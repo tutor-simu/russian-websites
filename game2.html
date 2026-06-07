@@ -12,7 +12,6 @@
             background: linear-gradient(135deg, #121224, #1a1a3a);
             font-family: sans-serif;
             display: flex;
-            overflow: hidden;
         }
 
         /* Canvas Workspace Area */
@@ -47,8 +46,6 @@
             max-height: 75vh;
         }
 
-        /* Sidebar Color Palette on the Right */
-        /* Sidebar Color Palette on the Right */
         #palette-sidebar {
             width: 130px;
             background: rgba(255, 255, 255, 0.1);
@@ -60,7 +57,9 @@
             padding: 20px 0;
             box-sizing: border-box;
             z-index: 10;
-            height: 100vh; /* Lock sidebar to full viewport height */
+            height: auto; /* Changed from 100vh to auto */
+            min-height: 100vh; /* Ensures it still covers the full height if needed */
+            overflow-y: auto; /* Ensures the sidebar itself can scroll if its content is too long */
         }
 
         /* NEW: Scrolling container specifically for color circles */
