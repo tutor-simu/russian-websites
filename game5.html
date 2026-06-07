@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Rescue - Game 3</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body { margin: 0; background: url('pictures/background/space_backround.jpeg') no-repeat center center fixed; background-size: cover; font-family: 'Comic Sans MS', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        
+        #welcome-screen { position: absolute; top: 0; left: 0; width: 100%; min-height: 100%; background: rgba(0, 0, 0, 0.4); z-index: 100; display: flex; align-items: center; justify-content: center; }
+        .welcome-bubble { background: beige; padding: 40px; border-radius: 40px; text-align: center; border: 8px solid #333; max-width: 700px; width: 90%; }
+        #start-btn { padding: 20px 50px; font-size: 28px; font-weight: bold; background-color: #4cd137; color: white; border: none; border-radius: 50px; cursor: pointer; }
+
+        #game-layout { display: none; flex-direction: column; align-items: center; width: 100%; }
+        #round-container { display: flex; gap: 20px; justify-content: center; margin-bottom: 30px; }
+        .item-slot { width: 250px; height: 250px; border-radius: 20px; border: 5px solid white; cursor: pointer; transition: transform 0.2s; object-fit: cover; }
+        .item-slot:hover { transform: scale(1.05); }
+
+        #feedback { font-size: 80px; margin: 20px; height: 100px; }
+        #end-screen { display: none; background: white; padding: 40px; border-radius: 20px; text-align: center; border: 8px solid #4cd137; }
+    </style>
+</head>
+<body>
+
+    <div id="welcome-screen">
+        <div class="welcome-bubble">
+            <h1>Welcome Mission</h1>
+            <p>Выбери картинку, которая <b>НЕ</b> начинается на букву <b>А</b>.</p>
+            <button id="start-btn" onclick="nextRound()">Начать миссию</button>
+        </div>
+    </div>
+
+    <div id="game-layout">
+        <div id="round-container"></div>
+        <div id="feedback"></div>
+    </div>
+
+    <div id="end-screen">
+        <h2>Замечательная сортировка!</h2>
+        <button onclick="location.reload()">Сбросить миссию</button>
+    </div>
+
+    <script>
+        const rounds = [
+            [
+                { name: 'pictures/game3/school-bus.png', correct: true },
+                { name: 'pictures/game3/table.png', correct: false },
+                { name: 'pictures/game3/pinapple.png', correct: true }
+            ],
+            [
+                { name: 'pictures/game3/watermellon.png', correct: true },
+                { name: 'pictures/game3/orange.png', correct: true },
+                { name: 'pictures/game3/gardirope.png', correct: false }
+            ],
+            [
+                { name: 'pictures/game3/fish.png', correct: false },
+                { name: 'pictures/game3/aquarium.png', correct: true },
+                { name: 'pictures/game3/apricot.png', correct: true }
+            ]
+        ];
+
+        let currentRoundIndex = 0;
+        let currentRoundItems = [];
+
+        function nextRound() {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('game-layout').style.display = 'flex';
+            currentRoundItems = [...rounds[currentRoundIndex]];
+            renderRound();
+        }
+
+        function renderRound() {
+            const container = document.getElementById('round-container');
+            container.innerHTML = '';
+            
+            currentRoundItems.forEach(item => {
+                const img = document.createElement('img');
+                img.src = item.name;
+                img.className = 'item-slot';
+                img.onclick = () => handleChoice(item);
+                container.appendChild(img);
+            });
+        }
+
+        function handleChoice(item) {
+            const feedback = document.getElementById('feedback');
+            
+            if (item.correct === false) {
+                confetti({ particleCount: 50 });
+                feedback.innerText = "✅";
+                
+                setTimeout(() => {
+                    feedback.innerText = "";
+                    currentRoundIndex++;
+                    if (currentRoundIndex < rounds.length) {
+                        currentRoundItems = [...rounds[currentRoundIndex]];
+                        renderRound();
+                    } else {
+                        endGame();
+                    }
+                }, 1000);
+            } else {
+                feedback.innerText = "❌";
+                setTimeout(() => feedback.innerText = "", 1000);
+            }
+        }
+
+        function endGame() {
+            document.getElementById('game-layout').style.display = 'none';
+            document.getElementById('end-screen').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
