@@ -293,27 +293,18 @@
             const currentItem = gameQueue[currentItemIndex];
             const feedbackEl = document.getElementById('feedback');
             
-            // Disable option circles during feedback window
             document.querySelectorAll('.option-circle').forEach(b => b.disabled = true);
 
             if (playerChoice === currentItem.correct) {
-                // CORRECT -> Confetti + Checkmark (pop up and fade)
-                confetti({
-                    particleCount: 80,
-                    spread: 60,
-                    origin: { y: 0.6 }
-                });
+                confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
                 feedbackEl.innerText = "✅";
                 feedbackEl.style.display = "block";
 
-                // Correct; remove from standard loop queue.
                 gameQueue.splice(currentItemIndex, 1);
             } else {
-                // INCORRECT -> Red cross markup
                 feedbackEl.innerText = "❌";
                 feedbackEl.style.display = "block";
 
-                // Advance index; item will cycle back around later.
                 currentItemIndex++;
             }
 
@@ -322,8 +313,9 @@
                 feedbackEl.style.display = "none";
                 document.querySelectorAll('.option-circle').forEach(b => b.disabled = false);
 
-                // If index exceeds queue size, wrap index to start (0).
-                if (currentItemIndex >= gameQueue.length) {
+                // SAFE INDEX WRAPPING:
+                // If the index goes beyond the last item, reset to 0 to loop back.
+                if (gameQueue.length > 0 && currentItemIndex >= gameQueue.length) {
                     currentItemIndex = 0;
                 }
                 
