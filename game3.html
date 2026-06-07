@@ -293,33 +293,44 @@
             const currentItem = gameQueue[currentItemIndex];
             const feedbackEl = document.getElementById('feedback');
             
+            // Disable buttons
             document.querySelectorAll('.option-circle').forEach(b => b.disabled = true);
 
             if (playerChoice === currentItem.correct) {
+                // CORRECT: Remove the item
                 confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
                 feedbackEl.innerText = "✅";
                 feedbackEl.style.display = "block";
 
                 gameQueue.splice(currentItemIndex, 1);
+                
+                // IMPORTANT: We do NOT increment currentItemIndex here.
+                // Because the array shrunk, the next item is now automatically at this index.
             } else {
+                // INCORRECT: Move to the next item in the list
                 feedbackEl.innerText = "❌";
                 feedbackEl.style.display = "block";
 
                 currentItemIndex++;
             }
 
-            // Cleanup delay
+            // Cleanup and Reset
             setTimeout(() => {
                 feedbackEl.style.display = "none";
                 document.querySelectorAll('.option-circle').forEach(b => b.disabled = false);
 
-                // SAFE INDEX WRAPPING:
-                // If the index goes beyond the last item, reset to 0 to loop back.
+                // SAFE LOOPING:
+                // If we reached the end of the array, wrap back to the start (0).
                 if (gameQueue.length > 0 && currentItemIndex >= gameQueue.length) {
                     currentItemIndex = 0;
                 }
                 
-                showNextItem();
+                // Check if we still have items to show
+                if (gameQueue.length > 0) {
+                    showNextItem();
+                } else {
+                    endGame();
+                }
             }, 1200);
         }
 
