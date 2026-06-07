@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+    /* 1. Reset everything to prevent hidden overflow */
+    html, body {
+        margin: 0;
+        padding: 0;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden; 
+        
+        background-image: url("../pictures/background/space_backround.jpeg");
+        background-size: cover;      /* Scales the image to fill the screen */
+        background-position: center; /* Keeps it centered */
+        background-repeat: no-repeat;
+        
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* 2. Grid container: Uses 4x5 layout */
+    .grid { 
+        display: grid; 
+        grid-template-columns: repeat(4, 1fr); 
+        grid-template-rows: repeat(5, 1fr); 
+        gap: 0.5vh; 
+        width: 95vw; 
+        height: 95vh; 
+        box-sizing: border-box;
+    }
+
+    /* 3. Cells: Forced to respect the grid boundaries */
+    .cell { 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        border-radius: 10px;
+        background: transparent;
+        position: relative; 
+        cursor: pointer;
+        transition: transform 0.1s;
+        /* CRITICAL: Allows cell to shrink if the image is too big */
+        min-height: 0;
+        min-width: 0;
+    }
+
+    /* 4. Images: Contain inside the cell so they never overflow */
+    .cell img { 
+        max-width: 90%; 
+        max-height: 90%; 
+        object-fit: contain; 
+        border-radius: 10px;
+        pointer-events: none; /* Allows click to pass through to the div */
+    }
+
+    /* 5. Interactive effects */
+    .cell:active { transform: scale(0.95); }
+
+    .path-highlight { 
+        outline: 5px solid #e65100; 
+        border-radius: 15px; 
+    }
+
+    /* 6. The Cat */
+    #cat { 
+        width: 60%; 
+        position: absolute; 
+        z-index: 10; 
+        transition: all 0.3s ease; 
+    }
+
+    /* 7. Full screen overlay */
+    #confetti { 
+        display: none; /* Keep this here */
+        position: fixed; 
+        top: 0; left: 0; 
+        width: 100vw; height: 100vh; 
+        background: rgba(0,0,0,0.85); 
+        color: white; 
+        text-align: center; 
+        /* REMOVE display: flex from here */
+        justify-content: center;
+        align-items: center;
+        font-size: 8vh; 
+        z-index: 100; 
+    }
+</style>
+</head>
+<body>
+
+<div class="grid" id="maze"></div>
+<div id="confetti">CONGRATULATIONS! </div>
+<script>
+    const layout = [
+        ['O', 'O', 'O', 'MOON'], // 4
+        ['O', 'A', 'S', 'U'],    // 4
+        ['O', 'O', 'O', 'O'],    // 4
+        ['A', 'M', 'A', 'O'],    // 4
+        ['CAT', 'O', 'O', 'O']   // 4 (Total 20)
+    ];
+        
+    const imageMap = {
+        'O': 'astroitO.png',
+        'A': 'astroitA.png',
+        'S': 'astroitS.png',
+        'M': 'astroitM.png',
+        'U': 'astroitU.png',
+        'MOON': 'moon.png' 
+    };
+
+    const maze = document.getElementById('maze');
+    let gameStarted = false, currentPath = [];
+
+    function createGrid() {
+        maze.innerHTML = '';
+        // Flatten layout to ensure we process exactly 20 items
+        layout.flat().forEach((val, index) => {
+            const div = document.createElement('div');
+            div.className = 'cell';
+            div.dataset.index = index; // Keep track of position
+            
+            if (imageMap[val]) {
+                const img = document.createElement('img');
+                img.src = `../pictures/O/${imageMap[val]}`;
+                div.appendChild(img);
+            }
+            
+            // Calculate row and col from index
+            const r = Math.floor(index / 4);
+            const c = index % 4;
+            
+            div.onclick = () => handleButtonClick(r, c, div);
+            
+            if (val === 'CAT') {
+                const catImg = document.createElement('img');
+                catImg.src = '../pictures/CHARACTERS/astro_cat.png'; 
+                catImg.id = 'cat';
+                div.appendChild(catImg);
+            }
+            maze.appendChild(div);
+        });
+    }
+
+    function handleButtonClick(r, c, div) {
+        if (!gameStarted && layout[r][c] === 'CAT') {
+            gameStarted = true;
+            currentPath = [{r, c}];
+            div.classList.add('path-highlight');
+            return;
+        }
+        if (!gameStarted) return;
+
+        const last = currentPath[currentPath.length - 1];
+        const isAdjacent = Math.abs(r - last.r) + Math.abs(c - last.c) === 1;
+
+        if (isAdjacent && (layout[r][c] === 'O' || layout[r][c] === 'MOON')) {
+            currentPath.push({r, c});
+            div.classList.add('path-highlight');
+            if (layout[r][c] === 'MOON') finish();
+        } else {
+            reset();
+        }
+    }
+
+    function reset() {
+        gameStarted = false;
+        currentPath = [];
+        document.querySelectorAll('.cell').forEach(c => c.classList.remove('path-highlight'));
+    }
+
+    function finish() {
+        const cat = document.getElementById('cat');
+        const confettiDiv = document.getElementById('confetti');
+        
+        currentPath.forEach((pos, i) => {
+            setTimeout(() => {
+                const targetIndex = pos.r * 4 + pos.c;
+                const cell = document.querySelectorAll('.cell')[targetIndex];
+                cell.appendChild(cat);
+                
+                // When the animation ends, show the confetti
+                if (i === currentPath.length - 1) {
+                    confettiDiv.style.display = 'flex'; // Explicitly set to flex on win
+                }
+            }, i * 300);
+        });
+    }
+
+    createGrid();
+</script>
