@@ -12,23 +12,36 @@
         .welcome-bubble { background: beige; padding: 40px; border-radius: 40px; text-align: center; border: 8px solid #333; max-width: 700px; width: 90%; }
         #start-btn { padding: 20px 50px; font-size: 28px; font-weight: bold; background-color: #4cd137; color: white; border: none; border-radius: 50px; cursor: pointer; }
 
-        #game-layout { display: none; flex-direction: column; align-items: center; width: 95%; }
+        #game-layout { display: none; flex-direction: column; align-items: center; width: 100%; }
         
-        /* Responsive Container */
-        #round-container { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-bottom: 30px; width: 100%; }
+        /* The container now wraps naturally when space runs out */
+        #round-container { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 20px; 
+            justify-content: center; 
+            margin-bottom: 30px; 
+            max-width: 900px; /* Keeps them centered in a nice group */
+        }
         
-        /* Responsive Images: Max-width keeps them from overflowing */
-        .item-slot { width: 250px; height: 250px; max-width: 30vw; max-height: 30vw; border-radius: 20px; border: 5px solid white; cursor: pointer; transition: transform 0.2s; object-fit: cover; }
+        /* Items stay at your preferred 250px size */
+        .item-slot { 
+            width: 250px; 
+            height: 250px; 
+            border-radius: 20px; 
+            border: 5px solid white; 
+            cursor: pointer; 
+            transition: transform 0.2s; 
+            object-fit: cover; 
+        }
         .item-slot:hover { transform: scale(1.05); }
 
         #feedback { font-size: 80px; margin: 20px; height: 100px; }
         #end-screen { display: none; background: white; padding: 40px; border-radius: 20px; text-align: center; border: 8px solid #4cd137; }
 
-        /* Media query for very small phones to ensure readability */
-        @media (max-width: 600px) {
-            .item-slot { width: 100px; height: 100px; max-width: 100px; max-height: 100px; }
-            .welcome-bubble h1 { font-size: 24px; }
-            .welcome-bubble p { font-size: 16px; }
+        /* On very small screens, ensure they don't look broken */
+        @media (max-width: 850px) {
+            .item-slot { width: 200px; height: 200px; }
         }
     </style>
 </head>
