@@ -19,7 +19,12 @@
 
         body { 
             font-family: sans-serif; 
-            background: #e3f2fd; 
+            /* Replace with your actual outside background image path */
+            background-image: url('pictures/background/space_backround.jpeg'); 
+            background-size: cover;          /* Scales image to completely cover the screen */
+            background-position: center;     /* Centers the background image */
+            background-repeat: no-repeat;    /* Prevents the image from repeating like a grid */
+            background-color: #e3f2fd;       /* Fallback color while image is loading */
             display: flex; 
             align-items: center; 
             justify-content: center;
@@ -49,13 +54,20 @@
             font-size: 1.4rem;
             margin: 0 0 15px 0;
             text-align: center;
+            color:white;
         }
         
         /* Restored to your preferred Large Layout Dimensions */
         #canvas {
             position: relative;
             width: 400px; height: 520px;
-            background: #fff; border: 3px dashed #777; border-radius: 20px;
+            /* Replace with your actual background image path */
+            background-image: url('pictures/background/space_backround111.jpeg'); 
+            background-size: cover;       /* Scales the image nicely to fill the entire box */
+            background-position: center;  /* Centers the picture perfectly */
+            background-color: #fff;       /* Fallback color while the image loads */
+            border: 3px dashed #777; 
+            border-radius: 20px;
             margin-bottom: 25px;
             overflow: hidden;
             box-sizing: border-box;
@@ -65,12 +77,13 @@
         /* Target slots matching the worksheet layout silhouette */
         .drop-zone { 
             position: absolute; 
-            border: 2px dashed rgba(0, 0, 0, 0.15); 
+            border: 2px dashed rgba(0, 0, 0, 0.2); /* Slightly darker so it's visible on backgrounds */
+            background: transparent;                /* Ensures the background image shows through */
             border-radius: 10px; 
             z-index: 1; 
             box-sizing: border-box;
         }
-        
+                
         /* Original precise large layout coordinates */
         #zone-log-left { 
             width: 250px; height: 60px; 
@@ -114,6 +127,12 @@
             touch-action: none;
             object-fit: contain;
         }
+        #confetti-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; 
+            z-index: 5001; /* Lifted up above the modal window */
+            display: none;
+        }
         
         /* Restored original larger item assets sizing */
         .long-log-asset { width: 120px; height: auto; }
@@ -127,6 +146,71 @@
         .stork-large {
             transform: scale(2.2) translateY(12px) !important; 
         }
+        /* Victory Modal Overlay */
+        #victory-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 15, 30, 0.85);
+            z-index: 5001; /* Lowered down one layer */
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Clean Modal Card Content */
+        .modal-content {
+            background: #1c2135;
+            border: 2px solid #ffffff;
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-width: 320px; width: 85%;
+            color: #fff;
+            animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal-content h3 {
+            margin: 0 0 10px 0; 
+            font-size: 1.6rem;
+            color: #ffffff; /* Crisp white text */
+        }
+
+        .modal-content p {
+            font-size: 1.1rem; 
+            margin-bottom: 25px; 
+            color: #d1d5db; /* Light gray text for readability */
+        }
+
+        /* Clean Buttons Setup */
+        .modal-buttons { display: flex; gap: 15px; justify-content: center; }
+        
+        .neon-btn {
+            padding: 12px 24px; 
+            font-size: 1rem; 
+            font-weight: bold;
+            border-radius: 8px; 
+            cursor: pointer; 
+            text-decoration: none;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+        .neon-btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-retry {
+            background: #4b5563; 
+            border: none; 
+            color: #ffffff;
+        }
+        .btn-retry:hover { background: #374151; }
+
+        .btn-next {
+            background: #2563eb; 
+            border: none; 
+            color: #ffffff;
+        }
+        .btn-next:hover { background: #1d4ed8; }
     </style>
 </head>
 <body>
@@ -150,6 +234,17 @@
             <img src="pictures/game3/stork.png" class="item" id="stork" data-target="stork">
         </div>
     </div>
+    <div id="victory-modal">
+        <div class="modal-content">
+            <h3>Отличная работа!</h3>
+            <p>Буква А успешно собрана!</p>
+            <div class="modal-buttons">
+                <button class="neon-btn btn-retry" onclick="location.reload()">Заново</button>
+                <a href="game7.html" class="neon-btn btn-next">Дальше</a>
+            </div>
+        </div>
+    </div>
+    <canvas id="confetti-canvas"></canvas>
 
     <script>
         const canvas = document.getElementById('canvas');
@@ -266,8 +361,65 @@
                     item.style.pointerEvents = 'none'; 
                     zone.style.visibility = 'hidden'; 
                     snapped = true;
+                    
+                    // Call the completion check after a brief snap delay
+                    setTimeout(checkGameCompletion, 300);
                 }
             });
+        }
+        function checkGameCompletion() {
+            // Count remaining hidden drop zones
+            const activeZones = Array.from(document.querySelectorAll('.drop-zone'))
+                                    .filter(z => z.style.visibility !== 'hidden');
+            
+            if (activeZones.length === 0) {
+                triggerVictory();
+            }
+        }
+
+        function triggerVictory() {
+            document.getElementById('victory-modal').style.display = 'flex';
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.style.display = 'block';
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const colors = ['#00f0ff', '#ff007f', '#00ff66', '#ffbe0b', '#7000ff'];
+            const particles = Array.from({ length: 120 }, () => ({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height - canvas.height,
+                r: Math.random() * 6 + 4,
+                d: Math.random() * canvas.height,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                tilt: Math.random() * 10 - 5,
+                tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+                tiltAngle: 0
+            }));
+
+            function drawConfetti() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach((p, idx) => {
+                    p.tiltAngle += p.tiltAngleIncremental;
+                    p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+                    p.x += Math.sin(p.tiltAngle);
+                    p.tilt = Math.sin(p.tiltAngle - idx / 3) * 15;
+
+                    ctx.beginPath();
+                    ctx.lineWidth = p.r;
+                    ctx.strokeStyle = p.color;
+                    ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+                    ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+                    ctx.stroke();
+                });
+                
+                // Stop animating loop if pop-up closes or modal resets
+                if (document.getElementById('victory-modal').style.display === 'flex') {
+                    requestAnimationFrame(drawConfetti);
+                }
+            }
+            drawConfetti();
         }
     </script>
 </body>
