@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=no">
+    <title>Собери букву А</title>
+    <style>
+        /* Prevents mobile pull-to-refresh gestures and text selection while dragging */
+        html, body {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body { 
+            font-family: sans-serif; 
+            background: #e3f2fd; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        /* Responsive Wrapper: Scales everything down on small screens, keeps it full size on large screens */
+        .game-container {
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            transform-origin: center center;
+        }
+
+        /* CSS Media Queries to handle screen scaling dynamically */
+        @media (max-width: 420px) {
+            .game-container { transform: scale(0.85); }
+        }
+        @media (max-width: 375px) {
+            .game-container { transform: scale(0.78); }
+        }
+        @media (max-width: 340px) {
+            .game-container { transform: scale(0.70); }
+        }
+        
+        h2 {
+            font-size: 1.4rem;
+            margin: 0 0 15px 0;
+            text-align: center;
+        }
+        
+        /* Restored to your preferred Large Layout Dimensions */
+        #canvas {
+            position: relative;
+            width: 400px; height: 520px;
+            background: #fff; border: 3px dashed #777; border-radius: 20px;
+            margin-bottom: 25px;
+            overflow: hidden;
+            box-sizing: border-box;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+        }
+
+        /* Target slots matching the worksheet layout silhouette */
+        .drop-zone { 
+            position: absolute; 
+            border: 2px dashed rgba(0, 0, 0, 0.15); 
+            border-radius: 10px; 
+            z-index: 1; 
+            box-sizing: border-box;
+        }
+        
+        /* Original precise large layout coordinates */
+        #zone-log-left { 
+            width: 250px; height: 60px; 
+            left: 20px; top: 310px; 
+            transform: rotate(-72deg); 
+        }
+        
+        #zone-log-right { 
+            width: 250px; height: 60px; 
+            left: 130px; top: 310px; 
+            transform: rotate(-108deg); 
+        }
+
+        #zone-cross {
+            width: 110px; height: 35px;
+            left: 145px; top: 370px;
+        }
+        
+        #zone-nest { 
+            width: 160px; height: 65px; 
+            left: 120px; top: 185px; 
+        }
+
+        #zone-stork {
+            width: 160px; height: 200px;
+            left: 120px; top: 5px;
+        }
+
+        /* Original Items panel styling */
+        .panel { 
+            display: flex; gap: 16px; background: white; 
+            padding: 16px; border-radius: 20px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); align-items: center;
+            flex-wrap: wrap; justify-content: center;
+            width: 400px;
+            box-sizing: border-box;
+        }
+
+        .item { 
+            cursor: grab; 
+            touch-action: none;
+            object-fit: contain;
+        }
+        
+        /* Restored original larger item assets sizing */
+        .long-log-asset { width: 120px; height: auto; }
+        #cross { width: 80px; height: auto; }
+        #nest { width: 100px; height: auto; }
+        #stork { 
+            width: 60px; 
+            height: auto; 
+        }
+
+        .stork-large {
+            transform: scale(2.2) translateY(12px) !important; 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h2>Собери букву А и посади аиста</h2>
+
+        <div id="canvas">
+            <div class="drop-zone" id="zone-stork"></div>
+            <div class="drop-zone" id="zone-nest"></div>
+            <div class="drop-zone" id="zone-cross"></div>
+            <div class="drop-zone" id="zone-log-left"></div>
+            <div class="drop-zone" id="zone-log-right"></div>
+        </div>
+
+        <div class="panel">
+            <img src="pictures/game6/long_log.png" class="item long-log-asset" id="log1" data-target="log">
+            <img src="pictures/game6/long_log.png" class="item long-log-asset" id="log2" data-target="log">
+            <img src="pictures/game6/short_log.png" class="item" id="cross" data-target="cross">
+            <img src="pictures/game6/nest.png" class="item" id="nest" data-target="nest">
+            <img src="pictures/game3/stork.png" class="item" id="stork" data-target="stork">
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+
+        document.querySelectorAll('.item').forEach(item => {
+            let isDragging = false;
+            let startX, startY;
+            let initialLeft, initialTop;
+
+            const dragStart = (e) => {
+                isDragging = true;
+                item.style.cursor = 'grabbing';
+                
+                const rect = item.getBoundingClientRect();
+                const canvasRect = canvas.getBoundingClientRect();
+                
+                // Track dragging scale offset caused by CSS scale transforms
+                const containerScale = canvasRect.width / 400; 
+                
+                initialLeft = (rect.left - canvasRect.left) / containerScale;
+                initialTop = (rect.top - canvasRect.top) / containerScale;
+
+                if (item.parentElement !== canvas) {
+                    item.style.position = 'absolute';
+                    item.style.left = initialLeft + 'px';
+                    item.style.top = initialTop + 'px';
+                    canvas.appendChild(item);
+                }
+
+                const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+                startX = clientX;
+                startY = clientY;
+                item.style.zIndex = 1000;
+            };
+
+            const dragMove = (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+
+                const canvasRect = canvas.getBoundingClientRect();
+                const containerScale = canvasRect.width / 400;
+
+                const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+                // Adjust positioning updates to align with dynamic scale modifications
+                const deltaX = (clientX - startX) / containerScale;
+                const deltaY = (clientY - startY) / containerScale;
+
+                item.style.left = (initialLeft + deltaX) + 'px';
+                item.style.top = (initialTop + deltaY) + 'px';
+            };
+
+            const dragEnd = () => {
+                if (!isDragging) return;
+                isDragging = false;
+                item.style.cursor = 'grab';
+                item.style.zIndex = 10;
+
+                checkSnap(item);
+            };
+
+            item.addEventListener('mousedown', dragStart);
+            window.addEventListener('mousemove', dragMove);
+            window.addEventListener('mouseup', dragEnd);
+
+            item.addEventListener('touchstart', dragStart, { passive: false });
+            window.addEventListener('touchmove', dragMove, { passive: false });
+            window.addEventListener('touchend', dragEnd);
+        });
+
+        function checkSnap(item) {
+            const zones = document.querySelectorAll('.drop-zone');
+            const itemType = item.getAttribute('data-target');
+            let snapped = false;
+
+            zones.forEach(zone => {
+                if (snapped) return;
+                if (zone.style.visibility === 'hidden') return;
+
+                if (itemType === 'log' && !zone.id.includes('log')) return;
+                if (itemType === 'cross' && !zone.id.includes('cross')) return;
+                if (itemType === 'nest' && !zone.id.includes('nest')) return;
+                if (itemType === 'stork' && !zone.id.includes('stork')) return;
+
+                const zRect = zone.getBoundingClientRect();
+                const iRect = item.getBoundingClientRect();
+                
+                const dist = Math.hypot(
+                    (zRect.left + zRect.width / 2) - (iRect.left + iRect.width / 2), 
+                    (zRect.top + zRect.height / 2) - (iRect.top + iRect.height / 2)
+                );
+                
+                // Safe distance threshold optimized across dynamic viewport alterations
+                const canvasRect = canvas.getBoundingClientRect();
+                const containerScale = canvasRect.width / 400;
+                const activeTolerance = 90 * containerScale;
+                
+                if (dist < activeTolerance) { 
+                    const computedStyle = window.getComputedStyle(zone);
+                    
+                    item.style.left = computedStyle.left;
+                    item.style.top = computedStyle.top;
+                    item.style.width = computedStyle.width;
+                    item.style.height = computedStyle.height;
+                    if (itemType === 'stork') {
+                        item.classList.add('stork-large');
+                    } else {
+                        item.style.transform = computedStyle.transform;
+                    }
+                    
+                    item.style.pointerEvents = 'none'; 
+                    zone.style.visibility = 'hidden'; 
+                    snapped = true;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
