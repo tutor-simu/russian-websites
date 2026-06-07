@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Rescue - Game 3</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            /* Changed from overflow: hidden to overflow-y: auto */
+            overflow-y: auto; 
+            /* Changed from height: 100vh to min-height: 100vh */
+            min-height: 100vh; 
+            background: url('pictures/background/space_backround.jpeg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Comic Sans MS', 'Segoe UI', cursive;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* --- Welcome Bubble Overlay --- */
+        #welcome-screen {
+            /* Change position to absolute and ensure it covers the space */
+            position: absolute;
+            top: 0; left: 0; width: 100%; min-height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .welcome-bubble {
+            background: beige;
+            opacity: 0.9; /* Slightly more opaque for better readability */
+            padding: 40px;
+            border-radius: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            max-width: 700px;
+            width: 90%; /* Responsive width */
+            text-align: center;
+            border: 8px solid #333;
+            margin: 20px 0; /* Ensures space at the top and bottom */
+        }
+
+        /* A little speech bubble tail pointing down toward the main game */
+        .welcome-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 30px 20px 0;
+            border-style: solid;
+            border-color: #333 transparent transparent;
+        }
+
+        .welcome-bubble h1 { font-size: 50px; margin-top: 0; color: #e84118; text-transform: uppercase;}
+        .welcome-bubble p { font-size: 26px; line-height: 1.6; margin-bottom: 30px; }
+        .welcome-bubble b { color: #2e86de; }
+
+        #start-btn {
+            padding: 20px 50px; font-size: 28px; font-weight: bold;
+            background-color: #4cd137; color: white; border: none; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.3); transition: transform 0.2s;
+        }
+        #start-btn:hover { transform: scale(1.1); }
+
+        /* --- Main Game Elements (Floating, not in a box) --- */
+        #game-layout {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly; /* Better than fixed margins */
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* The floating Letter Aa cue (Top Right) */
+        #letter-cue {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            font-size: 100px;
+            font-weight: bold;
+            color: #4cd137;
+            text-shadow: 0 0 20px #4cd137, 2px 2px 5px rgba(0,0,0,0.8);
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        /* Centered Item Image (Now in a circular border) */
+        #item-container {
+            margin-top: 2vh; /* Push down past the top UI */
+            position: relative;
+        }
+
+        #item-image {
+            width: 450px;  /* Keep your container size */
+            height: 450px; /* Keep your container size */
+            
+            /* 1. Force the image to fill the entire circle */
+            object-fit: cover; 
+            
+            /* 2. Remove padding so the image touches the edges */
+            padding: 0; 
+            
+            /* 3. Ensure the most important part of the image stays in the center */
+            object-position: center; 
+            
+            background: white;
+            border-radius: 50%;
+            border: 10px solid #2e86de;
+            box-shadow: 0 0 30px #2e86de;
+            display: block;
+        }
+
+        /* Feedback visuals pop over the image */
+        #feedback {
+            display: none;
+            font-size: 150px;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 30;
+            pointer-events: none;
+            animation: popFeedback 0.6s ease-out;
+        }
+
+        @keyframes popFeedback {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 1;}
+            80% { transform: translate(-50%, -50%) scale(1.3); opacity: 1;}
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0;} /* Fade out */
+        }
+
+        /* --- CIRCULAR Options Container (Bottom) --- */
+        .options-outer {
+            display: flex;
+            justify-content: center;
+            gap: 5vw; /* Use vw (viewport width) for responsiveness */
+            margin-top: 2vh;
+        }
+
+        /* Base style for the circular options */
+        .option-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 80px;
+            font-weight: bold;
+            color: white;
+            transition: all 0.2s ease-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            /* Important: Ensure we don't skew the button text */
+            -webkit-appearance: none;
+            line-height: 1;
+        }
+
+        .option-circle:disabled {
+            opacity: 0.5;
+            cursor: default;
+            transform: none !important;
+        }
+
+        /* Specific styles for Option A circle */
+        #btn-A {
+            background-color: #2e86de; /* Blue */
+            border: 8px solid #dfe6e9;
+        }
+        #btn-A:hover:not(:disabled) {
+            transform: translateY(-10px) scale(1.1);
+            box-shadow: 0 0 30px #2e86de;
+        }
+
+        /* Specific styles for Option HAND circle */
+        #btn-hands {
+            background-color: #e84118; /* Red */
+            border: 8px solid #dfe6e9;
+        }
+        #btn-hands:hover:not(:disabled) {
+            transform: translateY(-10px) scale(1.1);
+            box-shadow: 0 0 30px #e84118;
+        }
+
+        /* The Main Character Astro Cat (Bottom Right) */
+        #astro-cat {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 15vw; /* Makes it scale with screen size, max ~150px */
+            max-width: 150px;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        /* Simple Win Screen */
+        #end-screen {
+            display: none;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 8px solid #4cd137;
+        }
+        #end-screen h2 { font-size: 36px; color: #4cd137; margin-top: 0; }
+        #end-screen button { padding: 15px 30px; font-size: 20px; cursor: pointer; border-radius: 10px; border: none; background: #2e86de; color: white; margin-top: 20px;}
+    </style>
+</head>
+<body>
+
+    <div id="welcome-screen">
+        <div class="welcome-bubble">
+            <h1>Welcome Mission</h1>
+            <p>Добро пожаловать! Мы находимся в космосе и сортируем предметы. Изображения будут отображаться во всплывающем окне. Мы находимся в космосе и сортируем предметы. Изображения будут отображаться во всплывающем окне. Если русское название изображения начинается с буквы <b>A</b>, нажмите кнопку <b>A</b>. Если нет, нажмите кнопку <b>Рука»</b>.</p>
+            <button id="start-btn" onclick="startGame()">Начать сортировку</button>
+        </div>
+    </div>
+
+    <div id="game-layout">
+        <div id="letter-cue">A</div>
+
+        <div id="item-container">
+            <div id="feedback"></div>
+            <img id="item-image" src="" alt="Game item">
+        </div>
+
+        <div class="options-outer">
+            <button id="btn-A" class="option-circle" onclick="checkAnswer('A')">✋</button>
+            <button id="btn-hands" class="option-circle" onclick="checkAnswer('hands')">❌</button>
+        </div>
+    </div>
+
+    <div id="end-screen">
+        <h2>Замечательная сортировка!</h2>
+        <p>Вы успешно классифицировали весь космический груз!</p>
+        <button onclick="location.reload()">Сбросить миссию</button>
+        <button onclick="window.location.href='A4.html'">Следующая миссия</button>
+    </div>
+
+    <img id="astro-cat" src="../pictures/CHARACTERS/astro_cat.png" alt="Astro Cat Pilot">
+
+    <script>
+        const originalItems = [
+            { name: 'stork.png', correct: 'A' },    
+            { name: 'table.png', correct: 'hands' },    // Аист
+            { name: 'school-bus.png', correct: 'A' },  // Автобус
+            { name: 'shark.png', correct: 'A' },       // Акула
+            { name: 'pinapple.png', correct: 'A' },      // Ананас
+            { name: 'watermellon.png', correct: 'A' },
+            { name: 'chair.png', correct: 'hands' },   // Стул
+            { name: 'apricot.png', correct: 'A' }      // Абрикос
+        ];
+
+        let gameQueue = [];
+        let currentItemIndex = 0;
+
+        function startGame() {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('game-layout').style.display = 'flex';
+            
+            gameQueue = [...originalItems];
+            currentItemIndex = 0;
+            showNextItem();
+        }
+
+        function showNextItem() {
+            if (gameQueue.length === 0) {
+                endGame();
+                return;
+            }
+            const currentItem = gameQueue[currentItemIndex];
+            // Pointing to your item directory
+            document.getElementById('item-image').src = '../pictures/game3/' + currentItem.name;
+        }
+
+        function checkAnswer(playerChoice) {
+            const currentItem = gameQueue[currentItemIndex];
+            const feedbackEl = document.getElementById('feedback');
+            
+            // Disable buttons
+            document.querySelectorAll('.option-circle').forEach(b => b.disabled = true);
+
+            if (playerChoice === currentItem.correct) {
+                // CORRECT: Remove the item
+                confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+                feedbackEl.innerText = "✅";
+                feedbackEl.style.display = "block";
+
+                gameQueue.splice(currentItemIndex, 1);
+                
+                // IMPORTANT: We do NOT increment currentItemIndex here.
+                // Because the array shrunk, the next item is now automatically at this index.
+            } else {
+                // INCORRECT: Move to the next item in the list
+                feedbackEl.innerText = "❌";
+                feedbackEl.style.display = "block";
+
+                currentItemIndex++;
+            }
+
+            // Cleanup and Reset
+            setTimeout(() => {
+                feedbackEl.style.display = "none";
+                document.querySelectorAll('.option-circle').forEach(b => b.disabled = false);
+
+                // SAFE LOOPING:
+                // If we reached the end of the array, wrap back to the start (0).
+                if (gameQueue.length > 0 && currentItemIndex >= gameQueue.length) {
+                    currentItemIndex = 0;
+                }
+                
+                // Check if we still have items to show
+                if (gameQueue.length > 0) {
+                    showNextItem();
+                } else {
+                    endGame();
+                }
+            }, 1200);
+        }
+
+        function endGame() {
+            document.getElementById('game-layout').style.display = 'none';
+            document.getElementById('end-screen').style.display = 'block';
+            
+            // Winning celebration showers
+            let duration = 3 * 1000;
+            let end = Date.now() + duration;
+
+            (function frame() {
+                confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 } });
+                confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 } });
+                if (Date.now() < end) { requestAnimationFrame(frame); }
+            }());
+        }
+    </script>
+</body>
+</html>
