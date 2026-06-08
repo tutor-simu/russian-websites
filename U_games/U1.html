@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Раскрась буквы У!</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <style>
+        body { 
+            margin: 0; background: #121224; font-family: sans-serif; 
+            min-height: 100vh; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center;
+            background-image: url("../pictures/background/space_backround.jpeg");
+            background-size: cover;
+        }
+        
+        /* Grid Layout: Ensures equal items per row */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
+            gap: 20px;
+            padding: 20px;
+            width: 80vw;
+            max-width: 800px;
+        }
+
+        /* Desktop: 4 columns = 3 lines total (4, 4, 2) */
+        @media (min-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .star-group { 
+            cursor: pointer; 
+            width: 100%; 
+            transition: transform 0.2s; 
+        }
+        .star-group:hover { transform: scale(1.05); }
+        .star { fill: #ffffff; stroke: #333; stroke-width: 3; transition: fill 0.3s; }
+        .letter { pointer-events: none; font-size: 35px; font-weight: bold; fill: #333; user-select: none; }
+        
+        .controls { height: 12vh; display: flex; gap: 20px; align-items: center; }
+        button { padding: 15px 30px; font-size: 18px; border: none; border-radius: 15px; cursor: pointer; font-weight: bold; }
+        #reset-btn { background: #ff4757; color: white; }
+        #submit-btn { background: #2ed573; color: white; }
+
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background: #ffffff; padding: 40px; border-radius: 20px; text-align: center; color: #121224; }
+        #completion-modal { display: none; }
+
+        .top-right-cat { position: absolute; top: 15px; right: 15px; width: 80px; z-index: 50; }
+    </style>
+</head>
+<body>
+    <img src="../pictures/CHARACTERS/astro_cat.png" class="top-right-cat" alt="Cat Character">
+    
+    <div id="welcome-modal" class="modal">
+        <div class="modal-content">
+            <h2>Добро пожаловать!</h2>
+            <p>Пожалуйста, нажмите на все буквы "У", чтобы их раскрасить.</p>
+            <button onclick="document.getElementById('welcome-modal').style.display='none'">Начать!</button>
+        </div>
+    </div>
+
+    <div class="grid-container" id="star-grid"></div>
+
+    <div class="controls">
+        <button id="reset-btn" onclick="location.reload()">Reset</button>
+        <button id="submit-btn" onclick="checkAnswer()">Submit</button>
+    </div>
+
+    <div id="completion-modal" class="modal">
+        <div class="modal-content">
+            <h2>Отлично!</h2>
+            <button onclick="location.reload()">Играть снова</button>
+            <button onclick="location.href='U2.html'">Далее</button>
+        </div>
+    </div>
+
+    <script>
+        const letters = ['У', 'У', 'У', 'У', 'У', 'У', 'А', 'Б', 'В', 'Г'];
+        letters.sort(() => Math.random() - 0.5);
+
+        const grid = document.getElementById('star-grid');
+
+        letters.forEach((char) => {
+            const group = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            group.setAttribute("viewBox", "0 0 100 100");
+            group.classList.add('star-group');
+            group.innerHTML = `
+                <polygon class="star" points="50,5 61,35 95,35 67,55 78,85 50,65 22,85 33,55 5,35 39,35" />
+                <text x="50" y="55" text-anchor="middle" dominant-baseline="middle" class="letter">${char}</text>
+            `;
+            group.dataset.char = char;
+            group.onclick = () => {
+                group.querySelector('.star').style.fill = '#ffa502';
+                group.dataset.colored = "true";
+            };
+            grid.appendChild(group);
+        });
+
+        function checkAnswer() {
+            const colored = document.querySelectorAll('[data-colored="true"]');
+            let correct = true;
+            let count = 0;
+            colored.forEach(s => {
+                if (s.dataset.char !== 'У') correct = false;
+                else count++;
+            });
+
+            if (correct && count === 6) {
+                confetti({ particleCount: 250, spread: 120, origin: { y: 0.5 } });
+                document.getElementById('completion-modal').style.display = 'flex';
+            } else {
+                alert("Попробуй еще раз! Нужно раскрасить только 6 букв 'У'.");
+            }
+        }
+    </script>
+</body>
+</html>

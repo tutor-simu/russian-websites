@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Игра: Звук У</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body { margin: 0; background: #f0f8ff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        #palette { display: flex; gap: 10px; margin-bottom: 20px; padding: 15px; background: white; border-radius: 15px; }
+        .color-swatch { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; }
+        .color-swatch.active { border-color: #333; transform: scale(1.1); }
+        .game-grid { display: flex; flex-wrap: wrap; justify-content: center; }
+        .item-card { position: relative; width: 280px; margin: 15px; border: 2px solid #ccc; background: white; border-radius: 15px; display: flex; flex-direction: column; align-items: center; padding: 10px; }
+        canvas { width: 100%; height: 250px; cursor: crosshair; object-fit: contain; }
+        #global-controls { margin-top: 20px; display: flex; gap: 15px; }
+        button { padding: 12px 25px; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; background: #6e8efb; color: white; margin: 5px; }
+        
+        #popup { display: none; position: fixed; top: 30%; left: 50%; transform: translateX(-50%); background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; z-index: 100; border: 2px solid #6e8efb; }
+    </style>
+</head>
+<body>
+
+    <div id="palette">
+        <div class="color-swatch active" style="background-color: #FFD700;" data-color="255,215,0"></div>
+        <div class="color-swatch" style="background-color: #FF4757;" data-color="255,71,87"></div>
+        <div class="color-swatch" style="background-color: #2ED573;" data-color="46,213,115"></div>
+    </div>
+
+    <div class="game-grid">
+        <div class="item-card" data-is-u="true"><canvas data-src="../pictures/U/snail-nocolor.png"></canvas><div class="label">Улитка</div></div>
+        <div class="item-card" data-is-u="false"><canvas data-src="../pictures/U/tiger-nocolor.png"></canvas><div class="label">Тигр</div></div>
+        <div class="item-card" data-is-u="true"><canvas data-src="../pictures/U/mustage.png"></canvas><div class="label">Усы</div></div>
+        <div class="item-card" data-is-u="true"><canvas data-src="../pictures/U/iron.png"></canvas><div class="label">Утюг</div></div>
+        <div class="item-card" data-is-u="false"><canvas data-src="../pictures/U/elephant-nocolor.png"></canvas><div class="label">Слон</div></div>
+        <div class="item-card" data-is-u="true"><canvas data-src="../pictures/U/rod.png"></canvas><div class="label">Удочка</div></div>
+    </div>
+
+    <div id="global-controls">
+        <button onclick="resetGame()">Сбросить всё</button>
+        <button onclick="checkAll()">Проверить</button>
+    </div>
+
+    <div id="popup">
+        <h2 id="popup-text"></h2>
+        <div id="popup-actions"></div>
+    </div>
+
+    <script>
+        let currentFillColor = {r: 255, g: 215, b: 0};
+        
+        document.querySelectorAll('.color-swatch').forEach(s => s.onclick = function() {
+            document.querySelector('.active').classList.remove('active');
+            this.classList.add('active');
+            const rgb = this.dataset.color.split(',');
+            currentFillColor = {r: parseInt(rgb[0]), g: parseInt(rgb[1]), b: parseInt(rgb[2])};
+        });
+
+        function showPopup(message, isSuccess = false) {
+            document.getElementById('popup-text').innerText = message;
+            const actions = document.getElementById('popup-actions');
+            actions.innerHTML = ''; 
+
+            if (isSuccess) {
+                
+                actions.innerHTML += `<button onclick="closePopup()">Играть снова</button>`;
+                actions.innerHTML += `<button onclick="window.location.href='U3.html'">Следующая страница</button>`;
+            } else {
+                actions.innerHTML += `<button onclick="closePopup()">Закрыть</button>`;
+            }
+            document.getElementById('popup').style.display = 'block';
+        }
+
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+        }
+
+        function resetGame() {
+            document.querySelectorAll('canvas').forEach(c => {
+                c.dataset.hasBeenColored = "false";
+                const ctx = c.getContext('2d');
+                const img = new Image();
+                img.src = c.dataset.src;
+                img.onload = () => ctx.drawImage(img, 0, 0);
+            });
+            closePopup();
+        }
+
+        document.querySelectorAll('canvas').forEach(c => {
+            const ctx = c.getContext('2d', {willReadFrequently: true});
+            c.dataset.hasBeenColored = "false";
+            const img = new Image();
+            img.src = c.dataset.src;
+            img.onload = () => { c.width = img.naturalWidth; c.height = img.naturalHeight; ctx.drawImage(img, 0, 0); };
+            c.onclick = (e) => {
+                c.dataset.hasBeenColored = "true";
+                const rect = c.getBoundingClientRect();
+                const x = Math.floor((e.clientX - rect.left) * (c.width / rect.width));
+                const y = Math.floor((e.clientY - rect.top) * (c.height / rect.height));
+                floodFill(ctx, x, y, c.width, c.height, currentFillColor);
+            };
+        });
+
+        function checkAll() {
+            let hasErrors = false;
+            let correctColored = 0;
+            const totalCorrect = document.querySelectorAll('[data-is-u="true"]').length;
+
+            document.querySelectorAll('.item-card').forEach(card => {
+                const canvas = card.querySelector('canvas');
+                const isCorrect = card.dataset.isU === "true";
+                const isColored = canvas.dataset.hasBeenColored === "true";
+
+                if (isColored && !isCorrect) hasErrors = true;
+                if (isColored && isCorrect) correctColored++;
+            });
+
+            if (hasErrors) {
+                showPopup("Ошибка! Ты раскрасил предмет, который не начинается на звук У.", false);
+            } else if (correctColored === totalCorrect) {
+                confetti();
+                showPopup("Молодец! Всё верно!", true);
+            } else {
+                showPopup("Почти готово! Раскрась только те предметы, которые начинаются на звук У.", false);
+            }
+        }
+
+        function floodFill(ctx, x, y, w, h, col) {
+            const imgD = ctx.getImageData(0, 0, w, h);
+            const d = imgD.data;
+            const pos = (y * w + x) * 4;
+            const sR = d[pos], sG = d[pos+1], sB = d[pos+2];
+            if (Math.abs(sR - col.r) < 20 && Math.abs(sG - col.g) < 20 && Math.abs(sB - col.b) < 20) return;
+            const stack = [[x, y]];
+            while (stack.length) {
+                let [currX, currY] = stack.pop();
+                let p = (currY * w + currX) * 4;
+                if (Math.abs(d[p] - sR) < 20 && Math.abs(d[p+1] - sG) < 20 && Math.abs(d[p+2] - sB) < 20) {
+                    d[p] = col.r; d[p+1] = col.g; d[p+2] = col.b; d[p+3] = 255;
+                    if (currX > 0) stack.push([currX - 1, currY]);
+                    if (currX < w - 1) stack.push([currX + 1, currY]);
+                    if (currY > 0) stack.push([currX, currY - 1]);
+                    if (currY < h - 1) stack.push([currX, currY + 1]);
+                }
+            }
+            ctx.putImageData(imgD, 0, 0);
+        }
+    </script>
+</body>
+</html>

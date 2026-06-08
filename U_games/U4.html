@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Раскрась рыбок</title>
+    <style>
+        body { background: #1a1a3a; margin: 0; font-family: sans-serif; overflow-x: hidden; }
+        
+        /* Fixed Header Area */
+        .header {
+            position: sticky;
+            top: 0;
+            background: #1a1a3a;
+            padding: 10px 0;
+            border-bottom: 2px solid #2f2f5f;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 500;
+        }
+
+        .instructions { color: white; text-align: center; margin: 5px 0; font-size: 1.2rem; }
+        .palette { display: flex; gap: 20px; padding: 10px; }
+        .btn { width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 4px solid white; }
+        
+        /* Grid with top margin to clear the fixed header */
+        .fish-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; padding: 20px; width: 90%; max-width: 1000px; margin: 0 auto; }
+        
+        .fish-container { position: relative; width: 100%; aspect-ratio: 1; cursor: pointer; background-color: transparent; transition: background-color 0.3s; }
+        .fish-img { width: 100%; height: 100%; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; }
+        .fish-letter { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; font-weight: bold; color: black; pointer-events: none; text-shadow: 1px 1px 2px white; }
+        .error-x { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 50px; color: red; pointer-events: none; opacity: 0; transition: 0.2s; }
+        
+        #modal, #completion-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); color: white; display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        #canvas { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 999; }
+        .next-btn { padding: 15px 30px; font-size: 20px; cursor: pointer; background: #4caf50; color: white; border: none; border-radius: 10px; margin: 10px; }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas"></canvas>
+
+    <div class="header">
+        <div class="instructions">А — Красный | О — Синий | У — Жёлтый</div>
+        <div class="palette">
+            <div class="btn" style="background:red" onclick="activeLetter='A'; activeColor='red'"></div>
+            <div class="btn" style="background:blue" onclick="activeLetter='O'; activeColor='blue'"></div>
+            <div class="btn" style="background:yellow" onclick="activeLetter='Y'; activeColor='yellow'"></div>
+        </div>
+    </div>
+
+    <div id="modal">
+        <div style="text-align: center; background: #2f2f5f; padding: 40px; border-radius: 20px;">
+            <h1>Правила:</h1>
+            <p>А — Красный | О — Синий | У — Жёлтый</p>
+            <button onclick="document.getElementById('modal').style.display='none'">Начать</button>
+        </div>
+    </div>
+
+    <div id="completion-screen" style="display: none; flex-direction: column;">
+        <h1>Молодец!</h1>
+        <button class="next-btn" onclick="location.reload()">Играть снова</button>
+        <button class="next-btn" onclick="window.location.href='U5.html'">Следующая страница</button>
+    </div>
+
+    <div class="fish-grid" id="grid"></div>
+
+    <script>
+        const fishList = [
+            { id: 1, letter: 'A' }, { id: 2, letter: 'O' }, { id: 3, letter: 'Y' },
+            { id: 4, letter: 'A' }, { id: 5, letter: 'O' }, { id: 6, letter: 'Y' },
+            { id: 7, letter: 'A' }, { id: 8, letter: 'O' }, { id: 9, letter: 'Y' },
+            { id: 10, letter: 'A' }, { id: 11, letter: 'O' }, { id: 12, letter: 'Y' },
+            { id: 13, letter: 'A' }, { id: 14, letter: 'O' }, { id: 15, letter: 'Y' }
+        ];
+
+        let activeLetter = null;
+        let activeColor = null;
+        let solvedCount = 0;
+
+        const grid = document.getElementById('grid');
+        fishList.forEach((fish, i) => {
+            const div = document.createElement('div');
+            div.className = 'fish-container';
+            div.dataset.solved = "false";
+            div.innerHTML = `
+                <div class="fish-img" style="-webkit-mask-image: url('../pictures/U/fish${i + 1}.png'); mask-image: url('../pictures/U/fish${i + 1}.png'); background-color: #ddd;"></div>
+                <div class="fish-letter">${fish.letter}</div>
+                <div class="error-x" id="x${i}">✖</div>
+            `;
+            
+            div.onclick = () => {
+                if (!activeLetter || div.dataset.solved === "true") return;
+                if (activeLetter === fish.letter) {
+                    div.querySelector('.fish-img').style.backgroundColor = activeColor;
+                    div.dataset.solved = "true";
+                    solvedCount++;
+                    if (solvedCount === fishList.length) finishGame();
+                } else {
+                    const x = document.getElementById('x'+i);
+                    x.style.opacity = '1';
+                    setTimeout(() => x.style.opacity = '0', 800);
+                }
+            };
+            grid.appendChild(div);
+        });
+
+        function finishGame() {
+            document.getElementById('completion-screen').style.display = 'flex';
+            startConfetti();
+        }
+
+        function startConfetti() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            let particles = Array.from({length: 100}, () => ({
+                x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+                r: Math.random() * 5 + 2, color: ['red', 'blue', 'yellow'][Math.floor(Math.random()*3)],
+                vy: Math.random() * 3 + 1
+            }));
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+                    p.y += p.vy; if (p.y > canvas.height) p.y = 0;
+                });
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Игра: Пишем букву У</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            background: url('../pictures/background/space_backround.jpeg') no-repeat center center fixed;
+            background-size: cover;
+            height: 100vh;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: center;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .trace-container {
+            position: relative;
+            width: 150px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .guide-letter {
+            font-size: 80px; 
+            color: #d1d1d1;
+            user-select: none;
+            position: absolute;
+            z-index: 1;
+        }
+
+        .trace-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            cursor: crosshair;
+            touch-action: none;
+            z-index: 2;
+        }
+
+        /* Popup Styling */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            z-index: 1000;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: 5px solid #6e8efb;
+            text-align: center;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 15px;
+            background: #6e8efb;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn:hover { background: #5a75e0; }
+
+        #dim-overlay {
+            display: block; /* Shown by default for instructions */
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+        }
+        .button-row {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="instructions-popup" class="popup" style="display: block;">
+        <h1>Добро пожаловать!</h1>
+        <p>Правила игры: Обведи букву "У" на всех карточках мышкой или пальцем.</p>
+        <button class="btn" onclick="closeInstructions()">Начать игру</button>
+    </div>
+
+    <div id="congrats-popup" class="popup">
+        <h1 style="color: #6e8efb; margin-top: 0;">Молодец!</h1>
+        <div class="button-row">
+            <button class="btn" onclick="location.reload()">Играть снова</button>
+            <button class="btn" onclick="window.location.href='U7.html'">Далее</button>
+        </div>
+    </div>
+
+    <div id="dim-overlay"></div>
+
+    <div class="trace-container"><div class="guide-letter">У</div><canvas class="trace-canvas"></canvas></div>
+    <div class="trace-container"><div class="guide-letter">У</div><canvas class="trace-canvas"></canvas></div>
+    <div class="trace-container"><div class="guide-letter">У</div><canvas class="trace-canvas"></canvas></div>
+    <div class="trace-container"><div class="guide-letter">У</div><canvas class="trace-canvas"></canvas></div>
+    <div class="trace-container"><div class="guide-letter">У</div><canvas class="trace-canvas"></canvas></div>
+
+    <script>
+        let completed = 0;
+        const total = 5;
+
+        function closeInstructions() {
+            document.getElementById('instructions-popup').style.display = 'none';
+            document.getElementById('dim-overlay').style.display = 'none';
+        }
+
+        document.querySelectorAll('.trace-canvas').forEach(canvas => {
+            canvas.width = 150; canvas.height = 200;
+            const ctx = canvas.getContext('2d');
+            let isDrawing = false, hasDrawn = false;
+            ctx.strokeStyle = '#6e8efb'; ctx.lineWidth = 5; 
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+            const getPos = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return { x: clientX - rect.left, y: clientY - rect.top };
+            };
+
+            const start = (e) => { isDrawing = true; ctx.beginPath(); ctx.moveTo(getPos(e).x, getPos(e).y); };
+            const draw = (e) => { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+            const end = () => { if (isDrawing && !hasDrawn) { hasDrawn = true; completed++; checkAll(); } isDrawing = false; };
+
+            canvas.addEventListener('mousedown', start);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', end);
+            canvas.addEventListener('touchstart', (e) => { e.preventDefault(); start(e); });
+            canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); });
+            canvas.addEventListener('touchend', end);
+        });
+
+        function checkAll() {
+            if (completed === total) {
+                document.getElementById('dim-overlay').style.display = 'block';
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+                document.getElementById('congrats-popup').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

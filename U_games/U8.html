@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Космик потерялся</title>
+    <style>
+        body {
+            margin: 0;
+            background: #f0f8ff;
+            font-family: sans-serif;
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .syllable {
+            position: absolute;
+            font-size: 15vw;
+            font-weight: bold;
+            transition: color 0.5s ease;
+            user-select: none;
+        }
+
+        .active { color: red; }
+
+        /* Popups */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); z-index: 100;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .popup, .box {
+            background: white; padding: 30px; border-radius: 20px; 
+            text-align: center; width: 80%; max-width: 400px;
+        }
+        .button-row { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+        button, .btn { 
+            padding: 15px 20px; font-size: 16px; background: #6e8efb; 
+            color: white; border: none; border-radius: 10px; cursor: pointer; flex: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-overlay" class="overlay">
+        <div class="popup">
+            <h1>Кажется, котёнок заблудился!</h1>
+            <p>Прочитай, что говорит Космик.</p>
+            <button onclick="startGame()">Начать читать</button>
+        </div>
+    </div>
+
+    <div id="game-area"></div>
+
+    <div id="end-modal" class="overlay" style="display: none;">
+        <div class="box">
+            <h1>Молодец!</h1>
+            <div class="button-row">
+                <button class="btn" onclick="location.reload()">Ещё раз</button>
+                <button class="btn" onclick="window.location.href='../enntrence_pages/E.html'">Далее</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Syllables placed in reading order (Top-Left, Top-Right, Bottom-Left, Bottom-Right)
+        const syllablesData = [
+            { text: 'АУ', top: '5%', left: '10%' },
+            { text: 'АУ', top: '15%', left: '60%' },
+            { text: 'АО', top: '60%', left: '10%' },
+            { text: 'УА', top: '65%', left: '55%' }
+        ];
+
+        function startGame() {
+            document.getElementById('start-overlay').style.display = 'none';
+            renderSyllables();
+            animateSequence();
+        }
+
+        function renderSyllables() {
+            const area = document.getElementById('game-area');
+            syllablesData.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'syllable';
+                div.innerText = item.text;
+                div.style.top = item.top;
+                div.style.left = item.left;
+                div.id = 'syl-' + index;
+                area.appendChild(div);
+            });
+        }
+
+        async function animateSequence() {
+            for (let i = 0; i < syllablesData.length; i++) {
+                // Wait for the previous one to "sing"
+                await new Promise(r => setTimeout(r, 1000));
+                document.getElementById('syl-' + i).classList.add('active');
+            }
+            
+            // Show modal after a short delay once finished
+            setTimeout(() => {
+                document.getElementById('end-modal').style.display = 'flex';
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
