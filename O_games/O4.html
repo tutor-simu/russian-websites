@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=no">
+    <title>Собери букву О</title>
+    <style>
+        /* Prevents mobile pull-to-refresh gestures and text selection while dragging */
+        html, body {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body { 
+            font-family: sans-serif; 
+            background-image: url('../pictures/background/space_backround.jpeg'); 
+            background-size: cover;          
+            background-position: center;     
+            background-repeat: no-repeat;    
+            background-color: #e3f2fd;       
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        /* Fixed Cat Character Placement in Top-Right Corner */
+        .top-right-cat {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 80px;
+            height: auto;
+            z-index: 100;
+            pointer-events: none; /* Prevents blocking any drag/touch actions */
+        }
+
+        /* Adjust cat size slightly on smaller viewports to save text space */
+        @media (max-height: 640px) {
+            .top-right-cat {
+                width: 65px;
+                top: 10px;
+                right: 10px;
+            }
+        }
+
+        /* Responsive Wrapper */
+        .game-container {
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            transform-origin: center center;
+            width: 100%;
+            max-width: 420px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        /* CSS Media Queries for fluid scaling based on modern viewport restrictions */
+        @media (max-height: 740px) { .game-container { transform: scale(0.85); } }
+        @media (max-height: 680px) { .game-container { transform: scale(0.75); } }
+        @media (max-height: 600px) { .game-container { transform: scale(0.65); } }
+        
+        h2 {
+            font-size: 1.4rem;
+            margin: 0 0 12px 0;
+            text-align: center;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        #canvas {
+            position: relative;
+            width: 400px; 
+            height: 520px;
+            background-image: url('../pictures/background/space_backround111.jpeg'); 
+            background-size: cover;       
+            background-position: center;  
+            border: 3px dashed #fff; 
+            border-radius: 20px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            box-sizing: border-box;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+        }
+
+        /* The transparent letter outline overlay */
+        #letter-outline {
+            position: absolute;
+            width: 340px;
+            height: 460px;
+            left: 30px;
+            top: 30px;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0.3; 
+            transition: opacity 0.3s ease; 
+        }
+
+        /* Target slots matching the layout blocks */
+        .drop-zone { 
+            position: absolute; 
+            border: 2px dashed rgba(255, 255, 255, 0.25); 
+            background: rgba(255, 255, 255, 0.03);              
+            z-index: 1; 
+            box-sizing: border-box;
+        }
+                
+        /* Recalculated coordinates matching standard 6-slice O-split template scales */
+        #zone-top-left     { width: 170px; height: 140px; left: 30px;  top: 30px;  border-top-left-radius: 100% 100%; }
+        #zone-top-right    { width: 170px; height: 140px; left: 200px; top: 30px;  border-top-right-radius: 100% 100%; }
+
+        #zone-side-left    { width: 100px; height: 180px; left: 30px;  top: 170px; }
+        #zone-side-right   { width: 100px; height: 180px; left: 270px; top: 170px; }
+
+        #zone-bottom-left  { width: 170px; height: 140px; left: 30px;  top: 350px; border-bottom-left-radius: 100% 100%; }
+        #zone-bottom-right { width: 170px; height: 140px; left: 200px; top: 350px; border-bottom-right-radius: 100% 100%; }
+
+        /* Items panel tray styling */
+        .panel { 
+            display: flex; 
+            gap: 10px; 
+            background: rgba(255, 255, 255, 0.95); 
+            padding: 12px; 
+            border-radius: 20px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
+            align-items: center;
+            flex-wrap: wrap; 
+            justify-content: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .item { 
+            cursor: grab; 
+            touch-action: none;
+            object-fit: contain;
+            background: white; 
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.16);
+            transition: transform 0.1s ease;
+        }
+
+        .item:active {
+            transform: scale(1.05);
+        }
+
+        /* Unified tray preview sizes */
+        .top-asset, .bottom-asset { width: 90px; height: 72px; }
+        .side-asset { width: 52px; height: 86px; }
+
+        /* Individual post-placement piece adjustments */
+        #topLeft.placed { transform: rotate(-13deg) scale(1.25) translateY(13px); }
+        #topRight.placed { transform: scale(1.11) translateY(10px); }
+        #sideLeft.placed { transform: rotate(-23deg) scale(1.75); }
+        #sideRight.placed { transform: scale(1.57); }
+        #bottomLeft.placed { transform: rotate(156deg) scale(1.45) translateY(7px) translateX(-18px); }
+        #bottomRight.placed { transform: rotate(-50deg) scale(1.50) translateY(-20px) translateX(10px); }
+
+        #confetti-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; 
+            z-index: 5500; 
+            display: none;
+        }
+        
+        /* Victory Modal Overlay */
+        #victory-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 15, 30, 0.85);
+            z-index: 5001; 
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background: #1c2135;
+            border: 2px solid #ffffff;
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-width: 320px; width: 85%;
+            color: #fff;
+        }
+
+        .modal-content h3 { margin: 0 0 10px 0; font-size: 1.6rem; color: #ffffff; }
+        .modal-content p { font-size: 1.1rem; margin-bottom: 25px; color: #d1d5db; }
+        .modal-buttons { display: flex; gap: 15px; justify-content: center; }
+        
+        .neon-btn {
+            padding: 12px 24px; 
+            font-size: 1rem; 
+            font-weight: bold;
+            border-radius: 8px; 
+            cursor: pointer; 
+            text-decoration: none;
+            border: none;
+        }
+        .neon-btn:active { transform: scale(0.97); }
+        .btn-retry { background: #4b5563; color: #ffffff; }
+        .btn-retry:hover { background: #374151; }
+        .btn-next { background: #2563eb; color: #ffffff; }
+        .btn-next:hover { background: #1d4ed8; }
+    </style>
+</head>
+<body>
+
+    <img src="../pictures/CHARACTERS/astro_cat.png" class="top-right-cat" alt="Cat Character">
+
+    <div class="game-container">
+        <h2>Собери букву О</h2>
+
+        <div id="canvas">
+            <img src="../pictures/O/pieceO.png" id="letter-outline" alt="О">
+
+            <div class="drop-zone" id="zone-top-left"></div>
+            <div class="drop-zone" id="zone-top-right"></div>
+            <div class="drop-zone" id="zone-side-left"></div>
+            <div class="drop-zone" id="zone-side-right"></div>
+            <div class="drop-zone" id="zone-bottom-left"></div>
+            <div class="drop-zone" id="zone-bottom-right"></div>
+        </div>
+
+        <div class="panel">
+            <img src="../pictures/O/top_left.png" class="item top-asset" id="topLeft" data-target="top-left">
+            <img src="../pictures/O/top_right.png" class="item top-asset" id="topRight" data-target="top-right">
+            <img src="../pictures/O/side_left.png" class="item side-asset" id="sideLeft" data-target="side-left">
+            <img src="../pictures/O/side_right.png" class="item side-asset" id="sideRight" data-target="side-right">
+            <img src="../pictures/O/bottom_right.png" class="item bottom-asset" id="bottomLeft" data-target="bottom-left">
+            <img src="../pictures/O/bottom_left.png" class="item bottom-asset" id="bottomRight" data-target="bottom-right">
+        </div>
+    </div>
+
+    <div id="victory-modal">
+        <div class="modal-content">
+            <h3>Отличная работа!</h3>
+            <p>Буква О успешно собрана!</p>
+            <div class="modal-buttons">
+                <button class="neon-btn btn-retry" onclick="location.reload()">Заново</button>
+                <a href="O5.html" class="neon-btn btn-next">Дальше</a>
+            </div>
+        </div>
+    </div>
+    <canvas id="confetti-canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+
+        document.querySelectorAll('.item').forEach(item => {
+            let isDragging = false;
+            let startX, startY;
+            let initialLeft, initialTop;
+
+            const dragStart = (e) => {
+                isDragging = true;
+                item.style.cursor = 'grabbing';
+                
+                const rect = item.getBoundingClientRect();
+                const canvasRect = canvas.getBoundingClientRect();
+                const containerScale = canvasRect.width / 400; 
+                
+                initialLeft = (rect.left - canvasRect.left) / containerScale;
+                initialTop = (rect.top - canvasRect.top) / containerScale;
+
+                if (item.parentElement !== canvas) {
+                    item.style.position = 'absolute';
+                    item.style.left = initialLeft + 'px';
+                    item.style.top = initialTop + 'px';
+                    canvas.appendChild(item);
+                }
+
+                const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+                startX = clientX;
+                startY = clientY;
+                item.style.zIndex = 1000;
+            };
+
+            const dragMove = (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+
+                const canvasRect = canvas.getBoundingClientRect();
+                const containerScale = canvasRect.width / 400;
+
+                const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+                const deltaX = (clientX - startX) / containerScale;
+                const deltaY = (clientY - startY) / containerScale;
+
+                item.style.left = (initialLeft + deltaX) + 'px';
+                item.style.top = (initialTop + deltaY) + 'px';
+            };
+
+            const dragEnd = () => {
+                if (!isDragging) return;
+                isDragging = false;
+                item.style.cursor = 'grab';
+                item.style.zIndex = 10;
+
+                checkSnap(item);
+            };
+
+            item.addEventListener('mousedown', dragStart);
+            window.addEventListener('mousemove', dragMove);
+            window.addEventListener('mouseup', dragEnd);
+
+            item.addEventListener('touchstart', dragStart, { passive: false });
+            window.addEventListener('touchmove', dragMove, { passive: false });
+            window.addEventListener('touchend', dragEnd);
+        });
+
+        function checkSnap(item) {
+            const zones = document.querySelectorAll('.drop-zone');
+            const itemType = item.getAttribute('data-target');
+            let snapped = false;
+
+            zones.forEach(zone => {
+                if (snapped) return;
+                if (zone.style.visibility === 'hidden') return;
+                if (zone.id !== 'zone-' + itemType) return; 
+
+                const zRect = zone.getBoundingClientRect();
+                const iRect = item.getBoundingClientRect();
+                
+                const dist = Math.hypot(
+                    (zRect.left + zRect.width / 2) - (iRect.left + iRect.width / 2), 
+                    (zRect.top + zRect.height / 2) - (iRect.top + iRect.height / 2)
+                );
+                
+                const canvasRect = canvas.getBoundingClientRect();
+                const containerScale = canvasRect.width / 400;
+                const activeTolerance = 75 * containerScale;
+                
+                if (dist < activeTolerance) { 
+                    const computedStyle = window.getComputedStyle(zone);
+                    
+                    item.style.left = computedStyle.left;
+                    item.style.top = computedStyle.top;
+                    item.style.width = computedStyle.width;
+                    item.style.height = computedStyle.height;
+                    item.style.background = 'transparent'; 
+                    item.style.border = 'none';
+                    item.style.boxShadow = 'none';
+                    item.style.borderRadius = computedStyle.borderRadius;
+                    
+                    item.style.pointerEvents = 'none'; 
+                    zone.style.border = 'none'; 
+                    snapped = true;
+                    
+                    item.style.zIndex = 2;
+                    item.classList.add('placed');
+                    
+                    setTimeout(checkGameCompletion, 300);
+                }
+            });
+        }
+
+        function checkGameCompletion() {
+            const placedPieces = Array.from(document.querySelectorAll('.item'))
+                                      .filter(i => i.style.pointerEvents === 'none');
+            
+            if (placedPieces.length === 6) {
+                const outline = document.getElementById('letter-outline');
+                outline.src = "../pictures/O/finalpieceO.png";
+                outline.style.opacity = "1";
+                outline.style.zIndex = "20"; 
+
+                placedPieces.forEach(p => p.style.display = 'none');
+
+                setTimeout(() => {
+                    triggerVictory();
+                }, 1000);
+            }
+        }
+
+        function triggerVictory() {
+            document.getElementById('victory-modal').style.display = 'flex';
+            const canvasConf = document.getElementById('confetti-canvas');
+            const ctx = canvasConf.getContext('2d');
+            canvasConf.style.display = 'block';
+            
+            canvasConf.width = window.innerWidth;
+            canvasConf.height = window.innerHeight;
+            
+            const colors = ['#00f0ff', '#ff007f', '#00ff66', '#ffbe0b', '#7000ff'];
+            const particles = Array.from({ length: 120 }, () => ({
+                x: Math.random() * canvasConf.width,
+                y: Math.random() * canvasConf.height - canvasConf.height,
+                r: Math.random() * 6 + 4,
+                d: Math.random() * canvasConf.height,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                tilt: Math.random() * 10 - 5,
+                tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+                tiltAngle: 0
+            }));
+
+            function drawConfetti() {
+                ctx.clearRect(0, 0, canvasConf.width, canvasConf.height);
+                particles.forEach((p, idx) => {
+                    p.tiltAngle += p.tiltAngleIncremental;
+                    p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+                    p.x += Math.sin(p.tiltAngle);
+                    p.tilt = Math.sin(p.tiltAngle - idx / 3) * 15;
+
+                    ctx.beginPath();
+                    ctx.lineWidth = p.r;
+                    ctx.strokeStyle = p.color;
+                    ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+                    ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+                    ctx.stroke();
+                });
+                
+                if (document.getElementById('victory-modal').style.display === 'flex') {
+                    requestAnimationFrame(drawConfetti);
+                }
+            }
+            drawConfetti();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=no">
+    <title>Соедини звуки</title>
+    <style>
+        html, body {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* SPACE BACKGROUND: Nebula gradient + CSS Starfield layers */
+        body {
+            background-image: url("../pictures/background/space_backround.jpeg");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        /* Subtle star layer overlay using pseudo-element */
+        body::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.6;
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px),
+                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px);
+            background-size: 550px 550px, 350px 350px, 250px 250px;
+            background-position: 0 0, 40px 60px, 130px 270px;
+            z-index: -1;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform-origin: center center;
+        }
+
+        /* Responsive scaling system */
+        @media (max-width: 500px) { .game-container { transform: scale(0.85); } }
+        @media (max-width: 400px) { .game-container { transform: scale(0.75); } }
+        @media (max-width: 340px) { .game-container { transform: scale(0.65); } }
+
+        h2 {
+            font-size: 1.4rem;
+            margin: 0 0 20px 0;
+            text-align: center;
+            color: #ffffff;
+            text-shadow: 0 2px 12px rgba(99, 102, 241, 0.6);
+            max-width: 450px;
+            line-height: 1.3;
+        }
+
+        /* SCI-FI GLASS BOARD: Translucent dark panel with neon borders */
+        #game-board {
+            position: relative;
+            width: 500px;
+            height: 550px;
+            
+            /* SETS THE PICTURE HERE WITH A DARK OVERLAY */
+            /* Much lighter overlay so the real background details shine through */
+            background:url("../pictures/background/space_backround111.jpeg");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            
+            /* YOUR BORDER AND GLOW EFFECTS */
+            border: 3px solid #6366f1;
+            border-radius: 24px;
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            overflow: hidden;
+        }
+
+        #drawing-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: auto;
+            cursor: crosshair;
+        }
+
+        .item-node {
+            position: absolute;
+            width: 170px;
+            height: 170px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+            transition: transform 0.2s ease;
+        }
+
+        .item-node img {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+            pointer-events: none;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+            mix-blend-mode: normal; /* Switched from multiply so images display correctly on dark backgrounds */
+        }
+
+        /* ------------------------------------------------------------- */
+        /* INDIVIDUAL IMAGE SCALE BOOST FOR SHARK AND WATERMELON         */
+        /* ------------------------------------------------------------- */
+        #node-shark img {
+            transform: scale(1.70);
+        }
+
+        #node-watermelon img {
+            transform: scale(1.85); 
+        }
+        #node-island img{
+            transform: scale(1.75);
+        }
+        /* ------------------------------------------------------------- */
+
+        #node-island { top: 20px; left: 25px; }
+        #node-watermelon { top: 45px; right: 25px; }
+        #node-shark { bottom: 45px; left: 25px; }
+        #node-cloud { bottom: 40px; right: 25px; }
+
+        /* Connection Anchor Dots - Upgraded to look like small power cells */
+        .anchor-dot {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: #818cf8;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            z-index: 3;
+            box-shadow: 0 0 8px #6366f1;
+            pointer-events: none;
+        }
+
+        /* Success Overlay Screen */
+        #victory-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(3, 7, 18, 0.9);
+            z-index: 100;
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .modal-content {
+            background: #0f172a;
+            border: 2px solid #6366f1;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(99, 102, 241, 0.4);
+            max-width: 340px; width: 85%;
+            color: #fff;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.7); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-content h3 { margin: 0 0 12px 0; font-size: 1.8rem; color: #10b981; text-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+        .modal-content p { font-size: 1.1rem; margin-bottom: 30px; color: #9ca3af; }
+        
+        .action-btn {
+            padding: 14px 32px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            border: none;
+            background: #4f46e5;
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
+            transition: all 0.2s ease;
+        }
+        .action-btn:active { transform: scale(0.96); }
+        .action-btn:hover { background: #4338ca; box-shadow: 0 4px 20px rgba(79, 70, 229, 0.6); }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h2>Соедини картинки, которые начинаются с одного звука.</h2>
+
+        <div id="game-board">
+            <canvas id="drawing-canvas"></canvas>
+
+            <div class="item-node" id="node-island" data-sound="O" data-side="left">
+                <img src="../pictures/O/island.png" alt="Остров">
+            </div>
+            <div class="item-node" id="node-shark" data-sound="A" data-side="left">
+                <img src="../pictures/game3/shark.png" alt="Акула">
+            </div>
+
+            <div class="item-node" id="node-watermelon" data-sound="A" data-side="right">
+                <img src="../pictures/O/watermellon.png" alt="Арбуз">
+            </div>
+            <div class="item-node" id="node-cloud" data-sound="O" data-side="right">
+                <img src="../pictures/O/cloude.png" alt="Облако">
+            </div>
+        </div>
+    </div>
+
+    <div id="victory-modal">
+        <div class="modal-content">
+            <h3>Отличная работа!</h3>
+            <p>Все звуки объединены правильно!</p>
+            <button class="action-btn" onclick="location.reload()">Играть снова</button>
+            <a href="O6.html" class="action-btn" >Дальше</a>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('drawing-canvas');
+        const ctx = canvas.getContext('2d');
+        const board = document.getElementById('game-board');
+        const nodes = document.querySelectorAll('.item-node');
+        
+        let activeNode = null;
+        let isDrawing = false;
+        let mouseX = 0, mouseY = 0;
+        
+        let connections = []; 
+
+        function initBoard() {
+            const rect = board.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            
+            document.querySelectorAll('.anchor-dot').forEach(dot => dot.remove());
+
+            nodes.forEach(node => {
+                const dot = document.createElement('div');
+                dot.className = 'anchor-dot';
+                const center = getNodeAnchor(node);
+                dot.style.left = (center.x - 8) + 'px'; // Adjusted slightly for 16px size
+                dot.style.top = (center.y - 8) + 'px';
+                board.appendChild(dot);
+            });
+
+            redraw();
+        }
+
+        function getNodeAnchor(node) {
+            const left = node.offsetLeft;
+            const top = node.offsetTop;
+            const width = node.offsetWidth;
+            const height = node.offsetHeight;
+            const side = node.getAttribute('data-side');
+
+            return {
+                x: side === 'left' ? left + width - 12 : left + 12,
+                y: top + height / 2
+            };
+        }
+
+        function getMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        function findHoveredNode(pos) {
+            let found = null;
+            nodes.forEach(node => {
+                const left = node.offsetLeft;
+                const top = node.offsetTop;
+                const right = left + node.offsetWidth;
+                const bottom = top + node.offsetHeight;
+
+                if (pos.x >= left - 15 && pos.x <= right + 15 && pos.y >= top - 15 && pos.y <= bottom + 15) {
+                    found = node;
+                }
+            });
+            return found;
+        }
+
+        function redraw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            connections.forEach(conn => {
+                const start = getNodeAnchor(conn.from);
+                const end = getNodeAnchor(conn.to);
+                drawSmoothLine(start, end, '#10b981'); // Neon green for success lines
+            });
+
+            if (isDrawing && activeNode) {
+                const start = getNodeAnchor(activeNode);
+                drawSmoothLine(start, { x: mouseX, y: mouseY }, '#818cf8'); // Electric indigo drawing line
+            }
+        }
+
+        function drawSmoothLine(p1, p2, color) {
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 6;
+            ctx.lineCap = 'round';
+            ctx.shadowBlur = 10; // Adds glow effect to lines
+            ctx.shadowColor = color;
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+            ctx.shadowBlur = 0; // Reset shadow so it doesn't affect other elements
+        }
+
+        function onStart(e) {
+            const pos = getMousePos(e);
+            const target = findHoveredNode(pos);
+
+            if (target) {
+                const alreadyConnected = connections.some(c => c.from === target || c.to === target);
+                if (!alreadyConnected) {
+                    isDrawing = true;
+                    activeNode = target;
+                    mouseX = pos.x;
+                    mouseY = pos.y;
+                }
+            }
+        }
+
+        function onMove(e) {
+            if (!isDrawing) return;
+            if (e.cancelable) e.preventDefault();
+
+            const pos = getMousePos(e);
+            mouseX = pos.x;
+            mouseY = pos.y;
+            redraw();
+        }
+
+        function onEnd(e) {
+            if (!isDrawing) return;
+            isDrawing = false;
+
+            const finalPos = { x: mouseX, y: mouseY };
+            const targetNode = findHoveredNode(finalPos);
+
+            if (targetNode && targetNode !== activeNode) {
+                const validSidePair = activeNode.getAttribute('data-side') !== targetNode.getAttribute('data-side');
+                const validSoundMatch = activeNode.getAttribute('data-sound') === targetNode.getAttribute('data-sound');
+                
+                const targetAlreadyConnected = connections.some(c => c.from === targetNode || c.to === targetNode);
+
+                if (validSidePair && validSoundMatch && !targetAlreadyConnected) {
+                    connections.push({ from: activeNode, to: targetNode });
+                    checkGameCompletion();
+                } else if (validSidePair && !validSoundMatch) {
+                    triggerFailureFeedback(activeNode, targetNode);
+                }
+            }
+
+            activeNode = null;
+            redraw();
+        }
+
+        function triggerFailureFeedback(n1, n2) {
+            ctx.beginPath();
+            drawSmoothLine(getNodeAnchor(n1), getNodeAnchor(n2), '#ef4444'); // Vibrant red for errors
+            setTimeout(() => redraw(), 250);
+        }
+
+        function checkGameCompletion() {
+            if (connections.length === 2) {
+                setTimeout(() => {
+                    document.getElementById('victory-modal').style.display = 'flex';
+                }, 400);
+            }
+        }
+
+        canvas.addEventListener('mousedown', onStart);
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onEnd);
+
+        canvas.addEventListener('touchstart', onStart, { passive: false });
+        window.addEventListener('touchmove', onMove, { passive: false });
+        window.addEventListener('touchend', onEnd);
+
+        window.addEventListener('resize', initBoard);
+        window.addEventListener('load', initBoard);
+        setTimeout(initBoard, 100);
+    </script>
+</body>
+</html>
