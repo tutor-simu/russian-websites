@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Reading - Rocket Mission</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at center, #0B0F19 0%, #04060B 100%);
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            color: #38BDF8;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        p {
+            font-size: 1.2rem;
+            color: #94A3B8;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #board {
+            position: relative;
+            width: 90vw;
+            max-width: 800px;
+            height: 60vh;
+            border: 4px dashed #334155;
+            border-radius: 20px;
+            background: rgba(15, 23, 42, 0.4);
+        }
+
+        .rocket {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: #1E293B;
+            border: 4px solid #475569;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.3s, box-shadow 0.3s;
+            user-select: none;
+        }
+
+        .rocket:hover {
+            transform: scale(1.1);
+        }
+
+        .rocket.selected {
+            border-color: #F59E0B;
+            box-shadow: 0 0 15px #F59E0B;
+        }
+
+        .rocket.matched {
+            border-color: #10B981;
+            background: #065F46;
+            opacity: 0.6;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        /* Target Letter Box (Letter У in top right, like Image 3) */
+        #target-letter-box {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #1E293B;
+            border: 4px solid #38BDF8;
+            border-radius: 15px;
+            padding: 10px 20px;
+            font-size: 3rem;
+            color: #F87171;
+        }
+
+        /* Modal / Success Screen */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(4, 6, 11, 0.9);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn {
+            padding: 15px 30px;
+            background: #10B981;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: filter 0.2s;
+        }
+
+        .btn:hover { filter: brightness(1.1); }
+    </style>
+</head>
+<body>
+
+    <h1>Соедини одинаковые ракеты</h1>
+    <p>Найдите и нажмите на пары ракет с одинаковыми слогами.</p>
+
+    <div id="board">
+        <div id="target-letter-box">У</div>
+    </div>
+
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <h1>Миссия выполнена!</h1>
+            <button class="btn" onclick="location.reload()">Играть снова</button>
+        </div>
+    </div>
+
+    <script>
+        // Syllables matching Image 3 layout
+        const pairs = ['АУ', 'УА', 'ОУ', 'УО', 'АО', 'ОА'];
+        // Create an array with two of each syllable for matching pairs
+        const syllables = [...pairs, ...pairs];
+
+        const board = document.getElementById('board');
+        let selectedRocket = null;
+        let matchesFound = 0;
+
+        // Function to position rockets randomly inside the board preventing overlap
+        function initRockets() {
+            const positions = [];
+            const boardWidth = board.clientWidth - 100;
+            const boardHeight = board.clientHeight - 100;
+
+            syllables.forEach((syl, index) => {
+                const rocket = document.createElement('div');
+                rocket.className = 'rocket';
+                rocket.innerText = syl;
+                rocket.dataset.syl = syl;
+                rocket.dataset.id = index;
+
+                // Simple collision avoidance
+                let x, y, overlap;
+                let attempts = 0;
+                do {
+                    overlap = false;
+                    x = Math.random() * boardWidth;
+                    y = Math.random() * boardHeight;
+
+                    for (let pos of positions) {
+                        if (Math.abs(pos.x - x) < 100 && Math.abs(pos.y - y) < 100) {
+                            overlap = true;
+                            break;
+                        }
+                    }
+                    attempts++;
+                } while (overlap && attempts < 50);
+
+                positions.push({x, y});
+                rocket.style.left = `${x}px`;
+                rocket.style.top = `${y}px`;
+
+                rocket.addEventListener('click', () => handleRocketClick(rocket));
+                board.appendChild(rocket);
+            });
+        }
+
+        function handleRocketClick(rocket) {
+            // Ignore if already matched or clicked itself
+            if (rocket.classList.contains('matched') || rocket === selectedRocket) return;
+
+            if (!selectedRocket) {
+                // First rocket selected
+                selectedRocket = rocket;
+                rocket.classList.add('selected');
+            } else {
+                // Second rocket selected, check for match
+                if (selectedRocket.dataset.syl === rocket.dataset.syl && selectedRocket.dataset.id !== rocket.dataset.id) {
+                    // Match found!
+                    selectedRocket.classList.add('matched');
+                    rocket.classList.add('matched');
+                    selectedRocket.classList.remove('selected');
+                    
+                    matchesFound++;
+                    if (matchesFound === pairs.length) {
+                        setTimeout(() => {
+                            document.getElementById('successModal').style.display = 'flex';
+                        }, 500);
+                    }
+                } else {
+                    // No match, deselect first
+                    selectedRocket.classList.remove('selected');
+                }
+                selectedRocket = null; // Reset selection
+            }
+        }
+
+        window.onload = initRockets;
+    </script>
+</body>
+</html>

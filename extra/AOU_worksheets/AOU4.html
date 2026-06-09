@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Reading - Mission AUO</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap');
+
+        :root {
+            --primary: #2e86de;
+            --active-border: #f39c12; /* Orange border */
+            --base-text: #ffffff; /* Base text is white for space theme */
+            --fill-text: #ff4757; /* Red singing color */
+            --white: #ffffff;
+        }
+
+        body { 
+            margin: 0;
+            padding: 0;
+            overflow-y: auto; 
+            min-height: 100vh; 
+            background: radial-gradient(circle at center, #0B0F19 0%, #04060B 100%);
+            background-size: cover;
+            font-family: 'Comic Sans MS', 'Comic Neue', 'Segoe UI', cursive;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            color: var(--white);
+        }
+
+        /* Welcome Screen Bubble */
+        #welcome-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; min-height: 100%;
+            background: rgba(4, 6, 11, 0.85);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+            backdrop-filter: blur(8px);
+        }
+
+        .welcome-bubble {
+            background: #111827;
+            opacity: 0.95;
+            padding: 40px;
+            border-radius: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            max-width: 700px;
+            width: 90%;
+            text-align: center;
+            border: 8px solid #374151;
+            margin: 20px 0;
+            position: relative;
+            color: var(--white);
+        }
+
+        .welcome-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 30px 20px 0;
+            border-style: solid;
+            border-color: #374151 transparent transparent;
+        }
+
+        .welcome-bubble h1 { font-size: 50px; margin-top: 0; color: #f39c12; text-transform: uppercase;}
+        .welcome-bubble p { font-size: 26px; line-height: 1.6; margin-bottom: 30px; }
+
+        #start-btn {
+            padding: 20px 50px; font-size: 28px; font-weight: bold;
+            background-color: #10B981; color: white; border: none; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px 20px rgba(16, 185, 129, 0.3); 
+            transition: transform 0.2s, filter 0.2s;
+        }
+        #start-btn:hover { transform: scale(1.1); filter: brightness(1.1); }
+
+        /* Game Container */
+        .game-card { 
+            background: rgba(17, 24, 39, 0.85); 
+            padding: 40px; 
+            border-radius: 40px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5); 
+            width: 100%;
+            max-width: 550px; 
+            text-align: center; 
+            box-sizing: border-box;
+            border: 8px solid #1F2937;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .screen-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #38BDF8;
+            text-transform: uppercase;
+        }
+
+        /* 2x2 Grid setup */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 25px;
+            aspect-ratio: 1;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .card-item {
+            background: #1F2937;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4.5rem;
+            font-weight: bold;
+            border: 6px solid #374151;
+            transition: border-color 0.4s ease, box-shadow 0.4s ease;
+            gap: 5px;
+        }
+
+        .letter {
+            color: var(--base-text);
+            transition: color 0.4s ease;
+        }
+
+        .letter.active-letter {
+            color: var(--fill-text);
+        }
+
+        /* Active state: only the border turns orange with a glow, background remains dark */
+        .card-item.active {
+            border-color: var(--active-border);
+            box-shadow: 0 0 25px rgba(243, 156, 18, 0.4);
+        }
+
+        /* Pop-up Modal at the end */
+        .modal { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(4, 6, 11, 0.9); 
+            backdrop-filter: blur(12px);
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 100; 
+            animation: fadeIn 0.4s ease;
+        }
+
+        .modal-content { 
+            background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+            color: var(--white);
+            padding: 40px 35px; 
+            border-radius: 40px; 
+            text-align: center; 
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            font-family: 'Comic Sans MS', cursive;
+        }
+
+        .modal-content h1 {
+            color: #60A5FA;
+            margin-bottom: 25px;
+            font-size: 2.2rem;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn { 
+            padding: 18px 30px; 
+            border-radius: 50px; 
+            border: none; 
+            font-size: 1.2rem;
+            font-weight: bold; 
+            cursor: pointer; 
+            text-decoration: none; 
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            font-family: 'Comic Sans MS', cursive;
+        }
+
+        .btn-restart { 
+            background: #374151; 
+            color: var(--white); 
+        }
+
+        .btn-next { 
+            background: linear-gradient(135deg, #059669, #10B981); 
+            color: var(--white); 
+        }
+
+        .btn:hover { 
+            transform: translateY(-5px) scale(1.03); 
+            filter: brightness(1.1); 
+        }
+
+        .screen-container {
+            display: none;
+            width: 100%;
+        }
+
+        .screen-container.active-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #astro-cat {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 15vw;
+            max-width: 150px;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div id="finalModal" class="modal">
+        <div class="modal-content">
+            <h1>Миссия выполнена!</h1>
+            <div class="btn-group">
+                <button class="btn btn-restart" onclick="location.reload()">Играть снова</button>
+                <a href="AOU5.html" class="btn btn-next">Далее</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="welcome-screen">
+        <div class="welcome-bubble">
+            <h1>Космическое чтение</h1>
+            <p>Добро пожаловать в космическую экспедицию! Внимательно следите за карточками. Рамка карточки загорается оранжевым, а буквы внутри поют по очереди красным цветом.</p>
+            <button id="start-btn" onclick="startGame()">Начать миссию</button>
+        </div>
+    </div>
+
+    <div class="game-card" id="game-layout">
+        <div id="screen1" class="screen-container active-screen">
+            <div class="screen-title">Сектор 1</div>
+            <div class="cards-grid" id="grid1"></div>
+        </div>
+
+        <div id="screen2" class="screen-container">
+            <div class="screen-title">Сектор 2</div>
+            <div class="cards-grid" id="grid2"></div>
+        </div>
+    </div>
+
+    <img id="astro-cat" src="../../pictures/CHARACTERS/astro_cat.png" alt="Astro Cat Pilot">
+
+    <script>
+        const screensData = [
+            ['АО', 'УА', 'ОА', 'АУ'], 
+            ['УО', 'ОУ', 'А О', 'У А']  
+        ];
+
+        let currentScreen = 0;
+
+        function startGame() {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('game-layout').style.display = 'flex';
+            initScreen(currentScreen);
+        }
+
+        function initScreen(screenIndex) {
+            const screenId = `grid${screenIndex + 1}`;
+            const grid = document.getElementById(screenId);
+            grid.innerHTML = '';
+
+            screensData[screenIndex].forEach(letters => {
+                const card = document.createElement('div');
+                card.className = 'card-item';
+                
+                // Split letters inside card to sing one by one
+                const cleanStr = letters.replace(/\s+/g, '');
+                for (let char of cleanStr) {
+                    const span = document.createElement('span');
+                    span.className = 'letter';
+                    span.innerText = char;
+                    card.appendChild(span);
+                }
+                
+                grid.appendChild(card);
+            });
+
+            animateCards(screenIndex);
+        }
+
+        async function animateCards(screenIndex) {
+            const cards = document.querySelectorAll(`#screen${screenIndex + 1} .card-item`);
+            
+            for (let card of cards) {
+                // Highlight box border in orange
+                card.classList.add('active');
+                
+                // Sing letters one by one
+                const letters = card.querySelectorAll('.letter');
+                for (let letter of letters) {
+                    letter.classList.add('active-letter');
+                    await new Promise(r => setTimeout(r, 800)); // Time per letter
+                }
+
+                await new Promise(r => setTimeout(r, 400)); // Pause after singing
+                
+                // Remove orange highlight border
+                card.classList.remove('active');
+                await new Promise(r => setTimeout(r, 300)); // Gap between cards
+            }
+
+            // Move to next screen or finish
+            setTimeout(() => {
+                if (screenIndex < screensData.length - 1) {
+                    document.getElementById(`screen${currentScreen + 1}`).classList.remove('active-screen');
+                    currentScreen++;
+                    document.getElementById(`screen${currentScreen + 1}`).classList.add('active-screen');
+                    initScreen(currentScreen);
+                } else {
+                    // Show final pop-up page
+                    document.getElementById('finalModal').style.display = 'flex';
+                }
+            }, 500);
+        }
+    </script>
+</body>
+</html>
