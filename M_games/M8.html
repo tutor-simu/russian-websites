@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Reading - Blue Planet Mission</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at center, #0B0F19 0%, #04060B 100%);
+            font-family: 'Nunito', cursive, sans-serif;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* ========================================================
+           CINEMATIC ZOOM-INTO-PLANET ANIMATION SYSTEM 
+           ======================================================== */
+        #intro-stage {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #0B0F19 0%, #04060B 100%);
+            z-index: 100;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            transition: opacity 1s ease;
+        }
+
+        .intro-text {
+            position: absolute;
+            top: 10%;
+            font-size: 2rem;
+            color: #38BDF8;
+            text-transform: uppercase;
+            text-align: center;
+            opacity: 0;
+            animation: fadeInOut 3s ease-in-out forwards;
+        }
+
+        .deep-space-ship {
+            position: absolute;
+            width: 120px;
+            height: auto;
+            transform: rotate(-45deg);
+            animation: flyToPlanet 3s cubic-bezier(0.5, 0, 0.1, 1) forwards;
+            filter: drop-shadow(0 0 20px #38BDF8);
+        }
+
+        .blue-planet-intro {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #60A5FA, #1E3A8A);
+            box-shadow: 0 0 50px rgba(96, 165, 250, 0.3);
+            transform: scale(0.1);
+            animation: zoomToPlanet 3s cubic-bezier(0.5, 0, 0.1, 1) forwards;
+        }
+
+        /* ========================================================
+           MAIN WORKSPACE GAME INTERFACE 
+           ======================================================== */
+        h1 {
+            color: #38BDF8;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            text-align: center;
+            z-index: 1;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        p {
+            font-size: 1.4rem;
+            color: #94A3B8;
+            margin-bottom: 20px;
+            text-align: center;
+            z-index: 1;
+        }
+
+        #board {
+            position: relative;
+            width: 90vw;
+            max-width: 800px;
+            height: 60vh;
+            border: 4px dashed #334155;
+            border-radius: 20px;
+            background: rgba(15, 23, 42, 0.6);
+            overflow: hidden;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.5);
+        }
+
+        /* Round Planet Surface (Blue Ground) */
+        .planet-ground {
+            position: absolute;
+            bottom: -300px;
+            left: -10%;
+            width: 120%;
+            height: 400px;
+            background: radial-gradient(ellipse at center, #3B82F6 0%, #1D4ED8 100%);
+            border-radius: 50%;
+            box-shadow: 0 -10px 40px rgba(29, 78, 216, 0.5);
+        }
+
+        /* Spaceship parked sideways on the round planet */
+        .parked-rocket {
+            position: absolute;
+            bottom: 65px;
+            left: 20%;
+            width: 80px;
+            height: 80px;
+            background: #E2E8F0;
+            border: 4px solid #64748B;
+            border-radius: 50% 50% 10px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            transform: rotate(15deg); /* Looks sideways along the curve */
+            box-shadow: 0 0 20px rgba(226, 232, 240, 0.2);
+            z-index: 2;
+            animation: floatRocket 4s ease-in-out infinite;
+        }
+
+        .parked-rocket::before {
+            content: '🚀';
+            position: absolute;
+            transform: rotate(-15deg);
+        }
+
+        /* Reading Display Screen (No clicking words, just reading colored text) */
+        #reading-display {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 41, 59, 0.85);
+            border: 4px solid #475569;
+            border-radius: 30px;
+            padding: 30px 50px;
+            font-size: 4rem;
+            font-weight: 800;
+            display: flex;
+            gap: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            letter-spacing: 2px;
+        }
+
+        .syllable-1 { color: #F87171; } /* Colored words/syllables */
+        .syllable-2 { color: #34D399; }
+        .syllable-3 { color: #60A5FA; }
+        .syllable-4 { color: #FBBF24; }
+
+        .instruction-banner {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1E293B;
+            border: 3px solid #38BDF8;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.5rem;
+            color: #E2E8F0;
+            white-space: nowrap;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* ========================================================
+           ANIMATIONS TIMELINE 
+           ======================================================== */
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes flyToPlanet {
+            0% { top: 40%; left: 10%; transform: scale(1) rotate(-45deg); }
+            100% { top: 10%; left: 75%; transform: scale(0.1) rotate(-45deg); opacity: 0.2; }
+        }
+
+        @keyframes zoomToPlanet {
+            0% { transform: scale(0.1); opacity: 1; }
+            80% { transform: scale(18); opacity: 1; }
+            100% { transform: scale(25); opacity: 0; }
+        }
+
+        @keyframes floatRocket {
+            0%, 100% { transform: translateY(0) rotate(15deg); }
+            50% { transform: translateY(-10px) rotate(12deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="intro-stage">
+        <div class="intro-text">Прибытие на Синюю Планету</div>
+        <div class="blue-planet-intro"></div>
+        <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>🚀</text></svg>" class="deep-space-ship" alt="Ship">
+    </div>
+
+    <h1>Миссия: Голубая Планета</h1>
+    <p>Прочитайте с экрана слоги, глядя на космический корабль.</p>
+
+    <div id="board">
+        <div id="reading-display">
+            <span class="syllable-1">МА</span>
+            <span class="syllable-2">ЛА</span>
+            <span class="syllable-3">ПА</span>
+            <span class="syllable-4">ША</span>
+        </div>
+
+        <div class="planet-ground"></div>
+
+        <div class="parked-rocket"></div>
+
+        <div class="instruction-banner">Корабль на орбите. Просто читайте слоги выше! ✨</div>
+    </div>
+
+    <script>
+        // Automatic cleanup system for intro zoom optimization
+        setTimeout(() => {
+            const intro = document.getElementById('intro-stage');
+            if(intro) intro.remove();
+        }, 3000);
+    </script>
+</body>
+</html>

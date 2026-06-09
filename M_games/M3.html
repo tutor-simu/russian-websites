@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Найди пропавшую карточку | Bilingvi Online</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background: url('../pictures/background/space_backround.jpeg') center center/cover no-repeat;
+            background-color: #0b0b1e;
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow: hidden;
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+            color: white;
+            box-sizing: border-box;
+            padding-top: 20px;
+        }
+
+        /* Top Bar Info */
+        #game-status-bar {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            z-index: 10;
+        }
+
+        .status-panel {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-size: 24px;
+            font-weight: 800;
+            color: #1e272e;
+            border: 3px solid #ffa502;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+
+        #timer-box {
+            border-color: #ff4757;
+            display: none;
+        }
+
+        /* Canvas Arena - Centered Grid Container */
+        #canvas-container {
+            width: 100%;
+            max-width: 800px;
+            height: 60vh;
+            position: relative;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Bear Dialog Stage - Locked in bottom left corner */
+        #bear-stage {
+            position: absolute;
+            bottom: 3%;
+            left: 3%;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        /* Continuous floating animation */
+        .space-bear {
+            width: 220px;
+            height: auto;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+            animation: floatBear 3s ease-in-out infinite;
+        }
+
+        .speech-bubble {
+            background: white;
+            border-radius: 25px;
+            padding: 15px 25px;
+            font-size: 20px;
+            font-weight: 800;
+            color: #1e272e;
+            position: relative;
+            max-width: 320px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 3px solid #4a69bd;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            left: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-width: 15px 15px 15px 0;
+            border-style: solid;
+            border-color: transparent white transparent transparent;
+        }
+
+        /* End Game Screen Overlay */
+        #victory-popup {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 11, 30, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .popup-content-box {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            max-width: 800px;
+            padding: 20px;
+        }
+
+        .popup-bubble {
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
+            border: 4px solid #2ed573;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 400px;
+        }
+
+        .popup-bubble::after {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-width: 20px 20px 20px 0;
+            border-style: solid;
+            border-color: transparent white transparent transparent;
+        }
+
+        .popup-text {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1e272e;
+            text-align: center;
+            margin: 0;
+        }
+
+        .popup-buttons-container {
+            display: flex;
+            gap: 15px;
+        }
+
+        .popup-btn {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 15px;
+            font-weight: 800;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .popup-btn:hover { transform: translateY(-3px); }
+        .btn-again { background: #ffa502; color: white; }
+        .btn-next { background: #2ed573; color: white; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* Continuous gentle bouncing animation */
+        @keyframes floatBear {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* Tablet/Mobile Adjustments */
+        @media (max-width: 768px) {
+            #bear-stage { flex-direction: column; bottom: 2%; left: 2%; align-items: flex-start; gap: 5px;}
+            .space-bear { width: 120px; }
+            .speech-bubble { font-size: 15px; max-width: 200px; padding: 10px; }
+            .speech-bubble::after {
+                left: 50%; top: -12px; transform: translateX(-50%);
+                border-width: 0 12px 12px 12px;
+                border-color: transparent transparent white transparent;
+            }
+            #canvas-container { height: 45vh; }
+            .status-panel { font-size: 16px; padding: 6px 15px; }
+            .popup-content-box { flex-direction: column; }
+            .popup-bubble::after { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-status-bar">
+        <div id="round-box" class="status-panel">Раунд 1/2</div>
+        <div id="timer-box" class="status-panel">⏱️ 5</div>
+    </div>
+
+    <div id="canvas-container">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <div id="bear-stage">
+        <img src="../pictures/game4/bear.png" alt="Bear" class="space-bear" onerror="this.src='https://placehold.co/220x260/4a69bd/ffffff?text=🐻'">
+        <div id="speech-text" class="speech-bubble">Привет! Сыграем в игру "Что исчезло?". Запомни эти картинки!</div>
+    </div>
+
+    <div id="victory-popup">
+        <div class="popup-content-box">
+            <img src="../pictures/game4/bear.png" alt="Bear" class="space-bear" onerror="this.src='https://placehold.co/220x260/4a69bd/ffffff?text=🐻'">
+            <div class="popup-bubble">
+                <p class="popup-text">Отличная работа! Ты справился со всеми космическими загадками!</p>
+                <div class="popup-buttons-container">
+                    <button class="popup-btn btn-again" onclick="location.reload();">Заново</button>
+                    <button class="popup-btn btn-next" onclick="location.href='M4.html'">Далее</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const timerBox = document.getElementById('timer-box');
+    const roundBox = document.getElementById('round-box');
+    const speechText = document.getElementById('speech-text');
+    const canvasContainer = document.getElementById('canvas-container');
+    const victoryPopup = document.getElementById('victory-popup');
+
+    const gameRounds = [
+        {
+            roundNum: 1,
+            cards: [
+                { id: 1, name: 'Мука', img: 'pictures/мука.png', fallback: '🌾', row: 0, col: 0 },
+                { id: 2, name: 'Мышка', img: 'pictures/мышка.png', fallback: '🐭', row: 0, col: 1 },
+                { id: 3, name: 'Луна', img: 'pictures/луна.png', fallback: '🌙', row: 1, col: 0 },
+                { id: 4, name: 'Муравей', img: 'pictures/муравей.png', fallback: '🐜', row: 1, col: 1 }
+            ]
+        },
+        {
+            roundNum: 2,
+            cards: [
+                { id: 5, name: 'Мамонт', img: 'pictures/мамонт.png', fallback: '🦣', row: 0, col: 0 },
+                { id: 6, name: 'Майка', img: 'pictures/майка.png', fallback: '🎽', row: 0, col: 1 },
+                { id: 7, name: 'Медведь', img: '../pictures/game4/bear.png', fallback: '🐻', row: 1, col: 0 },
+                { id: 8, name: 'Морж', img: 'pictures/морж.png', fallback: '🦭', row: 1, col: 1 }
+            ]
+        }
+    ];
+
+    let currentRoundIndex = 0;
+    let cardsData = [];
+    let animationFrameId;
+    let gameState = 'intro';
+    let currentMissingId = null;
+
+    function resizeCanvas() {
+        const rect = canvasContainer.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        if(cardsData.length > 0 && (gameState === 'memorize' || gameState === 'revealMissing')) {
+            cardsData.forEach(card => card.calculatePositions());
+        }
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    class VisualCard {
+        constructor(data) {
+            this.data = data;
+            this.imgObj = new Image();
+            this.imgObj.src = data.img;
+            this.imageLoaded = false;
+            this.imgObj.onload = () => { this.imageLoaded = true; };
+            
+            // Scaled up for 3-year-olds
+            this.width = 240;
+            this.height = 240;
+            this.targetX = 0;
+            this.targetY = 0;
+            this.x = 0;
+            this.y = 0;
+            this.visible = true;
+            
+            this.calculatePositions();
+            this.x = this.targetX;
+            this.y = this.targetY;
+        }
+
+        calculatePositions() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const gap = 35; // slightly wider gap for larger cards
+
+            if (this.data.row === 0) {
+                this.targetY = centerY - this.height - (gap / 2);
+            } else {
+                this.targetY = centerY + (gap / 2);
+            }
+
+            if (this.data.col === 0) {
+                this.targetX = centerX - this.width - (gap / 2);
+            } else {
+                this.targetX = centerX + (gap / 2);
+            }
+        }
+
+        update() {
+            this.x += (this.targetX - this.x) * 0.12;
+            this.y += (this.targetY - this.y) * 0.12;
+        }
+
+        draw() {
+            if (!this.visible) return;
+            ctx.save();
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#4a69bd';
+            ctx.lineWidth = 6;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = 'rgba(0,0,0,0.4)';
+            
+            ctx.beginPath();
+            ctx.roundRect(this.x, this.y, this.width, this.height, 28);
+            ctx.fill();
+            ctx.stroke();
+            
+            if (this.imageLoaded) {
+                // Clipping path to make sure images don't overflow the rounded card borders
+                ctx.beginPath();
+                ctx.roundRect(this.x, this.y, this.width, this.height, 28);
+                ctx.clip();
+                
+                // Maximized: Removed padding completely so assets fill the whole frame
+                ctx.drawImage(this.imgObj, this.x, this.y, this.width, this.height);
+            } else {
+                ctx.fillStyle = '#1e272e';
+                ctx.font = 'bold 80px Nunito';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.data.fallback, this.x + this.width/2, this.y + this.height/2);
+            }
+            ctx.restore();
+        }
+    }
+
+    setTimeout(() => {
+        initRound(0);
+    }, 5000); 
+
+    function initRound(index) {
+        currentRoundIndex = index;
+        roundBox.textContent = `Раунд ${index + 1}/2`;
+        canvasContainer.style.display = 'block';
+        resizeCanvas();
+
+        const currentRound = gameRounds[index];
+        speechText.textContent = "Запомни эти картинки внимательно!";
+        
+        const randomCardIndex = Math.floor(Math.random() * currentRound.cards.length);
+        currentMissingId = currentRound.cards[randomCardIndex].id;
+
+        cardsData = currentRound.cards.map(card => {
+            const vCard = new VisualCard(card);
+            vCard.visible = true; 
+            return vCard;
+        });
+
+        gameState = 'memorize';
+        startCountdown(5, () => {
+            triggerShufflingPhase();
+        });
+
+        if (!animationFrameId) {
+            gameLoop();
+        }
+    }
+
+    function startCountdown(seconds, callback) {
+        timerBox.style.display = 'block';
+        let timeLeft = seconds;
+        timerBox.textContent = `⏱️ ${timeLeft}`;
+
+        const interval = setInterval(() => {
+            timeLeft--;
+            if (timeLeft <= 0) {
+                clearInterval(interval);
+                timerBox.style.display = 'none';
+                callback();
+            } else {
+                timerBox.textContent = `⏱️ ${timeLeft}`;
+            }
+        }, 1000);
+    }
+
+    function triggerShufflingPhase() {
+        gameState = 'shuffling';
+        speechText.textContent = "Кручу-верчу... Картинки перемешиваются!";
+        
+        cardsData.forEach(card => {
+            card.targetX = canvas.width / 2 - card.width / 2;
+            card.targetY = canvas.height / 2 - card.height / 2;
+        });
+
+        setTimeout(() => {
+            cardsData.forEach(card => {
+                if (card.data.id === currentMissingId) card.visible = false;
+            });
+
+            cardsData.forEach(card => card.calculatePositions());
+            
+            gameState = 'revealMissing';
+            speechText.textContent = "Ой! Посмотри внимательно, что пропало?";
+
+            setTimeout(() => {
+                // Wait for 5 seconds and go to the next round / victory screen
+                setTimeout(() => {
+                    if (currentRoundIndex + 1 < gameRounds.length) {
+                        initRound(currentRoundIndex + 1);
+                    } else {
+                        cardsData.forEach(card => card.visible = false);
+                        canvasContainer.style.display = 'none';
+                        victoryPopup.style.display = 'flex';
+                    }
+                }, 5000);
+            }, 2000); 
+
+        }, 2000); 
+    }
+
+    function gameLoop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        if (gameState === 'memorize' || gameState === 'shuffling' || gameState === 'revealMissing') {
+            cardsData.forEach(card => {
+                card.update();
+                card.draw();
+            });
+        }
+        
+        animationFrameId = requestAnimationFrame(gameLoop);
+    }
+</script>
+</body>
+</html>

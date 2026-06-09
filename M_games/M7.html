@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Космическое Чтение | Соедини звёздочки</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap');
+
+        :root {
+            --active-border: #ffa502;
+            --success-border: #2ed573;
+            --text-color: #1e272e;
+        }
+
+        html, body { 
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #1b1b3a 0%, #080811 100%);
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            color: white;
+            box-sizing: border-box;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        /* Welcome Screen Overlay */
+        #welcome-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(11, 11, 30, 0.9);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .welcome-bubble {
+            background: white;
+            padding: 35px;
+            border-radius: 30px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+            max-width: 550px;
+            width: 90%;
+            text-align: center;
+            border: 4px solid #4a69bd;
+            color: var(--text-color);
+            box-sizing: border-box;
+        }
+
+        .welcome-bubble h1 { font-size: 36px; margin-top: 0; color: #4a69bd; font-weight: 900; }
+        .welcome-bubble p { font-size: 20px; line-height: 1.5; margin-bottom: 25px; font-weight: 700; }
+
+        #start-btn {
+            padding: 15px 40px; font-size: 22px; font-weight: 800;
+            background-color: #2ed573; color: white; border: none; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 6px 20px rgba(46, 213, 115, 0.4); 
+            transition: transform 0.2s;
+        }
+        #start-btn:hover { transform: scale(1.05); }
+
+        /* Game Board Layout */
+        #game-layout {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            max-width: 900px;
+            max-height: 100vh;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+            position: relative;
+            padding: 10px 20px;
+            box-sizing: border-box;
+        }
+
+        .screen-title {
+            font-size: 20px;
+            font-weight: 900;
+            margin-bottom: 5px;
+            color: #82ccdd;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .instruction-text {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: white;
+            text-align: center;
+        }
+
+        .matching-board {
+            width: 100%;
+            max-width: 750px;
+            height: 650px;
+            position: relative;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .star-card {
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 900;
+            color: #1e272e;
+            cursor: pointer;
+            touch-action: none;
+            user-select: none;
+            transition: transform 0.2s, filter 0.3s;
+            background: radial-gradient(circle, #fff3b0 30%, #ffd166 70%);
+            clip-path: polygon(50% 0%, 63% 38%, 100% 38%, 69% 62%, 81% 100%, 50% 75%, 19% 100%, 31% 62%, 0% 38%, 37% 38%);
+            box-shadow: 0 4px 15px rgba(255, 209, 102, 0.4);
+            margin-top: -55px;
+            margin-left: -55px;
+        }
+
+        .star-card:hover:not(.matched) {
+            transform: scale(1.15) rotate(5deg);
+            filter: brightness(1.1);
+        }
+
+        .star-card.matched {
+            background: radial-gradient(circle, #d4edda 30%, #c3e6cb 70%);
+            box-shadow: 0 0 15px #2ed573;
+            opacity: 0.9;
+        }
+
+        /* SVG Connection lines canvas */
+        #lines-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Dynamically Scaling Space Bear */
+        #bear-anchor {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            pointer-events: none;
+            width: 8vw;
+            min-width: 50px;
+            max-width: 100px; 
+        }
+
+        .space-bear {
+            width: 100%;
+            height: auto;
+            filter: drop-shadow(0 8px 12px rgba(0,0,0,0.6));
+            animation: floatingBear 3.5s ease-in-out infinite;
+        }
+
+        /* End-Game Victory Popup */
+        .modal { 
+            position: absolute; 
+            top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(11, 11, 30, 0.9); 
+            backdrop-filter: blur(12px);
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 3000; 
+        }
+
+        .modal-content { 
+            background: white;
+            color: var(--text-color);
+            padding: 30px; 
+            border-radius: 30px; 
+            text-align: center; 
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            border: 4px solid #2ed573;
+            box-sizing: border-box;
+        }
+
+        .modal-content h1 { color: #2ed573; font-size: 28px; font-weight: 900; margin-bottom: 20px; }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn { 
+            flex: 1;
+            padding: 14px 18px; 
+            border-radius: 15px; 
+            border: none; 
+            font-size: 16px;
+            font-weight: 800; 
+            cursor: pointer; 
+            text-decoration: none; 
+            transition: transform 0.2s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+
+        .btn-restart { background: #ffa502; color: white; }
+        .btn-next { background: #2ed573; color: white; }
+        .btn:hover { transform: translateY(-3px); }
+
+        @keyframes floatingBear {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+
+        @media (max-width: 768px) {
+            .matching-board { height: 480px; }
+            .star-card { width: 80px; height: 80px; font-size: 20px; margin-top: -40px; margin-left: -40px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="finalModal" class="modal">
+        <div class="modal-content">
+            <h1>Миссия выполнена! </h1>
+            <p style="font-size: 16px; font-weight: 700; margin-bottom: 20px;">Ты соединил все звёздочки!</p>
+            <div class="btn-group">
+                <button class="btn btn-restart" onclick="location.reload()">Заново</button>
+                <button class="btn btn-next" onclick="location.href='M8.html'">Далее</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="welcome-screen">
+        <div class="welcome-bubble">
+            <h1>Космическое чтение</h1>
+            <p>Зажми и проведи линию от звёздочки к такой же звёздочке!</p>
+            <button id="start-btn" onclick="startGame()">Начать игру</button>
+        </div>
+    </div>
+
+    <div id="game-layout">
+        <div class="screen-title">Соедини одинаковые звёздочки</div>
+        <div class="instruction-text">Зажми на одной звёздочке и веди линию к другой с таким же слогом</div>
+        
+        <div class="matching-board" id="board-container">
+            <svg id="lines-canvas"></svg>
+        </div>
+    </div>
+
+    <div id="bear-anchor">
+        <img class="space-bear" src="../pictures/game4/bear.png" alt="Space Bear" onerror="this.src='https://placehold.co/180x210/4a69bd/ffffff?text=🐻'">
+    </div>
+
+    <script>
+        const syllables = ['МУ', 'МО', 'АМ', 'ОМ', 'УМ', 'МА'];
+
+        let matchedPairs = 0;
+        let isDrawing = false;
+        let startCard = null;
+        let tempLine = null;
+        const permanentLines = new Map();
+
+        // 6 strictly non-intersecting path zones within the center
+        const nonCrossingLocations = [
+            [{x: 18, y: 22}, {x: 35, y: 28}],
+            [{x: 22, y: 65}, {x: 42, y: 72}],
+            [{x: 35, y: 45}, {x: 60, y: 40}],
+            [{x: 65, y: 22}, {x: 82, y: 28}],
+            [{x: 68, y: 65}, {x: 85, y: 72}],
+            [{x: 55, y: 20}, {x: 55, y: 80}]
+        ];
+
+        function startGame() {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('game-layout').style.display = 'flex';
+            initGame();
+        }
+
+        function createCard(id, text, group, pos) {
+            const board = document.getElementById('board-container');
+            const card = document.createElement('div');
+            card.className = 'star-card';
+            card.id = id;
+            card.dataset.group = group;
+            card.innerText = text;
+
+            card.style.left = `${pos.x}%`;
+            card.style.top = `${pos.y}%`;
+
+            card.addEventListener('mousedown', (e) => startDraw(e, card));
+            card.addEventListener('touchstart', (e) => startDraw(e, card), { passive: false });
+
+            board.appendChild(card);
+            return card;
+        }
+
+        function initGame() {
+            const board = document.getElementById('board-container');
+            const svg = document.getElementById('lines-canvas');
+            board.innerHTML = '';
+            board.appendChild(svg);
+
+            syllables.forEach((syl, index) => {
+                let pts = [...nonCrossingLocations[index]];
+                
+                // Randomize which end is start/end
+                if (Math.random() > 0.5) {
+                    [pts[0], pts[1]] = [pts[1], pts[0]];
+                }
+                
+                // Add tiny random offset (up to ±2%) so positions feel organically scattered
+                const offset = () => (Math.random() * 4 - 2);
+                
+                createCard(`pair_${index}_1`, syl, index, {x: pts[0].x + offset(), y: pts[0].y + offset()});
+                createCard(`pair_${index}_2`, syl, index, {x: pts[1].x + offset(), y: pts[1].y + offset()});
+            });
+
+            window.addEventListener('mousemove', drawLineMove);
+            window.addEventListener('touchmove', drawLineMove, { passive: false });
+            
+            window.addEventListener('mouseup', endDraw);
+            window.addEventListener('touchend', endDraw);
+        }
+
+        function getCenter(element) {
+            const boardRect = document.getElementById('board-container').getBoundingClientRect();
+            const rect = element.getBoundingClientRect();
+            return {
+                x: rect.left + rect.width / 2 - boardRect.left,
+                y: rect.top + rect.height / 2 - boardRect.top
+            };
+        }
+
+        function startDraw(e, card) {
+            if (card.classList.contains('matched')) return;
+            e.preventDefault();
+            
+            isDrawing = true;
+            startCard = card;
+            
+            const svg = document.getElementById('lines-canvas');
+            const startPoint = getCenter(startCard);
+
+            tempLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            tempLine.setAttribute('x1', startPoint.x);
+            tempLine.setAttribute('y1', startPoint.y);
+            
+            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+            const boardRect = document.getElementById('board-container').getBoundingClientRect();
+            
+            tempLine.setAttribute('x2', clientX - boardRect.left);
+            tempLine.setAttribute('y2', clientY - boardRect.top);
+            tempLine.setAttribute('stroke', '#ffa502');
+            tempLine.setAttribute('stroke-width', '6');
+            tempLine.setAttribute('stroke-dasharray', '8,8');
+            tempLine.setAttribute('stroke-linecap', 'round');
+            
+            svg.appendChild(tempLine);
+        }
+
+        function drawLineMove(e) {
+            if (!isDrawing || !tempLine) return;
+            
+            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+            const boardRect = document.getElementById('board-container').getBoundingClientRect();
+            
+            tempLine.setAttribute('x2', clientX - boardRect.left);
+            tempLine.setAttribute('y2', clientY - boardRect.top);
+        }
+
+        function endDraw(e) {
+            if (!isDrawing) return;
+            isDrawing = false;
+
+            const svg = document.getElementById('lines-canvas');
+            if (tempLine) {
+                svg.removeChild(tempLine);
+                tempLine = null;
+            }
+
+            const clientX = e.type.includes('touch') ? e.changedTouches[0].clientX : e.clientX;
+            const clientY = e.type.includes('touch') ? e.changedTouches[0].clientY : e.clientY;
+            
+            const elementBelow = document.elementFromPoint(clientX, clientY);
+            const endCard = elementBelow ? elementBelow.closest('.star-card') : null;
+
+            if (endCard && endCard !== startCard && !endCard.classList.contains('matched')) {
+                if (endCard.dataset.group === startCard.dataset.group) {
+                    const group = startCard.dataset.group;
+                    startCard.classList.add('matched');
+                    endCard.classList.add('matched');
+
+                    const p1 = getCenter(startCard);
+                    const p2 = getCenter(endCard);
+
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', p1.x);
+                    line.setAttribute('y1', p1.y);
+                    line.setAttribute('x2', p2.x);
+                    line.setAttribute('y2', p2.y);
+                    line.setAttribute('stroke', '#2ed573');
+                    line.setAttribute('stroke-width', '8');
+                    line.setAttribute('stroke-linecap', 'round');
+                    
+                    const length = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+                    line.style.strokeDasharray = length;
+                    line.style.strokeDashoffset = length;
+                    
+                    svg.appendChild(line);
+                    
+                    line.getBoundingClientRect();
+                    line.style.transition = 'stroke-dashoffset 0.5s ease-in-out';
+                    line.style.strokeDashoffset = '0';
+
+                    permanentLines.set(group, line);
+
+                    matchedPairs++;
+                    if (matchedPairs === syllables.length) {
+                        setTimeout(() => {
+                            document.getElementById('finalModal').style.display = 'flex';
+                        }, 800);
+                    }
+                } else {
+                    const p1 = getCenter(startCard);
+                    const p2 = getCenter(endCard);
+
+                    const wrongLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    wrongLine.setAttribute('x1', p1.x);
+                    wrongLine.setAttribute('y1', p1.y);
+                    wrongLine.setAttribute('x2', p2.x);
+                    wrongLine.setAttribute('y2', p2.y);
+                    wrongLine.setAttribute('stroke', '#ff4757');
+                    wrongLine.setAttribute('stroke-width', '8');
+                    wrongLine.setAttribute('stroke-linecap', 'round');
+                    
+                    svg.appendChild(wrongLine);
+
+                    setTimeout(() => {
+                        svg.removeChild(wrongLine);
+                    }, 500);
+                }
+            }
+            startCard = null;
+        }
+
+        window.addEventListener('resize', () => {
+            if (matchedPairs > 0) {
+                const svg = document.getElementById('lines-canvas');
+                svg.innerHTML = '';
+                
+                permanentLines.forEach((line, group) => {
+                    const matchedGroupCards = document.querySelectorAll(`.star-card[data-group="${group}"]`);
+                    if (matchedGroupCards.length === 2) {
+                        const p1 = getCenter(matchedGroupCards[0]);
+                        const p2 = getCenter(matchedGroupCards[1]);
+                        
+                        line.setAttribute('x1', p1.x);
+                        line.setAttribute('y1', p1.y);
+                        line.setAttribute('x2', p2.x);
+                        line.setAttribute('y2', p2.y);
+                        
+                        svg.appendChild(line);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

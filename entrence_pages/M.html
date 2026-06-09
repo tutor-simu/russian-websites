@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Letter E - Practice Classes</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f4f9; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .grid { 
+            display: flex; 
+            flex-direction: column;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
+            gap: 15px; 
+            max-width: 1000px; 
+            margin: 0 auto; 
+        }
+        .class-btn {
+            background-color: white;
+            padding: 15px 5px;
+            text-align: center;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .class-btn:hover {
+            transform: scale(1.05);
+            background-color: #40929F;
+            color: white;
+        }
+        .back-btn {
+            display: block; width: 150px; margin: 30px auto;
+            padding: 10px; text-align: center; background: #333;
+            color: white; text-decoration: none; border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Letter "M" Practice</h1>
+        <p>Select your lesson:</p>
+    </div>
+
+    <div class="grid">
+        <script>
+            for (let i = 1; i <= 11; i++) {
+                document.write(`<a href="../M_games/M${i}.html" class="class-btn">Class ${i}</a>`);
+            }
+        </script>
+    </div>
+
+    <a href="../index.html" class="back-btn">Back to Home</a>
+
+</body>
+</html>
