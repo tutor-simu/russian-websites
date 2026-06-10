@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Rescue - Game 3</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body { 
+            margin: 0; 
+            background: url('../pictures/background/space_backround.jpeg') no-repeat center center fixed; 
+            background-size: cover; 
+            font-family: 'Comic Sans MS', sans-serif; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Full Screen Welcome Screen with Elephant */
+        #welcome-screen { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100vh; 
+            background: rgba(0, 0, 0, 0.5); 
+            z-index: 100; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center; 
+        }
+
+        .welcome-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            max-width: 800px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .welcome-elephant {
+            width: 250px; 
+            height: auto;
+            filter: drop-shadow(0 10px 25px rgba(0,0,0,0.6));
+            animation: floatElem 3s ease-in-out infinite;
+        }
+
+        .welcome-bubble {
+            background: white;
+            border-radius: 30px;
+            padding: 20px 35px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #1e272e;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            border: 4px solid #4a69bd;
+            max-width: 600px;
+        }
+
+        #start-btn { 
+            padding: 20px 60px; 
+            font-size: 28px; 
+            font-weight: bold; 
+            background-color: #4cd137; 
+            color: white; 
+            border: none; 
+            border-radius: 50px; 
+            cursor: pointer; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+        #start-btn:hover { transform: scale(1.05); }
+
+        @keyframes floatElem {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        #game-layout { 
+            display: none; 
+            flex-direction: column; 
+            align-items: center; 
+            width: 100%; 
+            max-width: 900px;
+        }
+        
+        /* The container now wraps naturally when space runs out */
+        #round-container { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 40px; 
+            justify-content: center; 
+            margin-bottom: 20px; 
+            max-width: 900px; 
+        }
+        
+        /* Items stay at your preferred 250px size */
+        .item-slot { 
+            width: 250px; 
+            height: 250px; 
+            border-radius: 20px; 
+            border: 5px solid white; 
+            cursor: pointer; 
+            transition: transform 0.2s; 
+            object-fit: cover; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+        .item-slot:hover { transform: scale(1.05); }
+
+        #feedback { font-size: 80px; margin: 10px; height: 100px; }
+        
+        #end-screen { 
+            display: none; 
+            background: white; 
+            padding: 40px; 
+            border-radius: 40px; 
+            text-align: center; 
+            border: 8px solid #4cd137; 
+            max-width: 500px;
+        }
+
+        /* Bear Dialog Stage (Elephant mascot positioned at the left edge during game) */
+        #bear-stage {
+            position: absolute;
+            bottom: 5%;
+            left: 3%;
+            display: none; /* Hidden initially until welcome screen is dismissed */
+            align-items: center;
+            gap: 20px;
+            z-index: 100;
+            pointer-events: none;
+            width: 90%;
+            max-width: 650px;
+        }
+
+        .space-bear {
+            width: 140px; 
+            height: auto;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+            animation: floatBear 3s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+
+        .speech-bubble {
+            background: white;
+            border-radius: 25px;
+            padding: 15px 25px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #1e272e;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 3px solid #4a69bd;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            left: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-width: 15px 15px 15px 0;
+            border-style: solid;
+            border-color: transparent white transparent transparent;
+        }
+
+        @keyframes floatBear {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* On very small screens, ensure they don't look broken */
+        @media (max-width: 850px) {
+            .item-slot { width: 180px; height: 180px; gap: 20px; }
+            #bear-stage { bottom: 2%; left: 3%; width: 95%; gap: 10px; }
+            .space-bear { width: 85px; }
+            .speech-bubble { font-size: 14px; padding: 10px 15px; }
+            .speech-bubble::after {
+                left: -12px;
+                border-width: 12px 12px 12px 0;
+            }
+            .welcome-elephant { width: 160px; }
+            .welcome-bubble { font-size: 18px; padding: 15px 20px; }
+            #start-btn { padding: 15px 40px; font-size: 22px; }
+        }
+        
+        .button-style {
+            display: inline-block;
+            padding: 10px 35px;
+            font-size: 20px;
+            font-weight: bold;
+            background-color: #4cd137;
+            color: white;
+            text-decoration: none; 
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            text-align: center;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="welcome-screen">
+        <div class="welcome-content">
+            <img src="pictures/elephant.png" alt="Elephant" class="welcome-elephant" onerror="this.src='https://placehold.co/180x210/4a69bd/ffffff?text=🐘'">
+            <div class="welcome-bubble">В каждом окошке найди и нажми на лишнюю картинку!</div>
+            <button id="start-btn" onclick="nextRound()">Начать миссию</button>
+        </div>
+    </div>
+
+    <div id="game-layout">
+        <div id="round-container"></div>
+        <div id="feedback"></div>
+    </div>
+
+    <div id="bear-stage">
+        <img src="pictures/elephant.png" alt="Elephant" class="space-bear" onerror="this.src='https://placehold.co/180x210/4a69bd/ffffff?text=🐘'">
+        <div id="speech-text" class="speech-bubble">В каждом окошке найди и нажми на лишнюю картинку!</div>
+    </div>
+
+    <div id="end-screen">
+        <h2>Замечательная сортировка!</h2>
+        <div>
+            <button class="button-style" onclick="location.reload()">Сбросить миссию</button>
+            <a href="C4.html" class="button-style">Next Game</a>
+        </div>
+    </div>
+
+    <script>
+        const rounds = [
+            [
+                { name: 'pictures/baykus.png', correct: true },
+                { name: 'pictures/snail.png', correct: false },
+                { name: 'pictures/elephant-real.png', correct: true }
+            ],
+            [
+                { name: '../pictures/game4/dog.png', correct: true },
+                { name: 'pictures/chese.png', correct: true },
+                { name: 'pictures/island.png', correct: false }
+            ],
+            [
+                { name: 'pictures/stork.png', correct: false },
+                { name: 'pictures/boots.png', correct: true },
+                { name: 'pictures/sled.png', correct: true }
+            ]
+        ];
+
+        let currentRoundIndex = 0;
+        let currentRoundItems = [];
+        const speechText = document.getElementById('speech-text');
+
+        function nextRound() {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('game-layout').style.display = 'flex';
+            document.getElementById('bear-stage').style.display = 'flex'; // Show the elephant stage once game starts
+            currentRoundItems = [...rounds[currentRoundIndex]];
+            renderRound();
+        }
+
+        function renderRound() {
+            const container = document.getElementById('round-container');
+            container.innerHTML = '';
+            
+            currentRoundItems.forEach(item => {
+                const img = document.createElement('img');
+                img.src = item.name;
+                img.className = 'item-slot';
+                img.onclick = () => handleChoice(item);
+                container.appendChild(img);
+            });
+        }
+
+        function handleChoice(item) {
+            const feedback = document.getElementById('feedback');
+            
+            if (item.correct === false) {
+                confetti({ particleCount: 50 });
+                feedback.innerText = "✅";
+                speechText.innerText = "Умница! Так держать! 🚀";
+                
+                setTimeout(() => {
+                    feedback.innerText = "";
+                    currentRoundIndex++;
+                    if (currentRoundIndex < rounds.length) {
+                        currentRoundItems = [...rounds[currentRoundIndex]];
+                        renderRound();
+                        speechText.innerText = "В каждом окошке найди и нажми на лишнюю картинку!";
+                    } else {
+                        endGame();
+                    }
+                }, 1500);
+            } else {
+                feedback.innerText = "❌";
+                speechText.innerText = "Ой, это правильная картинка, поищи еще!";
+                setTimeout(() => {
+                    feedback.innerText = "";
+                    speechText.innerText = "В каждом окошке найди и нажми на лишнюю картинку!";
+                }, 1500);
+            }
+        }
+
+        function endGame() {
+            document.getElementById('game-layout').style.display = 'none';
+            document.getElementById('bear-stage').style.display = 'none';
+            document.getElementById('end-screen').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

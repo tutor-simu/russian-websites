@@ -3,242 +3,431 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space Reading - Blue Planet Mission</title>
+    <title>Космический полет | Bilingvi Online</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
 
-        body {
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            min-height: 100vh;
-            background: radial-gradient(circle at center, #0B0F19 0%, #04060B 100%);
-            font-family: 'Nunito', cursive, sans-serif;
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow-x: hidden;
-            position: relative;
         }
 
-        /* ========================================================
-           CINEMATIC ZOOM-INTO-PLANET ANIMATION SYSTEM 
-           ======================================================== */
-        #intro-stage {
+        body, html {
+            width: 100%;
+            height: 100vh;
+            font-family: 'Nunito', sans-serif;
+            /* Custom space background image */
+            background-image: url('../pictures/background/space_backround.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #0b0b1e;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        #space-scene {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .planet-saturn {
+            position: absolute;
+            right: 15%;
+            top: 15%;
+            width: 220px;
+            height: auto;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: opacity 1s cubic-bezier(0.175, 0.885, 0.32, 1.275), transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(0 0 30px rgba(236, 204, 104, 0.4));
+        }
+
+        .planet-saturn.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .rocket-ship {
+            position: absolute;
+            top: 25%;
+            right: 15%;
+            width: 80px;
+            height: auto;
+            opacity: 0;
+            transform: scale(0.5) rotate(-140deg);
+            z-index: 10;
+            transition: transform 0s, opacity 0s;
+        }
+
+        /* Light Mode Planet Surface */
+        .planet {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 20vh;
+            background: linear-gradient(to bottom, #e1e8f0, #b0c2d4);
+            border-top: 8px solid #78909c;
+            border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+            z-index: 2;
+            box-shadow: inset 0 10px 20px rgba(255,255,255,0.3);
+            transition: opacity 0.5s ease;
+        }
+
+        /* Spaceship / Rocket on the side (Game 1) */
+        .spaceship {
+            position: absolute;
+            bottom: 10vh;
+            right: 2%;
+            width: 190px;
+            height: auto;
+            z-index: 5;
+            transform: translateY(10px);
+            transition: transform 2.5s cubic-bezier(0.5, 0, 1, 0.5);
+        }
+
+        /* Launch animation state */
+        .spaceship.launch {
+            transform: translateY(-120vh);
+        }
+
+        /* Game Container */
+        .game-board {
+            position: relative;
+            z-index: 10;
+            width: 70%;
+            max-width: 800px;
+            height: 60vh;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            margin-bottom: 12vh;
+            margin-right: 150px; /* Make space for the rocket on the right */
+            transition: opacity 0.5s ease;
+        }
+
+        /* Flag Pole and Base */
+        .flag-pole {
+            position: relative;
+            width: 10px;
+            height: 250px;
+            background: linear-gradient(to right, #ccc, #fff, #888);
+            border-radius: 4px;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+        }
+
+        .flag-pole::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: -10px;
+            width: 30px;
+            height: 20px;
+            background: radial-gradient(circle, #fff, #aaa);
+            border-radius: 50%;
+        }
+
+        /* Flag Cloth */
+        .flag-cloth {
+            position: absolute;
+            top: 10px;
+            left: 8px;
+            width: 160px;
+            height: 100px;
+            background-color: #ffffff;
+            border: 2px solid #333;
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 48px;
+            font-weight: bold;
+            color: #111;
+            box-shadow: 5px 5px 10px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            transform-origin: left center;
+        }
+
+        /* Colorful Border Animation using CSS Gradient Border */
+        .flag-cloth.active {
+            border: 5px solid transparent;
+            animation: border-rainbow 3s linear infinite;
+            box-shadow: 0 0 20px rgba(255, 0, 128, 0.4), 
+                        0 0 30px rgba(0, 255, 255, 0.4), 
+                        0 0 40px rgba(255, 255, 0, 0.4);
+            transform: scale(1.05);
+        }
+
+        @keyframes border-rainbow {
+            0% { border-color: #ff0000; }
+            16% { border-color: #ff8000; }
+            33% { border-color: #ffff00; }
+            50% { border-color: #00ff00; }
+            66% { border-color: #0000ff; }
+            83% { border-color: #4b0082; }
+            100% { border-color: #ee82ee; }
+        }
+
+        /* Instructions */
+        .instruction {
+            position: absolute;
+            top: 5%;
+            color: #333333;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 20;
+            transition: opacity 0.5s ease;
+        }
+
+        /* Popup Modal Styles */
+        .popup-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at center, #0B0F19 0%, #04060B 100%);
+            background: rgba(11, 11, 30, 0.8);
+            backdrop-filter: blur(5px);
+            display: none; 
+            align-items: center;
+            justify-content: center;
             z-index: 100;
-            pointer-events: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-sizing: border-box;
-            transition: opacity 1s ease;
-        }
-
-        .intro-text {
-            position: absolute;
-            top: 10%;
-            font-size: 2rem;
-            color: #38BDF8;
-            text-transform: uppercase;
-            text-align: center;
             opacity: 0;
-            animation: fadeInOut 3s ease-in-out forwards;
+            transition: opacity 0.5s ease;
         }
 
-        .deep-space-ship {
-            position: absolute;
-            width: 120px;
-            height: auto;
-            transform: rotate(-45deg);
-            animation: flyToPlanet 3s cubic-bezier(0.5, 0, 0.1, 1) forwards;
-            filter: drop-shadow(0 0 20px #38BDF8);
+        .popup-overlay.active {
+            display: flex;
+            opacity: 1;
         }
 
-        .blue-planet-intro {
-            position: absolute;
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #60A5FA, #1E3A8A);
-            box-shadow: 0 0 50px rgba(96, 165, 250, 0.3);
-            transform: scale(0.1);
-            animation: zoomToPlanet 3s cubic-bezier(0.5, 0, 0.1, 1) forwards;
-        }
-
-        /* ========================================================
-           MAIN WORKSPACE GAME INTERFACE 
-           ======================================================== */
-        h1 {
-            color: #38BDF8;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-            text-align: center;
-            z-index: 1;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
-
-        p {
-            font-size: 1.4rem;
-            color: #94A3B8;
-            margin-bottom: 20px;
-            text-align: center;
-            z-index: 1;
-        }
-
-        #board {
-            position: relative;
-            width: 90vw;
-            max-width: 800px;
-            height: 60vh;
-            border: 4px dashed #334155;
-            border-radius: 20px;
-            background: rgba(15, 23, 42, 0.6);
-            overflow: hidden;
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.5);
-        }
-
-        /* Round Planet Surface (Blue Ground) */
-        .planet-ground {
-            position: absolute;
-            bottom: -300px;
-            left: -10%;
-            width: 120%;
-            height: 400px;
-            background: radial-gradient(ellipse at center, #3B82F6 0%, #1D4ED8 100%);
-            border-radius: 50%;
-            box-shadow: 0 -10px 40px rgba(29, 78, 216, 0.5);
-        }
-
-        /* Spaceship parked sideways on the round planet */
-        .parked-rocket {
-            position: absolute;
-            bottom: 65px;
-            left: 20%;
-            width: 80px;
-            height: 80px;
-            background: #E2E8F0;
-            border: 4px solid #64748B;
-            border-radius: 50% 50% 10px 10px;
+        .popup-content {
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            transform: rotate(15deg); /* Looks sideways along the curve */
-            box-shadow: 0 0 20px rgba(226, 232, 240, 0.2);
-            z-index: 2;
-            animation: floatRocket 4s ease-in-out infinite;
+            gap: 30px;
+            max-width: 600px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: 5px solid #4a69bd;
+            transform: scale(0.8);
+            transition: transform 0.5s ease;
         }
 
-        .parked-rocket::before {
-            content: '🚀';
-            position: absolute;
-            transform: rotate(-15deg);
+        .popup-overlay.active .popup-content {
+            transform: scale(1);
         }
 
-        /* Reading Display Screen (No clicking words, just reading colored text) */
-        #reading-display {
-            position: absolute;
-            top: 20%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(30, 41, 59, 0.85);
-            border: 4px solid #475569;
-            border-radius: 30px;
-            padding: 30px 50px;
-            font-size: 4rem;
-            font-weight: 800;
+        .popup-bear {
+            width: 140px;
+            height: auto;
+        }
+
+        .popup-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e272e;
             display: flex;
+            flex-direction: column;
             gap: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-            letter-spacing: 2px;
         }
 
-        .syllable-1 { color: #F87171; } /* Colored words/syllables */
-        .syllable-2 { color: #34D399; }
-        .syllable-3 { color: #60A5FA; }
-        .syllable-4 { color: #FBBF24; }
-
-        .instruction-banner {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1E293B;
-            border: 3px solid #38BDF8;
-            padding: 15px 30px;
-            border-radius: 50px;
-            font-size: 1.5rem;
-            color: #E2E8F0;
-            white-space: nowrap;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        .popup-buttons {
+            display: flex;
+            gap: 15px;
         }
 
-        /* ========================================================
-           ANIMATIONS TIMELINE 
-           ======================================================== */
-        @keyframes fadeInOut {
-            0% { opacity: 0; }
-            20% { opacity: 1; }
-            80% { opacity: 1; }
-            100% { opacity: 0; }
+        .btn-popup {
+            padding: 12px 25px;
+            border-radius: 15px;
+            border: none;
+            color: white;
+            font-weight: 800;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        @keyframes flyToPlanet {
-            0% { top: 40%; left: 10%; transform: scale(1) rotate(-45deg); }
-            100% { top: 10%; left: 75%; transform: scale(0.1) rotate(-45deg); opacity: 0.2; }
+        .btn-popup:hover { 
+            transform: translateY(-2px); 
         }
 
-        @keyframes zoomToPlanet {
-            0% { transform: scale(0.1); opacity: 1; }
-            80% { transform: scale(18); opacity: 1; }
-            100% { transform: scale(25); opacity: 0; }
+        .btn-next { 
+            background: #2ed573; 
         }
 
-        @keyframes floatRocket {
-            0%, 100% { transform: translateY(0) rotate(15deg); }
-            50% { transform: translateY(-10px) rotate(12deg); }
+        .btn-next:hover { 
+            background: #26af5f; 
+        }
+
+        .btn-repeat { 
+            background: #ff4757; 
+        }
+
+        .btn-repeat:hover { 
+            background: #ff6b81; 
+        }
+
+        @media (max-width: 768px) {
+            .planet-saturn { width: 120px; right: 5%; top: 5%; }
+            .popup-content { flex-direction: column; gap: 15px; padding: 20px; text-align: center; margin: 15px; }
+            .popup-bear { width: 100px; }
+            .popup-text { font-size: 16px; gap: 12px; }
+            .popup-buttons { justify-content: center; }
+            .btn-popup { font-size: 14px; padding: 10px 18px; }
         }
     </style>
 </head>
 <body>
 
-    <div id="intro-stage">
-        <div class="intro-text">Прибытие на Синюю Планету</div>
-        <div class="blue-planet-intro"></div>
-        <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>🚀</text></svg>" class="deep-space-ship" alt="Ship">
+    <div id="space-scene">
+        <img src="pictures/saturn.png" alt="Saturn" class="planet-saturn" onerror="this.src='https://placehold.co/220x220/ffa502/ffffff?text=Сатурн'">
+        <img src="../pictures/rackets/racket.png" alt="Rocket" class="rocket-ship" onerror="this.src='https://placehold.co/150x150/ff4757/ffffff?text=Ракета'">
     </div>
 
-    <h1>Миссия: Голубая Планета</h1>
-    <p>Прочитайте с экрана слоги, глядя на космический корабль.</p>
+    <div class="planet"></div>
+    
+    <img src="../pictures/rackets/racket.png" alt="Spaceship" class="spaceship" onerror="this.src='https://placehold.co/150x150/ff4757/ffffff?text=Ракета'">
 
-    <div id="board">
-        <div id="reading-display">
-            <span class="syllable-1">МА</span>
-            <span class="syllable-2">ЛА</span>
-            <span class="syllable-3">ПА</span>
-            <span class="syllable-4">ША</span>
+    <div class="instruction">
+        Rocket landed successfully! Watch the flags transition one by one.
+    </div>
+
+    <div class="game-board">
+        <div class="flag-pole">
+            <div class="flag-cloth" id="flag-0">AM</div>
         </div>
+        <div class="flag-pole">
+            <div class="flag-cloth" id="flag-1">OM</div>
+        </div>
+        <div class="flag-pole">
+            <div class="flag-cloth" id="flag-2">UM</div>
+        </div>
+    </div>
 
-        <div class="planet-ground"></div>
-
-        <div class="parked-rocket"></div>
-
-        <div class="instruction-banner">Корабль на орбите. Просто читайте слоги выше! ✨</div>
+    <div id="completion-popup" class="popup-overlay">
+        <div class="popup-content">
+            <img src="../pictures/game4/bear.png" alt="Bear" class="popup-bear" onerror="this.src='https://placehold.co/150x200/4a69bd/ffffff?text=Медведь'">
+            <div class="popup-text">
+                <p>Ты закончил эту букву!Нажми "Далее" для следующей страницы или сыграй снова.</p>
+                <div class="popup-buttons">
+                    <button class="btn-popup btn-repeat" onclick="location.reload()">Снова</button>
+                    <button class="btn-popup btn-next" onclick="location.href='entrance_pages/C.html'">Далее</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Automatic cleanup system for intro zoom optimization
-        setTimeout(() => {
-            const intro = document.getElementById('intro-stage');
-            if(intro) intro.remove();
-        }, 3000);
+        // Game 1 Logic
+        const flags = [
+            document.getElementById('flag-0'),
+            document.getElementById('flag-1'),
+            document.getElementById('flag-2')
+        ];
+        const spaceship = document.querySelector('.spaceship');
+
+        let currentIndex = 0;
+        let activationCount = 0;
+        const transitionInterval = 2000; // Time in milliseconds each flag stays highlighted
+
+        function highlightNextFlag() {
+            // Remove active class from all flags
+            flags.forEach(flag => flag.classList.remove('active'));
+
+            // Add active class to current flag
+            flags[currentIndex].classList.add('active');
+
+            activationCount++;
+
+            // Check if all 3 flags have finished their cycle
+            if (activationCount === 3) {
+                // Wait one final interval before stopping loop and launching
+                setTimeout(() => {
+                    clearInterval(timer);
+                    // Deactivate the last flag
+                    flags[currentIndex].classList.remove('active');
+                    // Launch spaceship
+                    spaceship.classList.add('launch');
+                    
+                    // Fade out Game 1 elements after launch animation finishes (2500ms)
+                    setTimeout(() => {
+                        const game1Planet = document.querySelector('.planet');
+                        const game1Board = document.querySelector('.game-board');
+                        const game1Instruction = document.querySelector('.instruction');
+                        const game1Spaceship = document.querySelector('.spaceship');
+
+                        if (game1Planet) game1Planet.style.opacity = '0';
+                        if (game1Board) game1Board.style.opacity = '0';
+                        if (game1Instruction) game1Instruction.style.opacity = '0';
+                        if (game1Spaceship) game1Spaceship.style.opacity = '0';
+
+                        // Completely remove them from layout and start Game 2
+                        setTimeout(() => {
+                            if (game1Planet) game1Planet.style.display = 'none';
+                            if (game1Board) game1Board.style.display = 'none';
+                            if (game1Instruction) game1Instruction.style.display = 'none';
+                            if (game1Spaceship) game1Spaceship.style.display = 'none';
+
+                            startSecondGame();
+                        }, 500);
+
+                    }, 2500);
+                }, transitionInterval);
+            }
+
+            currentIndex = (currentIndex + 1) % flags.length;
+        }
+
+        // Start the continuous cycle
+        const timer = setInterval(highlightNextFlag, transitionInterval);
+        
+        // Run immediately on load
+        highlightNextFlag();
+
+        // Game 2 Sequence Triggered after Game 1 ends
+        function startSecondGame() {
+            const saturn = document.querySelector('.planet-saturn');
+            const rocket2 = document.querySelector('.rocket-ship');
+
+            // Make Saturn appear
+            saturn.classList.add('visible');
+
+            // Fade in and initialize the rocket near Saturn after the planet appears
+            setTimeout(() => {
+                rocket2.style.opacity = '1';
+                rocket2.style.transform = 'scale(0.5) rotate(-140deg)';
+            }, 1500);
+
+            // Travel from Saturn (top right area) towards the bottom left corner while increasing size
+            setTimeout(() => {
+                rocket2.style.transition = 'transform 4s cubic-bezier(0.45, 0, 0.55, 1)';
+                rocket2.style.transform = 'translate(-80vw, 80vh) scale(1.9) rotate(-140deg)';
+            }, 3000); 
+
+            // Show popup screen after the travel animation completes (3000ms delay + 4000ms transition = 7000ms)
+            setTimeout(() => {
+                const popup = document.getElementById('completion-popup');
+                if (popup) {
+                    popup.classList.add('active');
+                }
+            }, 7000);
+        }
     </script>
 </body>
 </html>

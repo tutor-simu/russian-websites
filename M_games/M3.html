@@ -96,6 +96,7 @@
             max-width: 320px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             border: 3px solid #4a69bd;
+            text-align: center;
         }
 
         .speech-bubble::after {
@@ -300,7 +301,6 @@
             this.imageLoaded = false;
             this.imgObj.onload = () => { this.imageLoaded = true; };
             
-            // Scaled up for 3-year-olds
             this.width = 240;
             this.height = 240;
             this.targetX = 0;
@@ -317,7 +317,7 @@
         calculatePositions() {
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2;
-            const gap = 35; // slightly wider gap for larger cards
+            const gap = 35;
 
             if (this.data.row === 0) {
                 this.targetY = centerY - this.height - (gap / 2);
@@ -353,12 +353,10 @@
             ctx.stroke();
             
             if (this.imageLoaded) {
-                // Clipping path to make sure images don't overflow the rounded card borders
                 ctx.beginPath();
                 ctx.roundRect(this.x, this.y, this.width, this.height, 28);
                 ctx.clip();
                 
-                // Maximized: Removed padding completely so assets fill the whole frame
                 ctx.drawImage(this.imgObj, this.x, this.y, this.width, this.height);
             } else {
                 ctx.fillStyle = '#1e272e';
@@ -440,7 +438,14 @@
             speechText.textContent = "Ой! Посмотри внимательно, что пропало?";
 
             setTimeout(() => {
-                // Wait for 5 seconds and go to the next round / victory screen
+                const roundCards = gameRounds[currentRoundIndex].cards;
+                const hiddenCard = roundCards.find(c => c.id === currentMissingId);
+                
+                if (hiddenCard) {
+                    // Inject the image directly inside the speech bubble element
+                    speechText.innerHTML = `Пропала карточка:<br><img src="${hiddenCard.img}" alt="${hiddenCard.name}" style="width: 90px; height: 90px; object-fit: contain; border-radius: 15px; margin-top: 10px; border: 3px solid #4a69bd;" onerror="this.src='https://placehold.co/90x90/4a69bd/ffffff?text=' + encodeURIComponent('${hiddenCard.fallback}')">`;
+                }
+
                 setTimeout(() => {
                     if (currentRoundIndex + 1 < gameRounds.length) {
                         initRound(currentRoundIndex + 1);
@@ -449,8 +454,9 @@
                         canvasContainer.style.display = 'none';
                         victoryPopup.style.display = 'flex';
                     }
-                }, 5000);
-            }, 2000); 
+                }, 3000);
+
+            }, 5000); 
 
         }, 2000); 
     }

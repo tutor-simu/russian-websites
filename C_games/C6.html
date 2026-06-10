@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Космические Траектории | Bilingvi Online</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background: url('../pictures/background/space_backround.jpeg') center center/cover no-repeat;
+            background-color: #0b0b1e;
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow: hidden;
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+            color: white;
+            box-sizing: border-box;
+            padding-top: 15px;
+        }
+
+        /* Header Bar */
+        #game-header {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 5px;
+            z-index: 10;
+        }
+
+        .status-panel {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px 25px;
+            border-radius: 20px;
+            font-size: 22px;
+            font-weight: 800;
+            color: #1e272e;
+            border: 3px solid #ffa502;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+
+        /* Main Stage Container */
+        #stage-container {
+            width: 100%;
+            max-width: 950px;
+            height: 60vh;
+            position: relative;
+            margin-top: 5px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Voice Ripple Effect Overlays */
+        #voice-bar {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(46, 213, 115, 0.9);
+            padding: 8px 20px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: 800;
+            display: none;
+            box-shadow: 0 0 15px #2ed573;
+            z-index: 15;
+            animation: pulse 1.5s infinite;
+            white-space: nowrap;
+        }
+
+        /* Bear Dialog Stage */
+        #bear-stage {
+            position: absolute;
+            bottom: 3%;
+            left: 5%;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            z-index: 100;
+            pointer-events: none;
+            width: 90%;
+            max-width: 700px;
+        }
+
+        .space-bear {
+            width: 140px;
+            height: auto;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+            animation: floatBear 3s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+
+        .speech-bubble {
+            background: white;
+            border-radius: 25px;
+            padding: 15px 25px;
+            font-size: 18px;
+            font-weight: 800;
+            color: #1e272e;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 3px solid #4a69bd;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            left: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-width: 15px 15px 15px 0;
+            border-style: solid;
+            border-color: transparent white transparent transparent;
+        }
+
+        /* Victory Overlay Popup */
+        #victory-popup {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 11, 30, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .popup-content-box {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            max-width: 800px;
+            padding: 20px;
+        }
+
+        .popup-bubble {
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
+            border: 4px solid #2ed573;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 400px;
+        }
+
+        .popup-bubble::after {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-width: 20px 20px 20px 0;
+            border-style: solid;
+            border-color: transparent white transparent transparent;
+        }
+
+        .popup-text {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1e272e;
+            text-align: center;
+            margin: 0;
+        }
+
+        .popup-buttons-container {
+            display: flex;
+            gap: 15px;
+        }
+
+        .popup-btn {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 15px;
+            font-weight: 800;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .popup-btn:hover { transform: translateY(-3px); }
+        .btn-again { background: #ffa502; color: white; }
+        .btn-next { background: #2ed573; color: white; }
+
+        @keyframes floatBear {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.9; transform: translateX(-50%) scale(1); }
+            50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+        }
+
+        /* Responsive UI fixes for mobile */
+        @media (max-width: 768px) {
+            #bear-stage { bottom: 2%; left: 5%; gap: 10px; }
+            .space-bear { width: 85px; }
+            .speech-bubble { font-size: 14px; padding: 10px 15px; }
+            .speech-bubble::after {
+                left: -12px;
+                border-width: 12px 12px 12px 0;
+            }
+            #stage-container { height: 52vh; }
+            .status-panel { font-size: 16px; padding: 5px 15px; }
+            .popup-content-box { flex-direction: column; }
+            .popup-bubble::after { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-header">
+        <div id="task-box" class="status-panel">Посади ракету C на планету!</div>
+    </div>
+
+    <div id="stage-container">
+        <div id="voice-bar">Тяни звук: C-C-C-C...</div>
+        <canvas id="flightCanvas"></canvas>
+    </div>
+
+    <div id="bear-stage">
+        <img src="pictures/elephant.png" alt="Bear" class="space-bear" onerror="this.src='https://placehold.co/180x210/4a69bd/ffffff?text=🐻'">
+        <div id="speech-text" class="speech-bubble">Давай полетаем на ракете! Веди пальчиком ракету по дорожке до планеты и пой буковку громко-громко, не прерывая голос!</div>
+    </div>
+
+    <div id="victory-popup">
+        <div class="popup-content-box">
+            <img src="pictures/elephant.png" alt="Bear" class="space-bear" onerror="this.src='https://placehold.co/180x210/4a69bd/ffffff?text=🐻'">
+            <div class="popup-bubble">
+                <p class="popup-text">Ура! Все ракеты успешно приземлились на планеты! Ты настоящий космонавт! </p>
+                <div class="popup-buttons-container">
+                    <button class="popup-btn btn-again" onclick="location.reload();">Заново</button>
+                    <button class="popup-btn btn-next" onclick="location.href='C3.html'">Далее</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const canvas = document.getElementById('flightCanvas');
+    const ctx = canvas.getContext('2d');
+    const stageContainer = document.getElementById('stage-container');
+    const speechText = document.getElementById('speech-text');
+    const voiceBar = document.getElementById('voice-bar');
+    const victoryPopup = document.getElementById('victory-popup');
+
+    const images = {
+        rocketA: new Image(), 
+        rocketO: new Image(), 
+        rocketU: new Image(),
+        planetA: new Image(),
+        planetO: new Image(),
+        planetU: new Image()
+    };
+    images.rocketA.src = 'pictures/мука.png';
+    images.rocketO.src = 'pictures/мышка.png';
+    images.rocketU.src = 'pictures/луна.png';
+    
+    // Set 3 different world images
+    images.planetA.src = 'pictures/earth-A.png'; 
+    images.planetO.src = 'pictures/Earth_O.png'; 
+    images.planetU.src = 'pictures/earth-Y.png'; 
+    
+    let planetsLoaded = { A: false, O: false, U: false };
+    images.planetA.onload = () => { planetsLoaded.A = true; };
+    images.planetO.onload = () => { planetsLoaded.O = true; };
+    images.planetU.onload = () => { planetsLoaded.U = true; };
+
+    let routes = [];
+    let activeRoute = null;
+    let isDragging = false;
+    let waveOffset = 0;
+
+    function resizeCanvas() {
+        const rect = stageContainer.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        initRoutes();
+    }
+
+    function initRoutes() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        routes = [
+            {
+                id: 'A', letter: 'C', targetLetter: 'М', color: '#ff9f43',
+                startX: w * 0.12, startY: h * 0.20,
+                currentX: w * 0.12, currentY: h * 0.20,
+                endX: w * 0.82, endY: h * 0.20,
+                planetImg: images.planetA, planetLoadedKey: 'A',
+                completed: false, progress: 0,
+                pathPoints: generateWavePoints(w * 0.12, h * 0.20, w * 0.82, h * 0.20, 30, 1.5)
+            },
+            {
+                id: 'O', letter: 'C', targetLetter: 'М', color: '#ff4757',
+                startX: w * 0.12, startY: h * 0.55,
+                currentX: w * 0.12, currentY: h * 0.55,
+                endX: w * 0.82, endY: h * 0.55,
+                planetImg: images.planetO, planetLoadedKey: 'O',
+                completed: false, progress: 0,
+                pathPoints: generateWavePoints(w * 0.12, h * 0.55, w * 0.82, h * 0.55, 25, 2.0)
+            },
+            {
+                id: 'U', letter: 'C', targetLetter: 'М', color: '#2ed573',
+                startX: w * 0.12, startY: h * 0.88,
+                currentX: w * 0.12, currentY: h * 0.88,
+                endX: w * 0.82, endY: h * 0.88,
+                planetImg: images.planetU, planetLoadedKey: 'U',
+                completed: false, progress: 0,
+                pathPoints: generateWavePoints(w * 0.12, h * 0.88, w * 0.82, h * 0.88, 35, 1.0)
+            }
+        ];
+    }
+
+    function generateWavePoints(x1, y1, x2, y2, amplitude, frequency) {
+        let pts = [];
+        let steps = 150;
+        for(let i=0; i<=steps; i++) {
+            let t = i / steps;
+            let x = x1 + (x2 - x1) * t;
+            let y = ((y1 + y2) / 2) + Math.sin(t * Math.PI * 2 * frequency) * amplitude;
+            pts.push({x, y});
+        }
+        return pts;
+    }
+
+    function getMousePos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+
+    function startDrag(e) {
+        if (e.touches) e.preventDefault();
+        const pos = getMousePos(e);
+        // Hitbox dynamically scales down if canvas gets smaller
+        const hitBoxSize = Math.max(35, Math.min(canvas.width * 0.06, 55));
+        routes.forEach(r => {
+            if (r.completed) return;
+            let dist = Math.hypot(pos.x - r.currentX, pos.y - r.currentY);
+            if (dist < hitBoxSize) { 
+                activeRoute = r;
+                isDragging = true;
+                voiceBar.style.display = 'block';
+                voiceBar.textContent = `Тяни звук: ${r.letter}-${r.letter}-${r.letter}... 🗣️`;
+                
+                // Clear the bear bubble text immediately upon grab
+                speechText.textContent = '';
+            }
+        });
+    }
+
+    function doDrag(e) {
+        if (!isDragging || !activeRoute) return;
+        if (e.touches) e.preventDefault();
+        const pos = getMousePos(e);
+        
+        let closestIdx = 0;
+        let minDist = Infinity;
+        
+        activeRoute.pathPoints.forEach((pt, idx) => {
+            let d = Math.hypot(pos.x - pt.x, pos.y - pt.y);
+            if (d < minDist) {
+                minDist = d;
+                closestIdx = idx;
+            }
+        });
+
+        // Threshold dynamically scales based on canvas width
+        const dragThreshold = Math.max(60, Math.min(canvas.width * 0.1, 95));
+
+        if (minDist < dragThreshold) {
+            if (closestIdx >= activeRoute.progress) {
+                activeRoute.progress = closestIdx;
+                activeRoute.currentX = activeRoute.pathPoints[closestIdx].x;
+                activeRoute.currentY = activeRoute.pathPoints[closestIdx].y;
+            }
+            
+            if (activeRoute.progress >= activeRoute.pathPoints.length - 3) {
+                activeRoute.completed = true;
+                activeRoute.currentX = activeRoute.endX;
+                activeRoute.currentY = activeRoute.endY;
+                endDrag();
+                triggerRouteSuccess();
+            }
+        } else {
+            endDrag();
+            speechText.textContent = "Ой, ракета сбилась с пути! Попробуй провести пальчиком аккуратно снова.";
+        }
+    }
+
+    function endDrag() {
+        isDragging = false;
+        activeRoute = null;
+        voiceBar.style.display = 'none';
+    }
+
+    function triggerRouteSuccess() {
+        const allDone = routes.every(r => r.completed);
+        if (allDone) {
+            setTimeout(() => {
+                victoryPopup.style.display = 'flex';
+            }, 800);
+        } else {
+            speechText.textContent = "Умница! Отличная посадка! Выбирай следующую ракету!";
+        }
+    }
+
+    function drawGame() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        waveOffset += 0.15;
+
+        // Dynamically scale rocket and planet sizes based on canvas size
+        const planetSize = Math.max(100, Math.min(canvas.width * 0.18, 175));
+        const rocketSize = Math.max(50, Math.min(canvas.width * 0.05, 80));
+        const boxOffset = rocketSize / 2;
+
+        routes.forEach(r => {
+            // 1. Draw Dotted Guide Tracks
+            ctx.save();
+            ctx.strokeStyle = r.completed ? '#2ed573' : 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = r.completed ? 4 : 3;
+            ctx.setLineDash([8, 6]);
+            ctx.beginPath();
+            r.pathPoints.forEach((pt, i) => {
+                if(i === 0) ctx.moveTo(pt.x, pt.y);
+                else ctx.lineTo(pt.x, pt.y);
+            });
+            ctx.stroke();
+            ctx.restore();
+
+            // 2. Draw Dynamic Audio Wave Ribbon
+            if (isDragging && activeRoute === r) {
+                ctx.save();
+                ctx.strokeStyle = 'rgba(46, 213, 115, 0.6)';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                for(let i = 0; i <= r.progress; i++) {
+                    let pt = r.pathPoints[i];
+                    let waveY = pt.y + Math.sin(i * 0.2 + waveOffset) * 8;
+                    if(i === 0) ctx.moveTo(pt.x, waveY);
+                    else ctx.lineTo(pt.x, waveY);
+                }
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // 3. Draw Target Planets (using designated world images)
+            ctx.save();
+            let glow = ctx.createRadialGradient(r.endX, r.endY, 10, r.endX, r.endY, planetSize/2);
+            glow.addColorStop(0, 'rgba(130, 204, 221, 0.6)');
+            glow.addColorStop(1, 'rgba(11, 11, 30, 0)');
+            ctx.fillStyle = glow;
+            ctx.beginPath();
+            ctx.arc(r.endX, r.endY, planetSize/2, 0, Math.PI*2);
+            ctx.fill();
+
+            if (planetsLoaded[r.planetLoadedKey]) {
+                ctx.drawImage(r.planetImg, r.endX - planetSize/2, r.endY - planetSize/2, planetSize, planetSize);
+            } else {
+                ctx.fillStyle = '#4a69bd';
+                ctx.strokeStyle = '#82ccdd';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(r.endX, r.endY, planetSize/3, 0, Math.PI*2);
+                ctx.fill();
+                ctx.stroke();
+            }
+            ctx.restore();
+
+            // 4. Draw Rockets Element Boxes
+            ctx.save();
+            ctx.translate(r.currentX, r.currentY);
+            
+            if (!r.completed && r.progress > 0) {
+                let prev = r.pathPoints[r.progress - 1];
+                let angle = Math.atan2(r.currentY - prev.y, r.currentX - prev.x);
+                ctx.rotate(angle + Math.PI/4);
+            }
+
+            ctx.fillStyle = r.completed ? '#2ed573' : '#ffffff';
+            ctx.strokeStyle = r.color;
+            ctx.lineWidth = 5;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = r.color;
+            ctx.beginPath();
+            ctx.roundRect(-boxOffset, -boxOffset, rocketSize, rocketSize, 20);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = r.completed ? '#ffffff' : '#1e272e';
+            ctx.font = `bold ${Math.max(20, Math.min(canvas.width * 0.03, 42))}px Nunito`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(r.letter, 0, 0);
+            ctx.restore();
+        });
+
+        requestAnimationFrame(drawGame);
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    
+    canvas.addEventListener('mousedown', startDrag);
+    canvas.addEventListener('mousemove', doDrag);
+    window.addEventListener('mouseup', endDrag);
+
+    canvas.addEventListener('touchstart', startDrag, { passive: false });
+    canvas.addEventListener('touchmove', doDrag, { passive: false });
+    canvas.addEventListener('touchend', endDrag);
+
+    setTimeout(() => {
+        resizeCanvas();
+        requestAnimationFrame(drawGame);
+    }, 200);
+</script>
+</body>
+</html>

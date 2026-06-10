@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Космическое путешествие | Bilingvi Online</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            background: url('../pictures/background/space_backround.jpeg') center center/cover no-repeat;
+            background-color: #0b0b1e;
+            font-family: 'Nunito', sans-serif;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* ==================== GAME 1: CHARACTERS SCENE ==================== */
+        #game1-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease;
+            z-index: 10;
+        }
+
+        .characters-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            animation: floatScene 6s ease-in-out infinite alternate;
+        }
+
+        .elephant-container {
+            position: relative;
+        }
+
+        .elephant-img {
+            width: 320px;
+            height: auto;
+            transform: rotate(5deg);
+        }
+
+        .cat-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .astro-cat-img {
+            width: 240px;
+            height: auto;
+            transform: rotate(-10deg);
+        }
+
+        .speech-bubble {
+            position: absolute;
+            top: -160px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 20px 25px;
+            border-radius: 30px;
+            font-size: 22px;
+            font-weight: 700;
+            color: #1e272e;
+            width: 700px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            border: 4px solid #4a69bd;
+            z-index: 20;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-15px);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 20px solid white;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
+        }
+
+        /* ==================== GAME 2: CHEESE GAME ==================== */
+        #game2-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            z-index: 5;
+        }
+
+        .instruction-banner {
+            position: absolute;
+            top: 4%;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 20px;
+            font-size: 22px;
+            font-weight: 700;
+            color: #2f3640;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            z-index: 10;
+            max-width: 800px;
+            text-align: center;
+            border: 4px solid #fbc531;
+        }
+
+        /* Cheese Board using the uploaded picture */
+        .cheese-board {
+            position: relative;
+            width: 900px;
+            height: 650px;
+            margin-top: 60px;
+            background: url('pictures/Chesee.png') center center/contain no-repeat;
+        }
+
+        /* Invisible/Transparent Clickable Hot-spots over the picture's letters */
+        .letter-marker {
+            position: absolute;
+            width: 81px;
+            height: 81px;
+            border-radius: 50%;
+            z-index: 10;
+            cursor: pointer;
+        }
+
+        .letter-marker:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Exact coordinates matching the circles in the background image */
+        #marker-U { top: 44.1%; left: 10.1%; }
+        #marker-O { top: 19%; left: 40%; }
+        #marker-topC { top: 5.5%; left: 63%; }
+        #marker-M { top: 31.3%; left: 79%; }
+        
+        #marker-midC { top: 37.5%; left: 62.5%; }
+        #marker-midRightC { top: 50.5%; left: 73.5%; }
+        #marker-bottomC { top: 79.3%; left: 63.0%; }
+        #marker-A { top: 60.7%; left: 58.5%; }
+
+
+        /* Visual indicator overlays upon action */
+        .letter-marker.correct {
+            background: rgba(46, 213, 115, 0.4) !important;
+            pointer-events: none;
+        }
+
+        .letter-marker.error {
+            animation: shake 0.4s;
+            background: rgba(255, 76, 75, 0.4) !important;
+        }
+
+        /* ==================== SUCCESS POPUP ==================== */
+        #success-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 11, 30, 0.85);
+            backdrop-filter: blur(6px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .congrats-content {
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            max-width: 650px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            border: 6px solid #2ed573;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .congrats-elephant {
+            width: 160px;
+            height: auto;
+            animation: floatAnimation 3s ease-in-out infinite alternate;
+        }
+
+        .congrats-text-box {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .congrats-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: #2ed573;
+        }
+
+        .congrats-text {
+            font-size: 18px;
+            color: #57606f;
+            line-height: 1.4;
+        }
+
+        .btn-restart {
+            padding: 12px 30px;
+            background: #2ed573;
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(46, 213, 115, 0.3);
+            transition: transform 0.2s, background 0.2s;
+            align-self: flex-start;
+        }
+        .btn-next {
+            padding: 12px 28px;
+            background: #4a69bd;
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(74, 105, 189, 0.3);
+            transition: transform 0.2s, background 0.2s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .btn-restart:hover {
+            background: #26af5f;
+            transform: translateY(-3px);
+        }
+        .btn-next:hover {
+            background: #3c52a0;
+            transform: translateY(-3px);
+        }
+        /* --- ДОБАВЬТЕ ЭТИ СТИЛИ --- */
+        .buttons-container {
+            display: flex;
+            gap: 12px;
+            align-self: flex-start;
+            margin-top: 5px;
+        }
+
+        /* Animations */
+        @keyframes floatScene {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-20px); }
+        }
+
+        @keyframes floatAnimation {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-10px); }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        @media (max-width: 900px) {
+            .cheese-board { transform: scale(0.65); margin-top: -50px; }
+            .instruction-banner { font-size: 16px; padding: 10px 20px; top: 2%; width: 90%; }
+            .characters-wrapper { flex-direction: column; gap: 80px; }
+            .elephant-img { width: 220px; }
+            .astro-cat-img { width: 160px; }
+            .speech-bubble { width: 280px; font-size: 16px; top: -140px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game1-container">
+        <div class="characters-wrapper">
+            <div class="speech-bubble">
+                Сегодня тебя встречает ещё один друг котёнка Космика. Кто это? Какой звук ты слышишь в начале слова слон?
+            </div>
+
+            <div class="elephant-container">
+                <img src="pictures/elephant.png" alt="Слон" class="elephant-img" onerror="this.src='https://placehold.co/320x320/a8a8a8/ffffff?text=Слон'">
+            </div>
+
+            <div class="cat-container">
+                <img src="../pictures/CHARACTERS/astro_cat.png" alt="Astro Cat" class="astro-cat-img" onerror="this.src='https://placehold.co/240x240/4a69bd/ffffff?text=Кот'">
+            </div>
+        </div>
+    </div>
+
+    <div id="game2-container">
+        <div class="instruction-banner">
+            Нажми на кружочки с буквами, кроме тех, на которых написана буква "С".
+        </div>
+
+        <div class="cheese-board">
+            <div class="letter-marker" id="marker-U" data-action="correct"></div>
+            <div class="letter-marker" id="marker-O" data-action="correct"></div>
+            <div class="letter-marker" id="marker-M" data-action="correct"></div>
+            <div class="letter-marker" id="marker-A" data-action="correct"></div>
+
+            <div class="letter-marker" id="marker-topC" data-action="error"></div>
+            <div class="letter-marker" id="marker-midC" data-action="error"></div>
+            <div class="letter-marker" id="marker-midRightC" data-action="error"></div>
+            <div class="letter-marker" id="marker-bottomC" data-action="error"></div>
+
+            <div class="central-c-wrapper"></div>
+        </div>
+    </div>
+
+    <div id="success-popup">
+        <div class="congrats-content">
+            <img src="pictures/elephant.png" alt="Слон" class="congrats-elephant" onerror="this.src='https://placehold.co/160x160/a8a8a8/ffffff?text=Слон'">
+            <div class="congrats-text-box">
+                <div class="congrats-title">Потрясающе!</div>
+                <div class="congrats-text">Ты выбрал все правильные буквы, а буквы "С" остались нетронутыми! Отличная работа!</div>
+                
+                <div class="buttons-container">
+                    <button class="btn-restart" onclick="location.reload()">Сыграть снова</button>
+                    <button class="btn-next" onclick="location.href='C2.html'">Далее</button>
+                </div>
+                </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const game1 = document.getElementById('game1-container');
+            const game2 = document.getElementById('game2-container');
+
+            // After 5 seconds, fade out Game 1 and display Game 2 instantly
+            setTimeout(() => {
+                game1.style.opacity = '0';
+                setTimeout(() => {
+                    game1.style.display = 'none';
+                    game2.style.display = 'flex';
+                    game2.style.opacity = '1';
+                }, 800);
+            }, 5000);
+
+            // Game 2 Interactive Logic
+            const correctTargets = document.querySelectorAll('[data-action="correct"]');
+            const errorTargets = document.querySelectorAll('[data-action="error"]');
+            let successCount = 0;
+
+            correctTargets.forEach(target => {
+                target.addEventListener('click', () => {
+                    if (!target.classList.contains('correct')) {
+                        target.classList.add('correct');
+                        successCount++;
+
+                        if (successCount === correctTargets.length) {
+                            setTimeout(() => {
+                                document.getElementById('success-popup').style.display = 'flex';
+                            }, 600);
+                        }
+                    }
+                });
+            });
+
+            errorTargets.forEach(target => {
+                target.addEventListener('click', () => {
+                    target.classList.add('error');
+                    setTimeout(() => {
+                        target.classList.remove('error');
+                    }, 400);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
