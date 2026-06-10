@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Letter U - Practice Classes</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f4f9; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        
+        /* Updated Grid to Vertical List */
+        .grid { 
+            display: flex; 
+            flex-direction: column; /* Stack items vertically */
+            align-items: center;    /* Center them horizontally */
+            gap: 15px;              /* Spacing between items */
+            max-width: 400px;       /* Constrain width so buttons aren't too long */
+            margin: 0 auto; 
+        }
+
+        .class-btn {
+            background-color: white;
+            padding: 15px 20px;
+            text-align: center;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+            width: 100%;            /* Stretch to fill container */
+            box-sizing: border-box; /* Include padding in width */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        
+        .class-btn:hover {
+            transform: scale(1.02); /* Slight scale on hover */
+            background-color: #40929F;
+            color: white;
+        }
+
+        .back-btn {
+            display: block; width: 150px; margin: 30px auto;
+            padding: 10px; text-align: center; background: #333;
+            color: white; text-decoration: none; border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Letter "U" Practice</h1>
+        <p>Select your lesson:</p>
+    </div>
+
+    <div class="grid">
+        <script>
+            for (let i = 1; i <= 8; i++) {
+                document.write(`<a href="../U_games/U${i}.html" class="class-btn">Class ${i}</a>`);
+            }
+        </script>
+    </div>
+
+    <a href="../index.html" class="back-btn">Back to Home</a>
+
+</body>
+</html>
