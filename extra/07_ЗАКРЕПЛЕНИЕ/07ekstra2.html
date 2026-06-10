@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Игра: Соедини слова с картинками</title>
+    <style>
+        :root { --bg-image: url('../../pictures/background/space_backround.jpeg'); }
+        
+        body { 
+            margin: 0; height: 100vh; overflow: hidden; font-family: sans-serif; 
+            background-image: var(--bg-image); background-size: cover; 
+            background-position: center; background-attachment: fixed;
+            background-color: rgba(0, 0, 0, 0.5); background-blend-mode: darken;
+        }
+
+        /* Template Overlays */
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .box { background: #2f2f5f; padding: 40px; border-radius: 20px; text-align: center; border: 3px solid #fff; color: white; }
+        .btn { padding: 15px 30px; font-size: 20px; cursor: pointer; background: #6e8efb; color: white; border: none; border-radius: 10px; margin: 10px; }
+
+        /* Game Specific Styles */
+        #game-area { height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 50px; box-sizing: border-box; }
+        
+        /* pointer-events: none allows clicking through the canvas to the nodes underneath */
+        #canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; touch-action: none; }
+        
+        .column { display: flex; flex-direction: column; gap: 20px; z-index: 2; }
+        
+        .node { 
+            width: 220px; height: 140px; display: flex; align-items: center; justify-content: center; 
+            font-size: 2.5rem; font-weight: bold; border: 4px solid #6e8efb; border-radius: 25px; 
+            background: white; color: #2f2f5f; cursor: pointer; transition: transform 0.2s;
+            user-select: none; -webkit-user-drag: none; text-align: center; padding: 10px; box-sizing: border-box;
+        }
+        .node img { width: 95%; height: 95%; object-fit: contain; pointer-events: none; }
+
+        /* Space Bear Animation */
+        #bear-anchor {
+            position: absolute; bottom: 20px; right: 20px; z-index: 1000; pointer-events: none;
+            width: 8vw; min-width: 50px; max-width: 100px;
+        }
+        .space-bear {
+            width: 100%; height: auto;
+            filter: drop-shadow(0 8px 12px rgba(0,0,0,0.6));
+            animation: floatingBear 3.5s ease-in-out infinite;
+        }
+        @keyframes floatingBear {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-modal" class="overlay">
+        <div class="box">
+            <h1>Добро пожаловать!</h1>
+            <p>Инструкция: Соедини слово с соответствующей картинкой.</p>
+            <button class="btn" onclick="document.getElementById('start-modal').style.display='none'">Играть</button>
+        </div>
+    </div>
+
+    <div id="game-area">
+        <div class="column" id="left-col">
+            <div class="node" data-id="CO-M">CO-M</div>
+            <div class="node" data-id="CA-M">CA-M</div>
+            <div class="node" data-id="O-CA">O-CA</div>
+            <div class="node" data-id="MA-MA">MA-MA</div>
+        </div>
+
+        <div class="column" id="right-col">
+            <div class="node" data-id="CO-M"><img src="../../C_games/pictures/yc.png" alt="CO-M"></div>
+            <div class="node" data-id="CA-M"><img src="pictures/kid-reading.jpeg" alt="CA-M"></div>
+            <div class="node" data-id="O-CA"><img src="pictures/bee.jpeg" alt="O-CA"></div>
+            <div class="node" data-id="MA-MA"><img src="pictures/hugging.jpeg" alt="MA-MA"></div>
+        </div>
+    </div>
+
+    <div id="end-modal" class="overlay" style="display: none;">
+        <div class="box">
+            <h1>Молодец!</h1>
+            <button class="btn" onclick="location.reload()">Играть снова</button>
+            <button class="btn" onclick="window.location.href='07ekstra3.html'">Следующая страница</button>
+        </div>
+    </div>
+
+    <div id="bear-anchor">
+        <img class="space-bear" src="../../pictures/game4/bear.png" alt="Space Bear" onerror="this.src='https://placehold.co/180x210/4a69bd/ffffff?text=🐻'">
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        // --- Logic ---
+        function shuffleNodes(containerId) {
+            const container = document.getElementById(containerId);
+            const nodes = Array.from(container.children);
+            nodes.sort(() => Math.random() - 0.5).forEach(node => container.appendChild(node));
+        }
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false, startNode = null, connections = [], mousePos = {x:0, y:0};
+
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; draw(); }
+        window.onresize = resize;
+        window.onload = () => { shuffleNodes('left-col'); shuffleNodes('right-col'); resize(); };
+
+        function getCenter(el) {
+            const rect = el.getBoundingClientRect();
+            return { x: rect.left + rect.width/2, y: rect.top + rect.height/2 };
+        }
+
+        function drawLine(p1, p2, color) {
+            ctx.beginPath(); ctx.lineWidth = 10; ctx.strokeStyle = color;
+            ctx.lineCap = "round"; ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            connections.forEach(c => drawLine(c.start, c.end, "#10b981"));
+            if (isDrawing) drawLine(getCenter(startNode), mousePos, "#6e8efb");
+        }
+
+        function findNodeUnderPoint(x, y) {
+            const nodes = document.querySelectorAll('.node');
+            return Array.from(nodes).find(n => {
+                const r = n.getBoundingClientRect();
+                return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+            });
+        }
+
+        // --- Mouse Event Handlers ---
+        window.onmousedown = (e) => {
+            startNode = findNodeUnderPoint(e.clientX, e.clientY);
+            if (startNode) isDrawing = true;
+        };
+
+        window.onmousemove = (e) => { 
+            if (isDrawing) { 
+                mousePos = {x: e.clientX, y: e.clientY}; 
+                draw(); 
+            } 
+        };
+
+        window.onmouseup = (e) => {
+            if (!isDrawing) return;
+            const endNode = findNodeUnderPoint(e.clientX, e.clientY);
+            finalizeConnection(endNode);
+        };
+
+        // --- Touch Event Handlers for Tablets/Mobile ---
+        window.ontouchstart = (e) => {
+            if (e.touches.length === 1) {
+                const t = e.touches[0];
+                startNode = findNodeUnderPoint(t.clientX, t.clientY);
+                if (startNode) {
+                    isDrawing = true;
+                    e.preventDefault();
+                }
+            }
+        };
+
+        window.ontouchmove = (e) => {
+            if (isDrawing && e.touches.length === 1) {
+                const t = e.touches[0];
+                mousePos = {x: t.clientX, y: t.clientY};
+                draw();
+                e.preventDefault();
+            }
+        };
+
+        window.ontouchend = (e) => {
+            if (!isDrawing) return;
+            if (e.changedTouches.length === 1) {
+                const t = e.changedTouches[0];
+                const endNode = findNodeUnderPoint(t.clientX, t.clientY);
+                finalizeConnection(endNode);
+            }
+            isDrawing = false; 
+            draw();
+        };
+
+        function finalizeConnection(endNode) {
+            if (endNode && endNode !== startNode && endNode.dataset.id === startNode.dataset.id && endNode.parentElement !== startNode.parentElement) {
+                connections.push({start: getCenter(startNode), end: getCenter(endNode)});
+                if(connections.length === 4) document.getElementById('end-modal').style.display = 'flex';
+            }
+            isDrawing = false; 
+            draw();
+        }
+    </script>
+</body>
+</html>

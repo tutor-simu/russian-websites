@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Космическая миссия: Считаем буквы</title>
+    <style>
+        :root { --bg-image: url('../../pictures/background/space_backround.jpeg'); }
+        
+        body { 
+            margin: 0; height: 100vh; overflow: hidden; font-family: sans-serif; 
+            background-image: var(--bg-image); background-size: cover; 
+            background-position: center; background-attachment: fixed;
+            background-color: rgba(0, 0, 0, 0.5); background-blend-mode: darken;
+            transition: background 1s ease;
+        }
+
+        body.transparent {
+            background: transparent;
+        }
+
+        /* Character & Bubble */
+        #character-container {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform: translate(-50%, 50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 1s ease-in-out;
+        }
+
+        .character-move-left {
+            bottom: 10px !important;
+            left: 20px !important;
+            transform: translate(0, 0) scale(0.5) !important;
+        }
+
+        .character-move-center {
+            bottom: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, 50%) scale(1) !important;
+        }
+
+        .space-char {
+            width: 150px;
+            height: auto;
+            filter: drop-shadow(0 8px 12px rgba(0,0,0,0.6));
+            animation: floatingBear 3.5s ease-in-out infinite;
+        }
+
+        @keyframes floatingBear {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+
+        #speech-bubble {
+            background: #ffffff;
+            color: #2f2f5f;
+            padding: 20px;
+            border-radius: 20px;
+            border: 4px solid #6e8efb;
+            font-size: 1.5rem;
+            text-align: center;
+            max-width: 350px;
+            position: relative;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            animation: popIn 0.5s ease-out;
+        }
+
+        #speech-bubble:after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 20px 15px 0;
+            border-style: solid;
+            border-color: #6e8efb transparent;
+            display: block;
+            width: 0;
+        }
+
+        .btn { 
+            padding: 15px 30px; font-size: 20px; cursor: pointer; 
+            background: #6e8efb; color: white; border: none; 
+            border-radius: 15px; margin-top: 10px; font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: background 0.2s, transform 0.1s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn:hover { background: #5672e6; transform: scale(1.05); }
+
+        /* Scattered elements area centered */
+        #letters-field {
+            position: absolute;
+            top: 20vh;
+            left: 30vw;
+            width: 40vw;
+            height: 50vh;
+            z-index: 1;
+            display: none;
+            user-select: none;
+        }
+
+        .scattered-item {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            font-weight: bold;
+            user-select: none;
+        }
+
+        /* Distinct font styles to add challenge */
+        .font-serif { font-family: 'Times New Roman', Times, serif; }
+        .font-sans { font-family: 'Arial', sans-serif; }
+        .font-cursive { font-family: 'Comic Sans MS', cursive, sans-serif; }
+        .font-fantasy { font-family: 'Impact', fantasy; }
+        .font-monospace { font-family: 'Courier New', monospace; }
+
+        /* Input section */
+        #input-section {
+            position: absolute;
+            bottom: 30px;
+            right: 50px;
+            z-index: 2;
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            background: rgba(47, 47, 95, 0.8);
+            padding: 20px;
+            border-radius: 20px;
+            border: 3px solid #6e8efb;
+            animation: fadeIn 0.5s;
+        }
+
+        .inputs-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .input-group input {
+            width: 50px;
+            height: 50px;
+            font-size: 2rem;
+            text-align: center;
+            border-radius: 10px;
+            border: 2px solid #6e8efb;
+            margin-top: 5px;
+            background: #2f2f5f;
+            color: white;
+            transition: border-color 0.3s, color 0.3s;
+        }
+
+        .input-group input.wrong {
+            border-color: #ff4d4d;
+            color: #ff4d4d;
+        }
+
+        .input-group input.correct {
+            border-color: #28a745;
+            color: #28a745;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        /* --- RESPONSIVE MOBILE ADJUSTMENTS --- */
+        @media (max-width: 768px) {
+            #letters-field {
+                top: 10vh;
+                left: 5vw;
+                width: 90vw;
+                height: 45vh;
+            }
+
+            .scattered-item {
+                font-size: 2.5rem; 
+                width: 45px;
+                height: 45px;
+            }
+
+            .space-char {
+                width: 100px; 
+            }
+
+            #speech-bubble {
+                font-size: 1.2rem;
+                padding: 15px;
+                max-width: 250px;
+            }
+
+            .character-move-left {
+                bottom: 10px !important;
+                left: 10px !important;
+                transform: translate(0, 0) scale(0.6) !important;
+            }
+
+            #input-section {
+                bottom: 10px;
+                right: 50%;
+                transform: translateX(50%);
+                padding: 10px;
+                gap: 10px;
+                width: 90%;
+                box-sizing: border-box;
+            }
+
+            .inputs-row {
+                gap: 5px;
+                justify-content: space-around;
+                width: 100%;
+            }
+
+            .input-group {
+                font-size: 1.2rem;
+            }
+
+            .input-group input {
+                width: 40px;
+                height: 40px;
+                font-size: 1.5rem;
+            }
+
+            .btn {
+                padding: 10px 20px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="character-container">
+        <div id="speech-bubble">Привет, космический путешественник! Давай вспомним буквы. Сосчитай, сколько раз встречается каждая буква на экране, и впиши числа.</div>
+        <img class="space-char" src="../../pictures/CHARACTERS/astro_cat.png" alt="Space Character" onerror="this.src='https://placehold.co/180x210/4a69bd/ffffff?text=🐻'">
+        <button id="start-btn" class="btn" onclick="startMission()">Начать миссию</button>
+    </div>
+
+    <div id="letters-field">
+    </div>
+
+    <div id="input-section">
+        <div class="inputs-row">
+            <div class="input-group">A<input type="number" id="input-A" min="0" max="9"></div>
+            <div class="input-group">O<input type="number" id="input-O" min="0" max="9"></div>
+            <div class="input-group">У<input type="number" id="input-U" min="0" max="9"></div>
+            <div class="input-group">M<input type="number" id="input-M" min="0" max="9"></div>
+            <div class="input-group">C<input type="number" id="input-C" min="0" max="9"></div>
+        </div>
+        <button id="check-btn" class="btn" onclick="checkCompletion()">Проверить</button>
+    </div>
+
+    <script>
+        // Target counts based on strictly letters setup in the center
+        const correctCounts = { A: 4, O: 4, U: 4, M: 4, C: 4 };
+
+        // Configuration items mimicking varied text characters centered on screen
+        const items = [
+            // Letter A configurations
+            { val: 'A', font: 'font-serif', x: 5, y: 10 },
+            { val: 'A', font: 'font-fantasy', x: 25, y: 30 },
+            { val: 'A', font: 'font-sans', x: 60, y: 15 },
+            { val: 'A', font: 'font-monospace', x: 80, y: 35 },
+            // Letter O configurations
+            { val: 'O', font: 'font-cursive', x: 15, y: 20 },
+            { val: 'O', font: 'font-monospace', x: 45, y: 5 },
+            { val: 'O', font: 'font-serif', x: 70, y: 50 },
+            { val: 'O', font: 'font-sans', x: 35, y: 75 },
+            // Letter У configurations
+            { val: 'У', font: 'font-fantasy', x: 10, y: 50 },
+            { val: 'У', font: 'font-serif', x: 55, y: 25 },
+            { val: 'У', font: 'font-cursive', x: 90, y: 15 },
+            { val: 'У', font: 'font-sans', x: 20, y: 70 },
+            // Letter M configurations
+            { val: 'M', font: 'font-monospace', x: 35, y: 15 },
+            { val: 'M', font: 'font-sans', x: 85, y: 55 },
+            { val: 'M', font: 'font-serif', x: 15, y: 40 },
+            { val: 'M', font: 'font-fantasy', x: 75, y: 70 },
+            // Letter C configurations
+            { val: 'C', font: 'font-cursive', x: 50, y: 40 },
+            { val: 'C', font: 'font-fantasy', x: 65, y: 85 },
+            { val: 'C', font: 'font-serif', x: 5, y: 80 },
+            { val: 'C', font: 'font-monospace', x: 95, y: 35 }
+        ];
+
+        function startMission() {
+            const charContainer = document.getElementById('character-container');
+            const bubble = document.getElementById('speech-bubble');
+            const startBtn = document.getElementById('start-btn');
+
+            // Bubble disappear & animate character to bottom left
+            bubble.style.display = 'none';
+            startBtn.style.display = 'none';
+            charContainer.classList.add('character-move-left');
+
+            setTimeout(() => {
+                document.getElementById('letters-field').style.display = 'block';
+                document.getElementById('input-section').style.display = 'flex';
+                renderItems();
+            }, 1000);
+        }
+
+        function renderItems() {
+            const field = document.getElementById('letters-field');
+            field.innerHTML = '';
+            items.forEach(item => {
+                const el = document.createElement('div');
+                el.className = `scattered-item ${item.font}`;
+                el.style.left = item.x + '%';
+                el.style.top = item.y + '%';
+                
+                el.innerText = item.val;
+                // Styling text to look colorful and distinct
+                const colors = ['#ffffff', '#ffaa33', '#00aa66', '#6e8efb', '#ff00aa', '#ffff00'];
+                el.style.color = colors[Math.floor(Math.random() * colors.length)];
+                
+                field.appendChild(el);
+            });
+        }
+
+        // Clear styling when user edits a field
+        const inputs = ['A', 'O', 'U', 'M', 'C'];
+        inputs.forEach(letter => {
+            const inputEl = document.getElementById(`input-${letter}`);
+            inputEl.addEventListener('input', () => {
+                inputEl.classList.remove('wrong', 'correct');
+            });
+        });
+
+        function checkCompletion() {
+            let allFilled = true;
+            inputs.forEach(letter => {
+                if (document.getElementById(`input-${letter}`).value === '') {
+                    allFilled = false;
+                }
+            });
+
+            if (!allFilled) {
+                alert('Пожалуйста, введите все числа перед проверкой.');
+                return;
+            }
+
+            let anyWrong = false;
+            inputs.forEach(letter => {
+                const inputEl = document.getElementById(`input-${letter}`);
+                const val = parseInt(inputEl.value);
+                if (val !== correctCounts[letter]) {
+                    inputEl.classList.add('wrong');
+                    inputEl.classList.remove('correct');
+                    anyWrong = true;
+                } else {
+                    inputEl.classList.add('correct');
+                    inputEl.classList.remove('wrong');
+                }
+            });
+
+            if (!anyWrong) {
+                // Complete: Transparent Background & return character to center with new bubble
+                document.body.classList.add('transparent');
+                document.getElementById('letters-field').style.display = 'none';
+                document.getElementById('input-section').style.display = 'none';
+
+                const charContainer = document.getElementById('character-container');
+                charContainer.classList.remove('character-move-left');
+                charContainer.classList.add('character-move-center');
+
+                setTimeout(() => {
+                    const bubble = document.getElementById('speech-bubble');
+                    bubble.innerText = 'Поздравляем! Ты угадал всё верно! Сыграть снова или продолжить?';
+                    bubble.style.display = 'block';
+                    
+                    // Create buttons inside speech bubble area
+                    const controls = document.createElement('div');
+                    controls.style.display = 'flex';
+                    controls.style.justifyContent = 'center';
+                    controls.style.gap = '10px';
+                    controls.innerHTML = `
+                        <button class="btn" onclick="location.reload()">Снова</button>
+                        <button class="btn" onclick="window.location.href='U4.html'">Продолжить</button>
+                    `;
+                    bubble.appendChild(controls);
+                }, 1000);
+            }
+        }
+    </script>
+</body>
+</html>
