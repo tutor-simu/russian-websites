@@ -1,104 +1,199 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Space Maze</title>
     <style>
-    /* 1. Reset everything to prevent hidden overflow */
-    html, body {
-        margin: 0;
-        padding: 0;
-        width: 100vw;
-        height: 100vh;
-        overflow: hidden; 
-        
-        background-image: url("../pictures/background/space_backround.jpeg");
-        background-size: cover;      /* Scales the image to fill the screen */
-        background-position: center; /* Keeps it centered */
-        background-repeat: no-repeat;
-        
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden; 
+            background-image: url("../pictures/background/space_backround.jpeg");
+            background-size: cover;     
+            background-position: center; 
+            background-repeat: no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Comic Sans MS', sans-serif;
+            -webkit-tap-highlight-color: transparent; 
+        }
 
-    /* 2. Grid container: Uses 4x5 layout */
-    .grid { 
-        display: grid; 
-        grid-template-columns: repeat(4, 1fr); 
-        grid-template-rows: repeat(5, 1fr); 
-        gap: 0.5vh; 
-        width: 95vw; 
-        height: 95vh; 
-        box-sizing: border-box;
-    }
+        /* Responsive grid with fixed 4:5 aspect ratio and constraints */
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            grid-template-rows: repeat(5, 1fr); 
+            gap: 1.5vmin; 
+            width: 90vw;
+            height: 90vh;
+            max-width: 76vh; /* 95vh * 0.8 aspect ratio limit */
+            max-height: 95vh;
+            aspect-ratio: 4 / 5;
+            box-sizing: border-box;
+            position: relative;
+            justify-items: center;
+            align-items: center;
+        }
 
-    /* 3. Cells: Forced to respect the grid boundaries */
-    .cell { 
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
-        border-radius: 10px;
-        background: transparent;
-        position: relative; 
-        cursor: pointer;
-        transition: transform 0.1s;
-        /* CRITICAL: Allows cell to shrink if the image is too big */
-        min-height: 0;
-        min-width: 0;
-    }
+        .cell { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 10px;
+            background: transparent;
+            position: relative; 
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.3s ease;
+            width: 100%;
+            height: 100%;
+            touch-action: manipulation;
+        }
 
-    /* 4. Images: Contain inside the cell so they never overflow */
-    .cell img { 
-        max-width: 90%; 
-        max-height: 90%; 
-        object-fit: contain; 
-        border-radius: 10px;
-        pointer-events: none; /* Allows click to pass through to the div */
-    }
+        .cell img:not(#cat) { 
+            max-width: 85%; 
+            max-height: 85%; 
+            object-fit: contain; 
+            border-radius: 10px;
+            pointer-events: none; 
+        }
 
-    /* 5. Interactive effects */
-    .cell:active { transform: scale(0.95); }
+        .cell:active:not(#cat) { transform: scale(0.95); }
 
-    .path-highlight { 
-        outline: 5px solid #e65100; 
-        border-radius: 15px; 
-    }
+        .path-highlight { 
+            outline: 5px solid #ffd700; 
+            border-radius: 15px; 
+            box-shadow: 0 0 15px #ffd700;
+        }
 
-    /* 6. The Cat */
-    #cat { 
-        width: 60%; 
-        position: absolute; 
-        z-index: 10; 
-        transition: all 0.3s ease; 
-    }
+        #cat { 
+            position: absolute; 
+            z-index: 10; 
+            transition: left 0.2s ease-out, top 0.2s ease-out;
+            pointer-events: none;
+            object-fit: contain; 
+        }
 
-    /* 7. Full screen overlay */
-    #confetti { 
-        display: none; /* Keep this here */
-        position: fixed; 
-        top: 0; left: 0; 
-        width: 100vw; height: 100vh; 
-        background: rgba(0,0,0,0.85); 
-        color: white; 
-        text-align: center; 
-        /* REMOVE display: flex from here */
-        justify-content: center;
-        align-items: center;
-        font-size: 8vh; 
-        z-index: 100; 
-    }
-</style>
+        #end-screen {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: beige;
+            padding: 40px;
+            border-radius: 40px;
+            border: 8px solid #333;
+            z-index: 100;
+            max-width: 650px;
+            width: 90%;
+            box-sizing: border-box;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .end-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .end-cat {
+            width: 150px;
+            height: auto;
+        }
+
+        .end-text-group {
+            text-align: center;
+            flex: 1;
+        }
+
+        .end-text-group h2 {
+            color: #1a1a3a;
+            margin: 0 0 25px 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .end-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .button-style {
+            display: inline-block;
+            padding: 12px 30px;
+            font-size: 20px;
+            font-weight: bold;
+            background-color: #4cd137;
+            color: white;
+            text-decoration: none; 
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            text-align: center;
+            white-space: nowrap;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .button-style:active {
+            transform: scale(0.95);
+        }
+
+        @media (max-width: 600px) {
+            .end-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .end-cat {
+                width: 100px;
+            }
+            .end-text-group h2 {
+                font-size: 22px;
+                margin-bottom: 15px;
+            }
+            .button-style {
+                padding: 10px 20px;
+                font-size: 16px;
+            }
+            .end-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
 </head>
 <body>
 
 <div class="grid" id="maze"></div>
-<div id="confetti">CONGRATULATIONS! </div>
+
+<div id="end-screen">
+    <div class="end-content">
+        <img src="../pictures/CHARACTERS/astro_cat.png" class="end-cat">
+        <div class="end-text-group">
+            <h2>Поздравляю!</h2>
+            <div class="end-buttons">
+                <button class="button-style" onclick="location.reload()">Играть снова</button>
+                <a href="O4.html" class="button-style">Далее</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<img id="cat" src="../pictures/CHARACTERS/astro_cat.png" alt="Astro Cat">
+
 <script>
     const layout = [
-        ['O', 'O', 'O', 'MOON'], // 4
-        ['O', 'A', 'S', 'U'],    // 4
-        ['O', 'O', 'O', 'O'],    // 4
-        ['A', 'M', 'A', 'O'],    // 4
-        ['CAT', 'O', 'O', 'O']   // 4 (Total 20)
+        ['O', 'O', 'O', 'MOON'], 
+        ['O', 'A', 'S', 'U'],    
+        ['O', 'O', 'O', 'O'],    
+        ['A', 'M', 'A', 'O'],    
+        ['CAT', 'O', 'O', 'O']   
     ];
         
     const imageMap = {
@@ -111,15 +206,16 @@
     };
 
     const maze = document.getElementById('maze');
+    const cat = document.getElementById('cat');
     let gameStarted = false, currentPath = [];
+    let catR = 4, catC = 0; 
 
     function createGrid() {
         maze.innerHTML = '';
-        // Flatten layout to ensure we process exactly 20 items
         layout.flat().forEach((val, index) => {
             const div = document.createElement('div');
             div.className = 'cell';
-            div.dataset.index = index; // Keep track of position
+            div.dataset.index = index; 
             
             if (imageMap[val]) {
                 const img = document.createElement('img');
@@ -127,66 +223,113 @@
                 div.appendChild(img);
             }
             
-            // Calculate row and col from index
             const r = Math.floor(index / 4);
             const c = index % 4;
             
             div.onclick = () => handleButtonClick(r, c, div);
-            
+
             if (val === 'CAT') {
-                const catImg = document.createElement('img');
-                catImg.src = '../pictures/CHARACTERS/astro_cat.png'; 
-                catImg.id = 'cat';
-                div.appendChild(catImg);
+                catR = r;
+                catC = c;
+                setTimeout(() => positionCatAtCell(div), 100);
             }
             maze.appendChild(div);
         });
     }
 
+    function positionCatAtCell(cellDiv) {
+        const cellRect = cellDiv.getBoundingClientRect();
+        
+        // Dynamic proportion configuration without distortion
+        const catWidth = cellRect.width * 0.70;
+        const catHeight = cellRect.height * 0.70;
+        
+        cat.style.width = catWidth + 'px';
+        cat.style.height = catHeight + 'px';
+        
+        // Exact viewport calculations mapping context to the main window space
+        cat.style.left = (cellRect.left + (cellRect.width - catWidth) / 2) + 'px';
+        cat.style.top = (cellRect.top + (cellRect.height - catHeight) / 2) + 'px';
+    }
+
     function handleButtonClick(r, c, div) {
-        if (!gameStarted && layout[r][c] === 'CAT') {
-            gameStarted = true;
-            currentPath = [{r, c}];
-            div.classList.add('path-highlight');
+        const cellVal = layout[r][c];
+
+        if (!gameStarted) {
+            if (cellVal === 'CAT') {
+                gameStarted = true;
+                currentPath = [{r, c}];
+                div.classList.add('path-highlight');
+                positionCatAtCell(div);
+                return;
+            } 
+            
+            const isAdjacentToCat = Math.abs(r - catR) + Math.abs(c - catC) === 1;
+            if (isAdjacentToCat && (cellVal === 'O' || cellVal === 'MOON')) {
+                gameStarted = true;
+                currentPath = [{r: catR, c: catC}, {r, c}];
+                
+                highlightAndFadeCell(catR, catC);
+                highlightAndFadeCell(r, c);
+                positionCatAtCell(div);
+
+                if (cellVal === 'MOON') finish();
+                return;
+            }
             return;
         }
-        if (!gameStarted) return;
 
         const last = currentPath[currentPath.length - 1];
         const isAdjacent = Math.abs(r - last.r) + Math.abs(c - last.c) === 1;
 
-        if (isAdjacent && (layout[r][c] === 'O' || layout[r][c] === 'MOON')) {
+        if (isAdjacent && (cellVal === 'O' || cellVal === 'MOON')) {
             currentPath.push({r, c});
-            div.classList.add('path-highlight');
-            if (layout[r][c] === 'MOON') finish();
+            highlightAndFadeCell(r, c);
+            positionCatAtCell(div); 
+            if (cellVal === 'MOON') finish();
         } else {
             reset();
         }
     }
 
+    function highlightAndFadeCell(r, c) {
+        const index = r * 4 + c;
+        const cell = document.querySelectorAll('.cell')[index];
+        cell.classList.add('path-highlight');
+        
+        const img = cell.querySelector('img');
+        if (img) img.style.opacity = '0';
+    }
+
     function reset() {
         gameStarted = false;
         currentPath = [];
-        document.querySelectorAll('.cell').forEach(c => c.classList.remove('path-highlight'));
+        document.querySelectorAll('.cell').forEach(c => {
+            c.classList.remove('path-highlight');
+            const img = c.querySelector('img');
+            if (img) img.style.opacity = '1';
+        });
+        const catCellIndex = catR * 4 + catC;
+        const catCell = document.querySelectorAll('.cell')[catCellIndex];
+        positionCatAtCell(catCell);
     }
 
     function finish() {
-        const cat = document.getElementById('cat');
-        const confettiDiv = document.getElementById('confetti');
-        
-        currentPath.forEach((pos, i) => {
-            setTimeout(() => {
-                const targetIndex = pos.r * 4 + pos.c;
-                const cell = document.querySelectorAll('.cell')[targetIndex];
-                cell.appendChild(cat);
-                
-                // When the animation ends, show the confetti
-                if (i === currentPath.length - 1) {
-                    confettiDiv.style.display = 'flex'; // Explicitly set to flex on win
-                }
-            }, i * 300);
-        });
+        const endScreen = document.getElementById('end-screen');
+        setTimeout(() => {
+            endScreen.style.display = 'block';
+        }, 400);
     }
 
     createGrid();
+
+    window.addEventListener('resize', () => {
+        const lastPathPos = currentPath[currentPath.length - 1];
+        const activeCell = lastPathPos 
+            ? document.querySelectorAll('.cell')[lastPathPos.r * 4 + lastPathPos.c]
+            : document.querySelectorAll('.cell')[catR * 4 + catC];
+        if (activeCell) positionCatAtCell(activeCell);
+    });
 </script>
+</body>
+</html>

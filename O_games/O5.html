@@ -281,8 +281,18 @@
 
         function getMousePos(e) {
             const rect = canvas.getBoundingClientRect();
-            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-            const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+            let clientX, clientY;
+            
+            if (e.type.includes('touch')) {
+                // If it's touchend, use changedTouches, otherwise touches
+                const touches = e.type.includes('end') ? e.changedTouches : e.touches;
+                clientX = touches[0].clientX;
+                clientY = touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+
             return {
                 x: clientX - rect.left,
                 y: clientY - rect.top
@@ -361,7 +371,11 @@
             if (!isDrawing) return;
             isDrawing = false;
 
-            const finalPos = { x: mouseX, y: mouseY };
+            // Retrieve updated coordinate precisely upon lifting the finger
+            const finalPos = getMousePos(e);
+            mouseX = finalPos.x;
+            mouseY = finalPos.y;
+            
             const targetNode = findHoveredNode(finalPos);
 
             if (targetNode && targetNode !== activeNode) {

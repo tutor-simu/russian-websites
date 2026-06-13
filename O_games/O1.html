@@ -12,11 +12,10 @@
             background: linear-gradient(135deg, #121224, #1a1a3a);
             font-family: sans-serif;
             display: flex;
-            flex-direction: row; /* Default side-by-side for desktop */
+            flex-direction: row;
             overflow: hidden;
         }
 
-        /* Canvas Workspace Area */
         #game-container {
             flex: 1;
             display: flex;
@@ -24,19 +23,19 @@
             align-items: center;
             justify-content: center;
             position: relative;
-            padding: 20px;
+            padding: 10px;
             box-sizing: border-box;
             height: 100vh;
         }
 
         #title-bubble {
             background: rgba(255, 255, 255, 0.95);
-            padding: 12px 35px;
+            padding: 8px 25px;
             border-radius: 15px;
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
             color: #1a1a3a;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             text-align: center;
             z-index: 5;
@@ -47,13 +46,11 @@
             border-radius: 20px;
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
             cursor: pointer;
-            
-            /* Enhanced Sizing Rules to blow up the canvas size */
             width: 100%;
             height: 100%;
-            max-width: 85vh; /* Sets a perfect square-ish boundary based on screen height */
-            max-height: 80vh; /* Maximizes vertical space usage */
-            object-fit: contain; /* Ensures the template image inside doesn't stretch or distort */
+            max-width: 70vh;
+            max-height: 68vh;
+            object-fit: contain;
         }
 
         #palette-sidebar {
@@ -64,13 +61,12 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px 10px;
+            padding: 15px 10px;
             box-sizing: border-box;
             z-index: 10;
             height: 100vh;
         }
 
-        /* Scrolling container for color circles */
         .swatch-container {
             width: 100%;
             flex: 1;
@@ -78,9 +74,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
-            padding: 10px 0;
-            margin-bottom: 15px;
+            gap: 10px;
+            padding: 5px 0;
+            margin-bottom: 10px;
             scrollbar-width: thin;
             scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
         }
@@ -103,8 +99,8 @@
         }
 
         .color-swatch {
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
             cursor: pointer;
             border: 3px solid transparent;
@@ -126,17 +122,17 @@
             display: flex;
             flex-direction: column;
             width: 100%;
-            gap: 10px;
+            gap: 8px;
             margin-top: auto;
         }
 
         #reset-btn, #next-btn {
-            padding: 12px 15px;
+            padding: 10px 12px;
             color: white;
             border: none;
             border-radius: 10px;
             font-weight: bold;
-            font-size: 15px;
+            font-size: 14px;
             cursor: pointer;
             transition: background 0.2s, transform 0.1s;
             width: 100%;
@@ -158,73 +154,73 @@
 
         #next-btn:hover { background: #26af5f; }
 
-        /* ========================================================
-           RESPONSIVE MOBILE BREAKPOINT (Screens 768px wide or less)
-           ======================================================== */
         @media (max-width: 768px) {
             body {
-                flex-direction: column; /* Stack vertically */
-                overflow: auto;
+                flex-direction: column;
+                overflow: hidden;
             }
 
             #game-container {
                 flex: none;
-                height: 73vh; 
-                padding: 15px 15px 5px 15px;
+                height: 72vh;
+                padding: 5px 10px;
             }
 
             #title-bubble {
-                font-size: 20px;
-                padding: 8px 25px;
-                margin-bottom: 10px;
+                font-size: 16px;
+                padding: 6px 20px;
+                margin-bottom: 5px;
             }
 
             canvas {
                 max-width: 100%;
-                max-height: 60vh;
+                max-height: 62vh;
             }
 
             #palette-sidebar {
                 width: 100%;
-                height: 27vh; 
+                height: 28vh;
                 border-left: none;
                 border-top: 2px solid rgba(255, 255, 255, 0.1);
-                padding: 10px 15px;
-                flex-direction: row; 
+                padding: 8px 10px;
+                flex-direction: row;
                 justify-content: space-between;
                 align-items: center;
                 flex-wrap: wrap;
             }
 
             .sidebar-label {
-                display: none; 
+                display: none;
             }
 
             .swatch-container {
-                flex-direction: row; 
+                flex-direction: row;
                 overflow-x: auto;
                 overflow-y: hidden;
                 justify-content: flex-start;
-                padding: 5px 0;
+                padding: 2px 0;
                 margin-bottom: 0;
-                width: 65%;
-                height: 65px;
+                width: 68%;
+                height: 55px;
+                gap: 8px;
             }
 
             .color-swatch {
-                width: 45px;
-                height: 45px;
+                width: 40px;
+                height: 40px;
             }
 
             .btn-group {
-                width: 32%;
+                width: 28%;
                 flex-direction: column;
                 gap: 5px;
+                margin-top: 0;
             }
 
             #reset-btn, #next-btn {
-                padding: 8px 5px;
-                font-size: 12px;
+                padding: 8px 4px;
+                font-size: 11px;
+                border-radius: 8px;
             }
         }
     </style>
