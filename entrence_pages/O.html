@@ -115,8 +115,7 @@
 
     <div class="container">
         <div class="header">
-            <h1>Буква О - Практика</h1>
-            <p>Выберите урок ниже</p>
+            <h1>Буква О</h1>
         </div>
 
         <div class="grid" id="lessons-grid"></div>
@@ -130,12 +129,10 @@
         const gridContainer = document.getElementById('lessons-grid');
         let htmlContent = '';
         
-        // Loop runs 6 times for Class 1 to Class 6
         for (let i = 1; i <= 6; i++) {
             htmlContent += `
                 <a href="../O_games/O${i}.html" class="class-btn btn-${i}">
-                    Занятие ${i}
-                    <span>Давай играть!</span>
+                    Задание ${i}
                 </a>`;
         }
         
