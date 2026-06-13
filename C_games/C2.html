@@ -378,6 +378,7 @@
             let dist = Math.hypot(pos.x - r.currentX, pos.y - r.currentY);
             if (dist < 55) { 
                 activeRoute = r;
+                activeRoute = r;
                 isDragging = true;
                 voiceBar.style.display = 'block';
                 voiceBar.textContent = `Тяни звук: ${r.letter}-${r.letter}-${r.letter}... 🗣️`;
@@ -477,16 +478,16 @@
 
             // 3. Draw Target Planets
             ctx.save();
-            let glow = ctx.createRadialGradient(r.endX, r.endY, 10, r.endX, r.endY, 70);
+            let glow = ctx.createRadialGradient(r.endX, r.endY, 10, r.endX, r.endY, 40);
             glow.addColorStop(0, 'rgba(130, 204, 221, 0.6)');
             glow.addColorStop(1, 'rgba(11, 11, 30, 0)');
             ctx.fillStyle = glow;
             ctx.beginPath();
-            ctx.arc(r.endX, r.endY, 70, 0, Math.PI*2);
+            ctx.arc(r.endX, r.endY, 40, 0, Math.PI*2);
             ctx.fill();
 
             if (planetLoaded) {
-                const size = 175; 
+                const size = 100; // Reduced size to prevent overlap
                 ctx.drawImage(images.planet, r.endX - size/2, r.endY - size/2, size, size);
             } else {
                 ctx.fillStyle = '#4a69bd';

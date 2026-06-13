@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Игра: Соедини звуки</title>
     <style>
         :root { --bg-image: url('../pictures/background/space_backround.jpeg'); }
@@ -11,6 +12,7 @@
             background-image: var(--bg-image); background-size: cover; 
             background-position: center; background-attachment: fixed;
             background-color: rgba(0, 0, 0, 0.5); background-blend-mode: darken;
+            touch-action: none;
         }
 
         /* Template Overlays */
@@ -19,17 +21,31 @@
         .btn { padding: 15px 30px; font-size: 20px; cursor: pointer; background: #6e8efb; color: white; border: none; border-radius: 10px; margin: 10px; }
 
         /* Game Specific Styles */
-        #game-area { height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 50px; }
+        #game-area { 
+            height: 100%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 30px; 
+            box-sizing: border-box;
+        }
         #canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; touch-action: none; }
-        .column { display: flex; flex-direction: column; gap: 40px; z-index: 2; }
+        .column { display: flex; flex-direction: column; gap: 30px; z-index: 2; }
         
         .node { 
-            width: 150px; height: 150px; display: flex; align-items: center; justify-content: center; 
-            font-size: 3rem; font-weight: bold; border: 4px solid #6e8efb; border-radius: 25px; 
+            width: 110px; height: 110px; display: flex; align-items: center; justify-content: center; 
+            font-size: 2.5rem; font-weight: bold; border: 4px solid #6e8efb; border-radius: 20px; 
             background: white; cursor: pointer; transition: transform 0.2s;
             user-select: none; -webkit-user-drag: none;
+            touch-action: none;
         }
-        .node img { width: 95%; height: 95%; object-fit: contain; pointer-events: none; }
+        .node img { width: 90%; height: 90%; object-fit: contain; pointer-events: none; }
+
+        @media (max-width: 600px) {
+            #game-area { padding: 15px; }
+            .node { width: 80px; height: 80px; font-size: 2rem; border-radius: 15px; }
+            .column { gap: 20px; }
+        }
     </style>
 </head>
 <body>
@@ -44,15 +60,15 @@
 
     <div id="game-area">
         <div class="column" id="left-col">
-            <div class="node" data-id="CA">CA</div>
-            <div class="node" data-id="CO">CO</div>
-            <div class="node" data-id="YC">YC</div>
+            <div class="node" data-id="СА">СА</div>
+            <div class="node" data-id="СО">СО</div>
+            <div class="node" data-id="УС">УС</div>
         </div>
 
         <div class="column" id="right-col">
-            <div class="node" data-id="CO"><img src="pictures/boots.png" alt="boots"></div>
-            <div class="node" data-id="CA"><img src="../pictures/U/mustage.png" alt="mustage"></div>
-            <div class="node" data-id="YC"><img src="pictures/yc.png" alt="yc"></div>
+            <div class="node" data-id="СА"><img src="pictures/boots.png" alt="boots"></div>
+            <div class="node" data-id="УС"><img src="../pictures/U/mustage.png" alt="mustage"></div>
+            <div class="node" data-id="СО"><img src="pictures/yc.png" alt="yc"></div>
         </div>
     </div>
 
@@ -97,32 +113,67 @@
             if (isDrawing) drawLine(getCenter(startNode), mousePos, "#6e8efb");
         }
 
-        // Event Handlers
-        window.onmousedown = (e) => {
+        function findNode(x, y) {
             const nodes = document.querySelectorAll('.node');
-            startNode = Array.from(nodes).find(n => {
+            return Array.from(nodes).find(n => {
                 const r = n.getBoundingClientRect();
-                return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+                const padding = 10;
+                return x >= r.left - padding && x <= r.right + padding && y >= r.top - padding && y <= r.bottom + padding;
             });
+        }
+
+        function startInteraction(x, y) {
+            startNode = findNode(x, y);
             if (startNode) isDrawing = true;
-        };
+        }
 
-        window.onmousemove = (e) => { if (isDrawing) { mousePos = {x: e.clientX, y: e.clientY}; draw(); } };
+        function moveInteraction(x, y) {
+            if (isDrawing) {
+                mousePos = { x: x, y: y }; 
+                draw();
+            }
+        }
 
-        window.onmouseup = (e) => {
+        function endInteraction(x, y) {
             if (!isDrawing) return;
-            const nodes = document.querySelectorAll('.node');
-            const endNode = Array.from(nodes).find(n => {
-                const r = n.getBoundingClientRect();
-                return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
-            });
+            const endNode = findNode(x, y);
             
             if (endNode && endNode !== startNode && endNode.dataset.id === startNode.dataset.id && endNode.parentElement !== startNode.parentElement) {
                 connections.push({start: getCenter(startNode), end: getCenter(endNode)});
                 if(connections.length === 3) document.getElementById('end-modal').style.display = 'flex';
             }
-            isDrawing = false; draw();
-        };
+            isDrawing = false; 
+            draw();
+        }
+
+        // Mouse Events
+        window.onmousedown = (e) => startInteraction(e.clientX, e.clientY);
+        window.onmousemove = (e) => moveInteraction(e.clientX, e.clientY);
+        window.onmouseup = (e) => endInteraction(e.clientX, e.clientY);
+
+        // Touch Events
+        window.addEventListener('touchstart', (e) => {
+            if (e.touches.length) {
+                startInteraction(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: false });
+
+        window.addEventListener('touchmove', (e) => {
+            if (e.touches.length) {
+                moveInteraction(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: false });
+
+        window.addEventListener('touchend', (e) => {
+            if (e.changedTouches.length) {
+                endInteraction(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+            }
+        }, { passive: false });
+
+        // Prevent default scrolling on canvas area
+        document.getElementById('game-area').addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, { passive: false });
     </script>
 </body>
 </html>

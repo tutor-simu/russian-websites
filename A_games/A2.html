@@ -14,7 +14,6 @@
             display: flex;
         }
 
-        /* Canvas Workspace Area */
         #game-container {
             flex: 1;
             display: flex;
@@ -23,6 +22,7 @@
             justify-content: center;
             position: relative;
             padding: 20px;
+            box-sizing: border-box;
         }
 
         #title-bubble {
@@ -41,9 +41,10 @@
             background: #ffffff;
             border-radius: 20px;
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
-            cursor: bucket;
+            cursor: pointer;
             max-width: 100%;
-            max-height: 75vh;
+            max-height: 65vh;
+            object-fit: contain;
         }
 
         #palette-sidebar {
@@ -57,29 +58,25 @@
             padding: 20px 0;
             box-sizing: border-box;
             z-index: 10;
-            height: auto; /* Changed from 100vh to auto */
-            min-height: 100vh; /* Ensures it still covers the full height if needed */
-            overflow-y: auto; /* Ensures the sidebar itself can scroll if its content is too long */
+            height: auto; 
+            min-height: 100vh; 
+            overflow-y: auto; 
         }
 
-        /* NEW: Scrolling container specifically for color circles */
         .swatch-container {
             width: 100%;
-            flex: 1; /* Takes up all available space between the header and buttons */
-            overflow-y: auto; /* Adds the vertical scrollbar when contents overflow */
+            flex: 1; 
+            overflow-y: auto; 
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 15px;
             padding: 10px 0;
             margin-bottom: 15px;
-            
-            /* Custom minimalist scrollbar styling */
             scrollbar-width: thin;
             scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
         }
 
-        /* Webkit custom scrollbar mapping for Chrome/Safari/Edge */
         .swatch-container::-webkit-scrollbar {
             width: 6px;
         }
@@ -139,10 +136,11 @@
         #reset-btn:active {
             transform: translateY(0);
         }
+
         #next-btn {
             margin-top: 10px;
             padding: 12px 20px;
-            background: #2ed573; /* Green for success/next steps */
+            background: #2ed573; 
             color: white;
             border: none;
             border-radius: 10px;
@@ -151,8 +149,9 @@
             cursor: pointer;
             transition: background 0.2s, transform 0.1s;
             box-shadow: 0 4px 10px rgba(46, 213, 115, 0.4);
-            width: 85%; /* Makes it fit nicely in the sidebar */
+            width: 85%; 
             text-align: center;
+            box-sizing: border-box;
         }
 
         #next-btn:hover {
@@ -162,6 +161,66 @@
 
         #next-btn:active {
             transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+                height: auto;
+                overflow-y: auto;
+            }
+            #game-container {
+                width: 100%;
+                height: auto;
+                min-height: 60vh;
+                justify-content: flex-start;
+                padding: 10px;
+            }
+            #title-bubble {
+                font-size: 18px;
+                padding: 10px 20px;
+                margin-bottom: 10px;
+            }
+            canvas {
+                max-height: 55vh;
+            }
+            #palette-sidebar {
+                width: 100%;
+                min-height: auto;
+                height: auto;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                border-left: none;
+                border-top: 2px solid rgba(255, 255, 255, 0.1);
+                padding: 15px 10px;
+                gap: 10px;
+            }
+            .sidebar-label {
+                display: none;
+            }
+            .swatch-container {
+                flex-direction: row;
+                overflow-x: auto;
+                overflow-y: hidden;
+                width: auto;
+                flex: 1;
+                margin-bottom: 0;
+                gap: 10px;
+                padding: 5px 0;
+            }
+            .color-swatch {
+                width: 45px;
+                height: 45px;
+                flex-shrink: 0;
+            }
+            #reset-btn, #next-btn {
+                margin-top: 0;
+                width: auto;
+                padding: 12px 16px;
+                font-size: 14px;
+                flex-shrink: 0;
+            }
         }
     </style>
 </head>
@@ -192,7 +251,7 @@
         </div>
         
         <button id="reset-btn">Сбросить</button>
-        <button id="next-btn" style="display: none;" onclick="location.href='A3.html'">Следующее занятие</button>
+        <button id="next-btn" style="display: none;" onclick="location.href='A3.html'">Далее</button>
     </div>
 
     <script>
@@ -201,13 +260,11 @@
         const swatches = document.querySelectorAll('.color-swatch');
         const resetBtn = document.getElementById('reset-btn');
 
-        let selectedColor = { r: 255, g: 71, b: 87 }; // Default #ff4757 RGB value
+        let selectedColor = { r: 255, g: 71, b: 87 }; 
         const rocketImage = new Image();
         
-        // POINT THIS TO YOUR ROCKET FILE PATH EXACTLY (No leading slash)
         rocketImage.src = '../pictures/rackets/racketcoloring2.png'; 
 
-        // Set up canvas scale dimensions when the image loads
         rocketImage.onload = () => {
             canvas.width = rocketImage.naturalWidth || 600;
             canvas.height = rocketImage.naturalHeight || 800;
@@ -216,11 +273,9 @@
 
         function resetCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // Draw your clean rocket line-art onto the workspace board
             ctx.drawImage(rocketImage, 0, 0, canvas.width, canvas.height);
         }
 
-        // Convert Hex Strings (#ffffff) to RGB targets ({r:255, g:255, b:255})
         function hexToRgb(hex) {
             const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
             return result ? {
@@ -230,7 +285,6 @@
             } : null;
         }
 
-        // Color Palette Click Listener 
         swatches.forEach(swatch => {
             swatch.addEventListener('click', () => {
                 document.querySelector('.color-swatch.active').classList.remove('active');
@@ -240,25 +294,20 @@
             });
         });
 
-        // Flood Fill Algorithm Engine
         function floodFill(startX, startY, fillColor) {
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const data = imageData.data;
             const width = imageData.width;
             const height = imageData.height;
 
-            // Get target start pixel index position
             const startPos = (startY * width + startX) * 4;
             const startR = data[startPos];
             const startG = data[startPos + 1];
             const startB = data[startPos + 2];
             const startA = data[startPos + 3];
 
-            // Safety Guard: Don't fill if user clicks on an area already matching the color
             if (startR === fillColor.r && startG === fillColor.g && startB === fillColor.b) return;
 
-            // Avoid overwriting or bleeding into the pure black lines (#000000)
-            // This threshold determines what counts as a "border line"
             if (startR < 50 && startG < 50 && startB < 50 && startA > 200) return;
 
             const queue = [[startX, startY]];
@@ -267,7 +316,6 @@
                 const [x, y] = queue.shift();
                 let currentY = y;
 
-                // Move up as far as possible within the same color zone
                 while (currentY >= 0 && matchStartColor(currentY * width + x)) {
                     currentY--;
                 }
@@ -276,17 +324,14 @@
                 let reachLeft = false;
                 let reachRight = false;
 
-                // Move down, filling pixels and checking side expansions
                 while (currentY < height && matchStartColor(currentY * width + x)) {
                     const pos = (currentY * width + x) * 4;
                     
-                    // Apply new colors
                     data[pos] = fillColor.r;
                     data[pos + 1] = fillColor.g;
                     data[pos + 2] = fillColor.b;
                     data[pos + 3] = 255;
 
-                    // Evaluate Left Column Bounds
                     if (x > 0) {
                         if (matchStartColor(currentY * width + (x - 1))) {
                             if (!reachLeft) {
@@ -298,7 +343,6 @@
                         }
                     }
 
-                    // Evaluate Right Column Bounds
                     if (x < width - 1) {
                         if (matchStartColor(currentY * width + (x + 1))) {
                             if (!reachRight) {
@@ -314,13 +358,10 @@
                 }
             }
 
-            // Update canvas with newly painted pixel matrix modifications
             ctx.putImageData(imageData, 0, 0);
 
             function matchStartColor(pixelIndex) {
                 const p = pixelIndex * 4;
-                // Returns true if the pixel matches the color where the user originally clicked
-                // A slight color tolerance (20) prevents getting stuck on compression artifacts
                 return Math.abs(data[p] - startR) < 20 &&
                        Math.abs(data[p + 1] - startG) < 20 &&
                        Math.abs(data[p + 2] - startB) < 20 &&
@@ -328,7 +369,6 @@
             }
         }
 
-        // Capture Click/Tap coordinates inside the canvas matrix bounds
         canvas.addEventListener('click', (e) => {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
@@ -337,10 +377,8 @@
             const x = Math.floor((e.clientX - rect.left) * scaleX);
             const y = Math.floor((e.clientY - rect.top) * scaleY);
 
-            // Fire coloring bucket engine execution
             floodFill(x, y, selectedColor);
 
-            // REVEAL BUTTON: Show the "Next Class" button after they start coloring
             document.getElementById('next-btn').style.display = 'block';
         });
 

@@ -114,11 +114,11 @@
             opacity: 0;
             transition: opacity 0.8s ease;
             z-index: 5;
+            overflow: auto;
+            padding: 20px;
         }
 
         .instruction-banner {
-            position: absolute;
-            top: 4%;
             background: rgba(255, 255, 255, 0.95);
             padding: 15px 30px;
             border-radius: 20px;
@@ -130,15 +130,27 @@
             max-width: 800px;
             text-align: center;
             border: 4px solid #fbc531;
+            margin-bottom: 20px;
         }
 
-        /* Cheese Board using the uploaded picture */
-        .cheese-board {
+        /* Cheese Board Wrapper to allow fluid scaling */
+        .board-wrapper {
             position: relative;
             width: 900px;
             height: 650px;
-            margin-top: 60px;
+            max-width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .cheese-board {
+            position: absolute;
+            width: 900px;
+            height: 650px;
             background: url('pictures/Chesee.png') center center/contain no-repeat;
+            transform-origin: center center;
+            transition: transform 0.3s ease;
         }
 
         /* Invisible/Transparent Clickable Hot-spots over the picture's letters */
@@ -165,7 +177,6 @@
         #marker-midRightC { top: 50.5%; left: 73.5%; }
         #marker-bottomC { top: 79.3%; left: 63.0%; }
         #marker-A { top: 60.7%; left: 58.5%; }
-
 
         /* Visual indicator overlays upon action */
         .letter-marker.correct {
@@ -204,6 +215,7 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.6);
             border: 6px solid #2ed573;
             animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin: 20px;
         }
 
         .congrats-elephant {
@@ -267,7 +279,7 @@
             background: #3c52a0;
             transform: translateY(-3px);
         }
-        /* --- ДОБАВЬТЕ ЭТИ СТИЛИ --- */
+        
         .buttons-container {
             display: flex;
             gap: 12px;
@@ -298,9 +310,22 @@
             40%, 80% { transform: translateX(6px); }
         }
 
+        /* Responsive Breakpoints for Scaling */
+        @media (max-width: 960px) {
+            .cheese-board { transform: scale(0.7); }
+            .board-wrapper { height: 450px; }
+        }
+        @media (max-width: 700px) {
+            .cheese-board { transform: scale(0.5); }
+            .board-wrapper { height: 320px; }
+            .instruction-banner { font-size: 16px; padding: 10px 20px; }
+        }
+        @media (max-width: 500px) {
+            .cheese-board { transform: scale(0.38); }
+            .board-wrapper { height: 250px; }
+        }
+
         @media (max-width: 900px) {
-            .cheese-board { transform: scale(0.65); margin-top: -50px; }
-            .instruction-banner { font-size: 16px; padding: 10px 20px; top: 2%; width: 90%; }
             .characters-wrapper { flex-direction: column; gap: 80px; }
             .elephant-img { width: 220px; }
             .astro-cat-img { width: 160px; }
@@ -331,18 +356,18 @@
             Нажми на кружочки с буквами, кроме тех, на которых написана буква "С".
         </div>
 
-        <div class="cheese-board">
-            <div class="letter-marker" id="marker-U" data-action="correct"></div>
-            <div class="letter-marker" id="marker-O" data-action="correct"></div>
-            <div class="letter-marker" id="marker-M" data-action="correct"></div>
-            <div class="letter-marker" id="marker-A" data-action="correct"></div>
+        <div class="board-wrapper">
+            <div class="cheese-board">
+                <div class="letter-marker" id="marker-U" data-action="correct"></div>
+                <div class="letter-marker" id="marker-O" data-action="correct"></div>
+                <div class="letter-marker" id="marker-M" data-action="correct"></div>
+                <div class="letter-marker" id="marker-A" data-action="correct"></div>
 
-            <div class="letter-marker" id="marker-topC" data-action="error"></div>
-            <div class="letter-marker" id="marker-midC" data-action="error"></div>
-            <div class="letter-marker" id="marker-midRightC" data-action="error"></div>
-            <div class="letter-marker" id="marker-bottomC" data-action="error"></div>
-
-            <div class="central-c-wrapper"></div>
+                <div class="letter-marker" id="marker-topC" data-action="error"></div>
+                <div class="letter-marker" id="marker-midC" data-action="error"></div>
+                <div class="letter-marker" id="marker-midRightC" data-action="error"></div>
+                <div class="letter-marker" id="marker-bottomC" data-action="error"></div>
+            </div>
         </div>
     </div>
 
@@ -357,7 +382,7 @@
                     <button class="btn-restart" onclick="location.reload()">Сыграть снова</button>
                     <button class="btn-next" onclick="location.href='C2.html'">Далее</button>
                 </div>
-                </div>
+            </div>
         </div>
     </div>
 

@@ -1,58 +1,143 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Letter A,O,У - Extra Practise</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Буквы А, О, У - Дополнительная практика</title>
     <style>
-        body { font-family: sans-serif; background-color: #f4f4f9; padding: 20px; }
-        .header { text-align: center; margin-bottom: 30px; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body { 
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background-color: #F8F9FA; 
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #3A4750;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header { 
+            text-align: center; 
+            margin-bottom: 40px; 
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            color: #4A90E2; 
+            margin-bottom: 12px;
+            font-weight: 800;
+        }
+
+        .header p {
+            color: #748593;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
         .grid { 
-            display: flex; 
-            flex-direction: column;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
-            gap: 15px; 
-            max-width: 1000px; 
-            margin: 0 auto; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+            gap: 20px; 
+            margin-bottom: 50px;
         }
+
         .class-btn {
-            background-color: white;
-            padding: 15px 5px;
+            padding: 24px 15px;
             text-align: center;
-            border-radius: 10px;
+            border-radius: 20px;
             text-decoration: none;
-            color: #333;
-            font-weight: bold;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.2s, background-color 0.2s;
+            color: #3A4750;
+            font-weight: 700;
+            font-size: 1.3rem;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            box-shadow: 0 4px 0px rgba(0, 0, 0, 0.05);
         }
+
+        .btn-1 { background-color: #E3F2FD; border: 2px solid #BAD7F2; } 
+        .btn-2 { background-color: #E8F5E9; border: 2px solid #B8E0BB; } 
+        .btn-3 { background-color: #FFF3E0; border: 2px solid #F3D3A2; } 
+        .btn-4 { background-color: #F3E5F5; border: 2px solid #D8B4E2; } 
+        .btn-5 { background-color: #E0F7FA; border: 2px solid #A5E5EC; } 
+
         .class-btn:hover {
-            transform: scale(1.05);
-            background-color: #40929F;
-            color: white;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.06);
         }
+
+        .class-btn:active {
+            transform: translateY(0);
+        }
+
+        .class-btn span {
+            font-size: 0.85rem;
+            display: block;
+            margin-top: 6px;
+            font-weight: 500;
+            color: #748593;
+        }
+
+        .footer {
+            text-align: center;
+        }
+
         .back-btn {
-            display: block; width: 150px; margin: 30px auto;
-            padding: 10px; text-align: center; background: #333;
-            color: white; text-decoration: none; border-radius: 5px;
+            display: inline-block; 
+            padding: 12px 35px; 
+            background: #3A4750;
+            color: white; 
+            text-decoration: none; 
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #232B31;
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>Letter A,O,У - Extra Practise</h1>
-        <p>Select your lesson:</p>
+    <div class="container">
+        <div class="header">
+            <h1>Буквы А, О, У - Дополнительная практика</h1>
+            <p>Выберите урок ниже</p>
+        </div>
+
+        <div class="grid" id="lessons-grid"></div>
+
+        <div class="footer">
+            <a href="../index.html" class="back-btn">На главную</a>
+        </div>
     </div>
 
-    <div class="grid">
-        <script>
-            for (let i = 1; i <= 5; i++) {
-                document.write(`<a href="../extra/AOU_worksheets/AOU${i}.html" class="class-btn">Class ${i}</a>`);
-            }
-        </script>
-    </div>
-
-    <a href="../index.html" class="back-btn">Back to Home</a>
+    <script>
+        const gridContainer = document.getElementById('lessons-grid');
+        let htmlContent = '';
+        
+        for (let i = 1; i <= 5; i++) {
+            htmlContent += `
+                <a href="../extra/AOU_worksheets/AOU${i}.html" class="class-btn btn-${i}">
+                    Занятие ${i}
+                    <span>Давай играть!</span>
+                </a>`;
+        }
+        
+        gridContainer.innerHTML = htmlContent;
+    </script>
 
 </body>
 </html>

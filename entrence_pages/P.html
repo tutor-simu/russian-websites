@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Буква Е - Практика</title>
+    <title>Буква П - Практика</title>
     <style>
         * {
             box-sizing: border-box;
@@ -65,7 +65,7 @@
             box-shadow: 0 4px 0px rgba(0, 0, 0, 0.05);
         }
 
-        /* 7 matching pastel color themes */
+        /* Pastel colors matching your collection */
         .btn-1 { background-color: #E3F2FD; border: 2px solid #BAD7F2; } 
         .btn-2 { background-color: #E8F5E9; border: 2px solid #B8E0BB; } 
         .btn-3 { background-color: #FFF3E0; border: 2px solid #F3D3A2; } 
@@ -116,7 +116,7 @@
 
     <div class="container">
         <div class="header">
-            <h1>Буква Е - Практика</h1>
+            <h1>Буква П - Практика</h1>
             <p>Выберите урок ниже</p>
         </div>
 
@@ -131,10 +131,10 @@
         const gridContainer = document.getElementById('lessons-grid');
         let htmlContent = '';
         
-        // Loop generates 7 lessons mapped to E1.html through E7.html
-        for (let i = 1; i <= 7; i++) {
+        // Loop back up to 7 items for the Letter P files
+        for (let i = 1; i <= 5; i++) {
             htmlContent += `
-                <a href="../E_games/E${i}.html" class="class-btn btn-${i}">
+                <a href="../P_games/P${i}.html" class="class-btn btn-${i}">
                     Занятие ${i}
                     <span>Давай играть!</span>
                 </a>`;
