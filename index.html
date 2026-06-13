@@ -49,24 +49,15 @@
             margin-bottom: 30px;
         }
 
-        /* Group container formatting */
         .group-container {
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
 
-        /* Layout constraints forcing items per row without screen size scaling wraps */
         .grid-4 { 
             display: grid; 
             grid-template-columns: repeat(4, 1fr); 
-            gap: 20px; 
-            text-align: center;
-        }
-
-        .grid-3 { 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
             gap: 20px; 
             text-align: center;
         }
@@ -94,7 +85,6 @@
             transform: translateY(0);
         }
 
-        /* Color configurations for specific button loops */
         .btn-1 { background-color: #E3F2FD; border: 2px solid #BAD7F2; } 
         .btn-2 { background-color: #E8F5E9; border: 2px solid #B8E0BB; } 
         .btn-3 { background-color: #FFF3E0; border: 2px solid #F3D3A2; } 
@@ -118,80 +108,70 @@
         </div>
 
         <div class="card">
-            <h2 class="section-title">Алфавит (Практика)</h2>
+            <h2 class="section-title">Алфавит и Уроки (Практика)</h2>
             
             <div class="group-container">
                 <div class="grid-4">
                     <a href="entrence_pages/A.html" class="nav-btn btn-1">А</a>
                     <a href="entrence_pages/O.html" class="nav-btn btn-2">О</a>
-                    <a href="entrence_pages/O.html" class="nav-btn btn-3">У</a>                
-                    <a href="04_AOU_exercises/AOU_01.html" class="nav-btn btn-4">Упражнение А,O,У</a>
+                    <a href="entrence_pages/U.html" class="nav-btn btn-3">У</a>
+                    <a href="entrence_pages/AOU.html" class="nav-btn btn-4">Закрепление</a>
                 </div>
 
-                <div class="grid-3">
-                    <a href="entrence_pages/" class="nav-btn btn-5">М</a>                
-                    <a href="game_s.html" class="nav-btn btn-6">С</a>
-                    <a href="04_AOU_exercises/AOU_01.html" class="nav-btn btn-7">Упражнение М,С</a>
+                <div class="grid-4">
+                    <a href="entrence_pages/M.html" class="nav-btn btn-5">М</a>
+                    <a href="entrence_pages/C.html" class="nav-btn btn-6">С</a>
+                    <a href="entrence_pages/C_ekstra07.html" class="nav-btn btn-7">Закрепление</a>
+                    <a href="entrence_pages/X.html" class="nav-btn btn-1">Х</a>
                 </div>
 
-                <div class="grid-3">
-                    <a href="game_b.html" class="nav-btn btn-1">Б</a>
-                    <a href="game_v.html" class="nav-btn btn-2">В</a>
-                    <a href="game_g.html" class="nav-btn btn-3">Г</a>
+                <div class="grid-4">
+                    <a href="entrence_pages/P.html" class="nav-btn btn-2">Р</a>
+                    <a href="entrence_pages/Ш.html" class="nav-btn btn-3">Ш</a>
+                    <a href="entrence_pages/I.html" class="nav-btn btn-4">Ы</a>
+                    <a href="entrence_pages/12_L.html" class="nav-btn btn-5">Л</a>
                 </div>
 
-                <div class="grid-3">
-                    <a href="game_d.html" class="nav-btn btn-4">Д</a>
-                    <a href="game_ye.html" class="nav-btn btn-5">Е</a>
-                    <a href="game_yo.html" class="nav-btn btn-6">Ё</a>
+                <div class="grid-4">
+                    <a href="entrence_pages/13_N.html" class="nav-btn btn-6">Н</a>
+                    <a href="entrence_pages/14_STOP_UROK.html" class="nav-btn btn-7">Стоп Урок</a>
+                    <a href="entrence_pages/15_K.html" class="nav-btn btn-1">К</a>
+                    <a href="entrence_pages/16_T.html" class="nav-btn btn-2">Т</a>
                 </div>
 
-                <div class="grid-3">
-                    <a href="game_zh.html" class="nav-btn btn-7">Ж</a>
-                    <a href="game_z.html" class="nav-btn btn-1">З</a>
-                    <a href="game_i.html" class="nav-btn btn-2">И</a>
+                <div class="grid-4">
+                    <a href="entrence_pages/17_I.html" class="nav-btn btn-3">И</a>
+                    <a href="entrence_pages/18_P.html" class="nav-btn btn-4">П</a>
+                    <a href="entrence_pages/19_Z.html" class="nav-btn btn-5">З</a>
+                    <a href="entrence_pages/20_YI.html" class="nav-btn btn-6">Й</a>
                 </div>
 
-                <div class="grid-3">
-                    <a href="game_iy.html" class="nav-btn btn-3">Й</a>
-                    <a href="game_k.html" class="nav-btn btn-4">К</a>
-                    <a href="game_l.html" class="nav-btn btn-5">Л</a>
+                <div class="grid-4">
+                    <a href="entrence_pages/21_G.html" class="nav-btn btn-7">Г</a>
+                    <a href="entrence_pages/22_V.html" class="nav-btn btn-1">В</a>
+                    <a href="entrence_pages/23_D.html" class="nav-btn btn-2">Д</a>
+                    <a href="entrence_pages/24_B.html" class="nav-btn btn-3">Б</a>
                 </div>
 
-                <div class="grid-3">
-                    <a href="game_n.html" class="nav-btn btn-6">Н</a>
-                    <a href="game_p.html" class="nav-btn btn-7">П</a>
-                    <a href="game_r.html" class="nav-btn btn-1">Р</a>
+                <div class="grid-4">
+                    <a href="entrence_pages/25_ZH.html" class="nav-btn btn-4">Ж</a>
+                    <a href="entrence_pages/26_E.html" class="nav-btn btn-5">Е</a>
+                    <a href="entrence_pages/27_YA.html" class="nav-btn btn-6">Я</a>
+                    <a href="entrence_pages/28_Ь.html" class="nav-btn btn-7">Ь</a>
                 </div>
 
-                <div class="grid-3">
-                    <a href="game_t.html" class="nav-btn btn-2">Т</a>
-                    <a href="game_f.html" class="nav-btn btn-3">Ф</a>
-                    <a href="game_kh.html" class="nav-btn btn-4">Х</a>
+                <div class="grid-4">
+                    <a href="entrence_pages/29_YU.html" class="nav-btn btn-1">Ю</a>
+                    <a href="entrence_pages/30_YO.html" class="nav-btn btn-2">Ё</a>
+                    <a href="entrence_pages/31_CH.html" class="nav-btn btn-3">Ч</a>
+                    <a href="entrence_pages/32_E.html" class="nav-btn btn-4">Э</a>
                 </div>
 
-                <div class="grid-3">
-                    <a href="game_ts.html" class="nav-btn btn-5">Ц</a>
-                    <a href="game_ch.html" class="nav-btn btn-6">Ч</a>
-                    <a href="game_sh.html" class="nav-btn btn-7">Ш</a>
-                </div>
-
-                <div class="grid-3">
-                    <a href="game_shch.html" class="nav-btn btn-1">Щ</a>
-                    <a href="game_hard.html" class="nav-btn btn-2">Ъ</a>
-                    <a href="game_y.html" class="nav-btn btn-3">Ы</a>
-                </div>
-
-                <div class="grid-3">
-                    <a href="game_soft.html" class="nav-btn btn-4">Ь</a>
-                    <a href="game_e.html" class="nav-btn btn-5">Э</a>
-                    <a href="game_yu.html" class="nav-btn btn-6">Ю</a>
-                </div>
-
-                <div class="grid-3">
-                    <a href="game_ya.html" class="nav-btn btn-7">Я</a>
-                    <div></div>
-                    <div></div>
+                <div class="grid-4">
+                    <a href="entrence_pages/33_TS.html" class="nav-btn btn-5">Ц</a>
+                    <a href="entrence_pages/34_F.html" class="nav-btn btn-6">Ф</a>
+                    <a href="entrence_pages/35_SHCH.html" class="nav-btn btn-7">Щ</a>
+                    <a href="entrence_pages/36_Ъ.html" class="nav-btn btn-1">Ъ</a>
                 </div>
             </div>
 
