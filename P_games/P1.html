@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Космическое путешествие | Space Rescue</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            width: 100%;
+            min-height: 100vh;
+            background: url('pictures/background/space_backround.jpeg') center center/cover no-repeat;
+            background-color: #0b0b1e;
+            font-family: 'Nunito', sans-serif, 'Comic Sans MS', 'Segoe UI';
+            overflow-y: auto;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- Initial Intro Scene --- */
+        #intro-scene {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 120;
+            background: rgba(11, 11, 30, 0.6);
+        }
+
+        .characters-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            animation: floatScene 6s ease-in-out infinite alternate;
+        }
+
+        .robot-container {
+            position: relative;
+        }
+
+        .robot-img {
+            width: 280px;
+            height: auto;
+            transform: rotate(5deg);
+        }
+
+        .cat-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .astro-cat-img {
+            width: 240px;
+            height: auto;
+            transform: rotate(-10deg);
+        }
+
+        .speech-bubble {
+            position: absolute;
+            top: -160px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 20px 25px;
+            border-radius: 30px;
+            font-size: 22px;
+            font-weight: 700;
+            color: #1e272e;
+            width: 700px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            border: 4px solid #4a69bd;
+            z-index: 20;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-15px);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 20px solid white;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
+        }
+
+        @keyframes floatScene {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-20px); }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* --- Robot Intro Scene 2 --- */
+        #robot-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; min-height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 110;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .robot-bubble {
+            background: #fff;
+            padding: 40px;
+            border-radius: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            border: 8px solid #2e86de;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .robot-bubble img {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+        }
+
+        .robot-bubble h2 { font-size: 40px; margin: 0; color: #2e86de; }
+        .robot-bubble p { font-size: 24px; line-height: 1.5; margin: 0; }
+
+        .action-btn {
+            padding: 20px 50px; font-size: 28px; font-weight: bold;
+            background-color: #4cd137; color: white; border: none; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.3); transition: transform 0.2s;
+        }
+        .action-btn:hover { transform: scale(1.1); }
+
+        /* --- Welcome Bubble Overlay --- */
+        #welcome-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; min-height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .welcome-bubble {
+            background: beige;
+            opacity: 0.9;
+            padding: 40px;
+            border-radius: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            max-width: 700px;
+            width: 90%;
+            text-align: center;
+            border: 8px solid #333;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .welcome-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 30px 20px 0;
+            border-style: solid;
+            border-color: #333 transparent transparent;
+        }
+
+        .welcome-bubble h1 { font-size: 50px; margin-top: 0; color: #e84118; text-transform: uppercase;}
+        .welcome-bubble p { font-size: 26px; line-height: 1.6; margin-bottom: 30px; }
+        .welcome-bubble b { color: #2e86de; }
+
+        /* --- Main Game Elements --- */
+        #game-layout {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            box-sizing: border-box;
+            padding: 20px;
+        }
+
+        /* The floating Letter cue */
+        #letter-cue {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            font-size: 100px;
+            font-weight: bold;
+            color: #4cd137;
+            text-shadow: 0 0 20px #4cd137, 2px 2px 5px rgba(0,0,0,0.8);
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            z-index: 15;
+        }
+
+        #item-container {
+            margin-top: 2vh;
+            position: relative;
+        }
+
+        #item-image {
+            width: 450px; 
+            height: 450px; 
+            object-fit: cover; 
+            padding: 0; 
+            object-position: center; 
+            background: white;
+            border-radius: 50%;
+            border: 10px solid #2e86de;
+            box-shadow: 0 0 30px #2e86de;
+            display: block;
+        }
+
+        #feedback {
+            display: none;
+            font-size: 150px;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 30;
+            pointer-events: none;
+            animation: popFeedback 0.6s ease-out;
+        }
+
+        @keyframes popFeedback {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 1;}
+            80% { transform: translate(-50%, -50%) scale(1.3); opacity: 1;}
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0;}
+        }
+
+        /* --- CIRCULAR Options Container --- */
+        .options-outer {
+            display: flex;
+            justify-content: center;
+            gap: 5vw;
+            margin-top: 2vh;
+        }
+
+        .option-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 80px;
+            font-weight: bold;
+            color: white;
+            transition: all 0.2s ease-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            -webkit-appearance: none;
+            line-height: 1;
+        }
+
+        .option-circle:disabled {
+            opacity: 0.5;
+            cursor: default;
+            transform: none !important;
+        }
+
+        #btn-P {
+            background-color: #2e86de;
+            border: 8px solid #dfe6e9;
+        }
+        #btn-P:hover:not(:disabled) {
+            transform: translateY(-10px) scale(1.1);
+            box-shadow: 0 0 30px #2e86de;
+        }
+
+        #btn-cross {
+            background-color: #e84118;
+            border: 8px solid #dfe6e9;
+        }
+        #btn-cross:hover:not(:disabled) {
+            transform: translateY(-10px) scale(1.1);
+            box-shadow: 0 0 30px #e84118;
+        }
+
+        #astro-cat {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 15vw;
+            max-width: 150px;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        /* Simple Win Screen */
+        #end-screen {
+            display: none;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 8px solid #4cd137;
+        }
+        #end-screen h2 { font-size: 36px; color: #4cd137; margin-top: 0; }
+        #end-screen button { padding: 15px 30px; font-size: 20px; cursor: pointer; border-radius: 10px; border: none; background: #2e86de; color: white; margin-top: 20px;}
+
+        /* --- Responsive Shifts for Smaller Screens --- */
+        @media (max-width: 768px) {
+            .characters-wrapper { flex-direction: column; gap: 80px; }
+            .robot-img { width: 200px; }
+            .astro-cat-img { width: 160px; }
+            .speech-bubble { width: 280px; font-size: 16px; top: -140px; }
+
+            .robot-bubble { padding: 20px; gap: 15px; }
+            .robot-bubble img { width: 120px; height: 120px; }
+            .robot-bubble h2 { font-size: 28px; }
+            .robot-bubble p { font-size: 18px; }
+            .action-btn { padding: 15px 30px; font-size: 22px; }
+
+            .welcome-bubble {
+                padding: 20px;
+                border-radius: 20px;
+            }
+            .welcome-bubble h1 { font-size: 32px; }
+            .welcome-bubble p { font-size: 18px; }
+
+            #game-layout {
+                justify-content: center;
+                gap: 20px;
+            }
+
+            #letter-cue {
+                position: static;
+                font-size: 50px;
+                padding: 5px 15px;
+                margin-bottom: 10px;
+                border-radius: 10px;
+            }
+
+            #item-image {
+                width: 280px;
+                height: 280px;
+                border-width: 6px;
+            }
+
+            .option-circle {
+                width: 100px;
+                height: 100px;
+                font-size: 50px;
+                border-width: 5px;
+            }
+
+            #astro-cat {
+                width: 80px;
+                bottom: 5px;
+                right: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="intro-scene">
+        <div class="characters-wrapper">
+            <div class="speech-bubble">
+                Привет, космический исследователь! Смотри, кто к нам присоединился — это дружелюбный робот!
+            </div>
+
+            <div class="robot-container">
+                <img src="pictures/robot.png" alt="Робот" class="robot-img" onerror="this.src='https://placehold.co/320x320/4a69bd/ffffff?text=Робот'">
+            </div>
+
+            <div class="cat-container">
+                <img src="../pictures/CHARACTERS/astro_cat.png" alt="Astro Cat" class="astro-cat-img" onerror="this.src='https://placehold.co/240x240/4a69bd/ffffff?text=Кот'">
+            </div>
+        </div>
+    </div>
+
+    <div id="robot-screen">
+        <div class="robot-bubble">
+            <img src="pictures/robot.png" alt="Robot Helper">
+            <h2>Привет! Я твой робот-помощник!</h2>
+            <p>Давай отправимся в космос и поиграем в увлекательную игру сортировки на букву P!</p>
+            <button class="action-btn" onclick="showWelcomeScreen()">Далее</button>
+        </div>
+    </div>
+
+    <div id="welcome-screen">
+        <div class="welcome-bubble">
+            <h1>Welcome Mission</h1>
+            <p>Добро пожаловать! Мы находимся в космосе и сортируем предметы. Изображения будут отображаться во всплывающем окне. Если русское название изображения начинается с буквы <b>P (Р)</b>, нажмите кнопку <b>P</b>. Если нет, нажмите кнопку <b>❌</b>.</p>
+            <button id="start-btn" class="action-btn" onclick="startGame()">Начать сортировку</button>
+        </div>
+    </div>
+
+    <div id="game-layout">
+        <div id="letter-cue">P</div>
+
+        <div id="item-container">
+            <div id="feedback"></div>
+            <img id="item-image" src="" alt="Game item">
+        </div>
+
+        <div class="options-outer">
+            <button id="btn-P" class="option-circle" onclick="checkAnswer('P')">P</button>
+            <button id="btn-cross" class="option-circle" onclick="checkAnswer('cross')">❌</button>
+        </div>
+    </div>
+
+    <div id="end-screen">
+        <h2>Замечательная сортировка!</h2>
+        <p>Вы успешно классифицировали весь космический груз на букву P!</p>
+        <button onclick="location.reload()">Сбросить миссию</button>
+        <button onclick="window.location.href='P2.html'">Следующая миссия</button>
+    </div>
+
+    <img id="astro-cat" src="pictures/CHARACTERS/astro_cat.png" alt="Astro Cat Pilot">
+
+    <script>
+        // Transition from intro scene to robot speech after 3.5 seconds
+        setTimeout(() => {
+            const intro = document.getElementById('intro-scene');
+            if (intro) {
+                intro.style.display = 'none';
+                document.getElementById('robot-screen').style.display = 'flex';
+            }
+        }, 3500);
+
+        function showWelcomeScreen() {
+            document.getElementById('robot-screen').style.display = 'none';
+            document.getElementById('welcome-screen').style.display = 'flex';
+        }
+
+        const originalItems = [
+            { name: 'pictures/rainbow.png', correct: 'P' },    // Радуга
+            { name: 'pictures/lobster.png', correct: 'cross' },  // Лобстер
+            { name: 'pictures/book.png', correct: 'cross' },   // Книга
+            { name: '../pictures/CHARACTERS/astro_cat.png', correct: 'cross' },    // Кот
+            { name: 'pictures/fish.png', correct: 'P' },       // Рыба
+            { name: 'pictures/yumak.png', correct: 'cross' },   // Веревка
+            { name: 'pictures/river.png', correct: 'P' },      // Река
+            { name: 'pictures/turnip.png', correct: 'P' }      // Репа
+        ];
+
+        let gameQueue = [];
+        let currentItemIndex = 0;
+
+        function startGame() {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('game-layout').style.display = 'flex';
+            
+            gameQueue = [...originalItems];
+            currentItemIndex = 0;
+            showNextItem();
+        }
+
+        function showNextItem() {
+            if (gameQueue.length === 0) {
+                endGame();
+                return;
+            }
+            const currentItem = gameQueue[currentItemIndex];
+            document.getElementById('item-image').src = currentItem.name;
+        }
+
+        function checkAnswer(playerChoice) {
+            const currentItem = gameQueue[currentItemIndex];
+            const feedbackEl = document.getElementById('feedback');
+            
+            document.querySelectorAll('.option-circle').forEach(b => b.disabled = true);
+
+            if (playerChoice === currentItem.correct) {
+                confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+                feedbackEl.innerText = "✅";
+                feedbackEl.style.display = "block";
+
+                gameQueue.splice(currentItemIndex, 1);
+            } else {
+                feedbackEl.innerText = "❌";
+                feedbackEl.style.display = "block";
+
+                currentItemIndex++;
+            }
+
+            setTimeout(() => {
+                feedbackEl.style.display = "none";
+                document.querySelectorAll('.option-circle').forEach(b => b.disabled = false);
+
+                if (gameQueue.length > 0 && currentItemIndex >= gameQueue.length) {
+                    currentItemIndex = 0;
+                }
+                
+                if (gameQueue.length > 0) {
+                    showNextItem();
+                } else {
+                    endGame();
+                }
+            }, 1200);
+        }
+
+        function endGame() {
+            document.getElementById('game-layout').style.display = 'none';
+            document.getElementById('end-screen').style.display = 'block';
+            
+            let duration = 3 * 1000;
+            let end = Date.now() + duration;
+
+            (function frame() {
+                confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 } });
+                confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 } });
+                if (Date.now() < end) { requestAnimationFrame(frame); }
+            }());
+        }
+    </script>
+</body>
+</html>
