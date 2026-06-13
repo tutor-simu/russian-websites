@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Космические слоги | Bilingvi Online</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: url('../pictures/background/space_backround.jpeg') center center/cover no-repeat fixed;
+            background-color: #0b0b1e;
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow-x: hidden;
+            box-sizing: border-box;
+            padding-bottom: 40px;
+        }
+
+        #title-bubble {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px 30px;
+            border-radius: 20px;
+            font-size: 22px;
+            font-weight: 800;
+            color: #1e272e;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            border: 3px solid #6e8efb;
+            text-align: center;
+            max-width: 90%;
+        }
+
+        #main-workspace {
+            width: 100%;
+            max-width: 850px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 25px 30px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            box-sizing: border-box;
+            transition: opacity 0.4s ease;
+        }
+
+        .syllable-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8f9fa;
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 2px dashed #dcdde1;
+            position: relative;
+            gap: 15px;
+        }
+
+        .letter {
+            font-size: 65px;
+            font-weight: 800;
+            color: #1e272e;
+            user-select: none;
+            width: 60px;
+            text-align: center;
+        }
+
+        .track-container {
+            flex: 1;
+            margin: 0 15px;
+            position: relative;
+            height: 70px;
+            display: flex;
+            align-items: center;
+        }
+
+        .dotted-line {
+            width: 100%;
+            height: 4px;
+            border-top: 4px dotted #a4b0be;
+        }
+
+        .rocket-runner {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            /* Translate vertically to center, then rotate 90deg to face right towards the target letter */
+            transform: translateY(-50%) rotate(90deg);
+            width: 55px;
+            height: auto;
+            transition: left 0.6s cubic-bezier(0.42, 0, 0.58, 1);
+            z-index: 10;
+            transform-origin: center center;
+        }
+
+        .action-panel {
+            display: flex;
+            align-items: center;
+        }
+
+        .read-btn {
+            padding: 10px 18px;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 15px;
+            cursor: pointer;
+            background: #6e8efb;
+            box-shadow: 0 4px 12px rgba(110, 142, 251, 0.3);
+            transition: all 0.2s;
+        }
+        .read-btn:hover { background: #5a75e0; }
+        .read-btn:disabled {
+            background: #a4b0be;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .read-btn.hidden { display: none; }
+
+        .drop-zone {
+            width: 110px;
+            height: 80px;
+            border: 3px dashed #dcdde1;
+            background: #f1f2f6;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 36px;
+            font-weight: 800;
+            color: #1e272e;
+            user-select: none;
+        }
+        .drop-zone.unlocked {
+            border-color: #a4b0be;
+            background: #ffffff;
+        }
+        .drop-zone.hovered {
+            border-color: #6e8efb;
+            background: #edf2ff;
+            transform: scale(1.05);
+        }
+        .drop-zone.correct {
+            border-color: #2ed573;
+            background: #e8fced;
+            border-style: solid;
+        }
+
+        #cutting-details {
+            width: 100%;
+            max-width: 850px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 25px;
+            padding: 20px;
+            margin-top: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .cutting-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #57606f;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cards-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            min-height: 90px;
+            align-items: center;
+        }
+
+        .syllable-card {
+            width: 110px;
+            height: 80px;
+            background: white;
+            border: 3px solid #1e272e;
+            border-radius: 15px;
+            font-size: 40px;
+            font-weight: 800;
+            color: #1e272e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            user-select: none;
+            box-shadow: 0 6px 0 #1e272e;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .syllable-card:active { cursor: grabbing; }
+
+        #congrats-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 40px;
+            text-align: center;
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        .astro-cat-final {
+            width: 180px;
+            height: auto;
+            margin-bottom: 20px;
+            animation: floatUpDown 3s ease-in-out infinite;
+        }
+
+        .congrats-text {
+            color: #2ed573;
+            font-size: 32px;
+            font-weight: 800;
+            margin: 10px 0;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .congrats-subtext {
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: 600;
+            max-width: 500px;
+            line-height: 1.5;
+        }
+
+        @keyframes floatUpDown {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @media (max-width: 768px) {
+            #title-bubble { font-size: 15px; padding: 10px; }
+            #main-workspace, #cutting-details { padding: 15px; width: 95%; }
+            .syllable-row { padding: 8px; flex-wrap: wrap; justify-content: center; }
+            .track-container { min-width: 140px; margin: 0; }
+            .letter { font-size: 38px; width: 40px; }
+            .rocket-runner { width: 40px; }
+            .drop-zone, .syllable-card { width: 85px; height: 65px; font-size: 28px; }
+            .read-btn { width: 100%; text-align: center; }
+            .congrats-text { font-size: 24px; }
+            .congrats-subtext { font-size: 16px; padding: 0 15px; }
+            .astro-cat-final { width: 140px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="title-bubble">Нажми "Прочитать", запусти ракету, а затем найди нужный слог внизу!</div>
+
+    <div id="main-workspace">
+        <div class="syllable-row">
+            <div class="letter" id="l-start-1">Х</div>
+            <div class="track-container" id="track-1">
+                <div class="dotted-line"></div>
+                <img id="rocket-1" class="rocket-runner" src="../pictures/rackets/finalgame1Ship.png" alt="🚀" onerror="this.src='https://placehold.co/55x55/ff4757/ffffff?text=🚀'">
+            </div>
+            <div class="letter" id="l-end-1" style="color: #ff4757;">А</div>
+            <div class="action-panel">
+                <button id="btn-1" class="read-btn" onclick="readSyllable(1)">Прочитать</button>
+            </div>
+            <div class="drop-zone" id="zone-1" data-expected="ХА"></div>
+        </div>
+
+        <div class="syllable-row">
+            <div class="letter" id="l-start-2">Х</div>
+            <div class="track-container" id="track-2">
+                <div class="dotted-line"></div>
+                <img id="rocket-2" class="rocket-runner" src="../pictures/rackets/finalgame1Ship.png" alt="🚀" onerror="this.src='https://placehold.co/55x55/ff4757/ffffff?text=🚀'">
+            </div>
+            <div class="letter" id="l-end-2" style="color: #ff9f43;">У</div>
+            <div class="action-panel">
+                <button id="btn-2" class="read-btn" onclick="readSyllable(2)">Прочитать</button>
+            </div>
+            <div class="drop-zone" id="zone-2" data-expected="ХУ"></div>
+        </div>
+
+        <div class="syllable-row">
+            <div class="letter" id="l-start-3">М</div>
+            <div class="track-container" id="track-3">
+                <div class="dotted-line"></div>
+                <img id="rocket-3" class="rocket-runner" src="../pictures/rackets/finalgame1Ship.png" alt="🚀" onerror="this.src='https://placehold.co/55x55/ff4757/ffffff?text=🚀'">
+            </div>
+            <div class="letter" id="l-end-3" style="color: #ff9f43;">О</div>
+            <div class="action-panel">
+                <button id="btn-3" class="read-btn" onclick="readSyllable(3)">Прочитать</button>
+            </div>
+            <div class="drop-zone" id="zone-3" data-expected="МО"></div>
+        </div>
+    </div>
+
+    <div id="cutting-details">
+        <div class="cutting-title">Детали для вырезания (Найди правильный слог)</div>
+        <div class="cards-container" id="cards-pool"></div>
+    </div>
+
+    <div id="congrats-container">
+        <img src="../pictures/CHARACTERS/astro_cat.png" class="astro-cat-final" alt="🐱" onerror="this.src='https://placehold.co/150x150/6e8efb/ffffff?text=🐱'">
+        <div class="congrats-text">Космический успех!</div>
+        <div class="congrats-subtext">Ты безупречно прочитал и собрал все слоги! Задание полностью выполнено.</div>
+        
+        <div style="display: flex; gap: 20px; margin-top: 30px;">
+            <button class="read-btn" style="font-size: 18px; padding: 12px 24px; background-color: #ff9f43; box-shadow: 0 4px 12px rgba(255, 159, 67, 0.3);" onclick="location.reload();">Сыграть снова</button>
+            <button class="read-btn" style="font-size: 18px; padding: 12px 24px; background-color: #2ed573; box-shadow: 0 4px 12px rgba(46, 213, 115, 0.3);" onclick="location.href='X6.html';">Далее</button>
+        </div>
+    </div>
+
+    <script>
+        const stagesConfig = {
+            1: {
+                left:  ['Х', 'Х', 'М'],
+                right: ['А', 'У', 'О'],
+                colors:['#ff4757', '#ff9f43', '#ff9f43'],
+                expected: ['ХА', 'ХУ', 'МО']
+            },
+            2: {
+                left:  ['М', 'С', 'С'],
+                right: ['У', 'А', 'О'],
+                colors:['#2ed573', '#ff4757', '#ff9f43'],
+                expected: ['МУ', 'СА', 'СО']
+            }
+        };
+
+        const allSyllables = [...stagesConfig[1].expected, ...stagesConfig[2].expected].sort(() => Math.random() - 0.5);
+
+        let currentStage = 1;
+        let completedInStage = 0;
+        let draggedCard = null;
+        let rowUnlocked = { 1: false, 2: false, 3: false };
+
+        initGlobalCardsPool();
+        initStage(currentStage);
+        setupDropZones();
+
+        function initGlobalCardsPool() {
+            const pool = document.getElementById('cards-pool');
+            pool.innerHTML = '';
+            
+            allSyllables.forEach(val => {
+                const card = document.createElement('div');
+                card.className = 'syllable-card';
+                card.textContent = val;
+                card.draggable = true;
+                card.id = `card-${val}`;
+                
+                card.addEventListener('dragstart', dragStart);
+                card.addEventListener('dragend', dragEnd);
+                card.addEventListener('touchstart', handleTouchStart, {passive: false});
+                card.addEventListener('touchmove', handleTouchMove, {passive: false});
+                card.addEventListener('touchend', handleTouchEnd);
+
+                pool.appendChild(card);
+            });
+        }
+
+        function initStage(stageNum) {
+            completedInStage = 0;
+            rowUnlocked = { 1: false, 2: false, 3: false };
+            const data = stagesConfig[stageNum];
+
+            for (let i = 1; i <= 3; i++) {
+                const idx = i - 1;
+                document.getElementById(`l-start-${i}`).textContent = data.left[idx];
+                document.getElementById(`l-end-${i}`).textContent = data.right[idx];
+                document.getElementById(`l-end-${i}`).style.color = data.colors[idx];
+                
+                const btn = document.getElementById(`btn-${i}`);
+                btn.classList.remove('hidden');
+                btn.disabled = false;
+                btn.textContent = "Прочитать";
+
+                const zone = document.getElementById(`zone-${i}`);
+                zone.className = 'drop-zone';
+                zone.textContent = '';
+                zone.setAttribute('data-expected', data.expected[idx]);
+
+                const rocket = document.getElementById(`rocket-${i}`);
+                rocket.style.transition = 'none';
+                rocket.style.left = '0px';
+                setTimeout(() => rocket.style.transition = '', 50);
+            }
+        }
+
+        function readSyllable(rowId) {
+            const btn = document.getElementById(`btn-${rowId}`);
+            const rocket = document.getElementById(`rocket-${rowId}`);
+            const track = document.getElementById(`track-${rowId}`);
+            const zone = document.getElementById(`zone-${rowId}`);
+
+            btn.disabled = true;
+
+            // Use offsetWidth for accurate full travel distance, minus a tiny safety margin (10px) to prevent overflow
+            const maxDist = track.clientWidth - rocket.offsetWidth - 10;
+            rocket.style.left = `${maxDist}px`;
+
+            setTimeout(() => {
+                btn.classList.add('hidden');
+                rowUnlocked[rowId] = true;
+                zone.classList.add('unlocked');
+            }, 600);
+        }
+
+        function dragStart() { draggedCard = this; }
+        function dragEnd() { draggedCard = null; }
+
+        function setupDropZones() {
+            for (let i = 1; i <= 3; i++) {
+                const zone = document.getElementById(`zone-${i}`);
+                
+                zone.addEventListener('dragover', e => e.preventDefault());
+                zone.addEventListener('dragenter', function() { if(rowUnlocked[i]) this.classList.add('hovered'); });
+                zone.addEventListener('dragleave', function() { this.classList.remove('hovered'); });
+                zone.addEventListener('drop', function() {
+                    this.classList.remove('hovered');
+                    if (!draggedCard || !rowUnlocked[i]) return;
+                    checkMatch(draggedCard, this, i);
+                });
+            }
+        }
+
+        function checkMatch(card, zone, rowId) {
+            const expected = zone.getAttribute('data-expected');
+            
+            if (card.textContent === expected) {
+                zone.className = 'drop-zone correct';
+                zone.textContent = expected;
+                card.remove();
+                
+                completedInStage++;
+
+                if (completedInStage === 3) {
+                    setTimeout(() => {
+                        handleStageClear();
+                    }, 800);
+                }
+            } else {
+                zone.style.borderColor = '#ff4757';
+                setTimeout(() => zone.style.borderColor = '', 500);
+            }
+        }
+
+        function handleStageClear() {
+            if (currentStage === 1) {
+                currentStage = 2;
+                document.getElementById('main-workspace').style.opacity = '0';
+                setTimeout(() => {
+                    initStage(currentStage);
+                    document.getElementById('main-workspace').style.opacity = '1';
+                }, 400);
+            } else {
+                document.getElementById('main-workspace').style.display = 'none';
+                document.getElementById('cutting-details').style.display = 'none';
+                document.getElementById('title-bubble').style.display = 'none';
+                document.getElementById('congrats-container').style.display = 'flex';
+            }
+        }
+
+        // Support for Touch devices
+        let touchStartPos = { x: 0, y: 0 };
+        let activeTouchCard = null;
+
+        function handleTouchStart(e) {
+            activeTouchCard = this;
+            const touch = e.touches[0];
+            touchStartPos = { x: touch.clientX, y: touch.clientY };
+            this.style.position = 'relative';
+            this.style.zIndex = '1000';
+        }
+
+        function handleTouchMove(e) {
+            if (!activeTouchCard) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            const deltaX = touch.clientX - touchStartPos.x;
+            const deltaY = touch.clientY - touchStartPos.y;
+            activeTouchCard.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+        }
+
+        function handleTouchEnd(e) {
+            if (!activeTouchCard) return;
+            
+            const card = activeTouchCard;
+            card.style.position = '';
+            card.style.zIndex = '';
+            card.style.transform = '';
+            activeTouchCard = null;
+
+            const touch = e.changedTouches[0];
+            const elementUnderTouch = document.elementFromPoint(touch.clientX, touch.clientY);
+            
+            if (!elementUnderTouch) return;
+            const targetZone = elementUnderTouch.closest('.drop-zone');
+            
+            if (targetZone && targetZone.classList.contains('unlocked') && !targetZone.classList.contains('correct')) {
+                const rowId = targetZone.id.replace('zone-', '');
+                checkMatch(card, targetZone, parseInt(rowId));
+            }
+        }
+    </script>
+</body>
+</html>

@@ -2,52 +2,261 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Игра: Звук У</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        body { margin: 0; background: #f0f8ff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        #palette { display: flex; gap: 10px; margin-bottom: 20px; padding: 15px; background: white; border-radius: 15px; }
-        .color-swatch { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; }
-        .color-swatch.active { border-color: #333; transform: scale(1.1); }
-        .game-grid { display: flex; flex-wrap: wrap; justify-content: center; }
-        .item-card { position: relative; width: 280px; margin: 15px; border: 2px solid #ccc; background: white; border-radius: 15px; display: flex; flex-direction: column; align-items: center; padding: 10px; }
-        canvas { width: 100%; height: 250px; cursor: crosshair; object-fit: contain; }
-        #global-controls { margin-top: 20px; display: flex; gap: 15px; }
-        button { padding: 12px 25px; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; background: #6e8efb; color: white; margin: 5px; }
+        html, body { 
+            margin: 0; 
+            padding: 0;
+            width: 100%;
+            min-height: 100vh;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            background: #f0f8ff;
+        }
         
-        #popup { display: none; position: fixed; top: 30%; left: 50%; transform: translateX(-50%); background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; z-index: 100; border: 2px solid #6e8efb; }
+        body { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            box-sizing: border-box;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .main-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 900px;
+            gap: 20px;
+            box-sizing: border-box;
+        }
+
+        .instructions {
+            color: #333333;
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            user-select: none;
+            padding: 0 10px;
+        }
+
+        #palette { 
+            display: flex; 
+            gap: 15px; 
+            padding: 15px 25px; 
+            background: white; 
+            border-radius: 20px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        .color-swatch { 
+            width: 50px; 
+            height: 50px; 
+            border-radius: 50%; 
+            cursor: pointer; 
+            border: 4px solid transparent; 
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .color-swatch.active { 
+            border-color: #333; 
+            transform: scale(1.1); 
+        }
+
+        .game-grid { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 15px;
+            width: 100%;
+        }
+        
+        .item-card { 
+            position: relative; 
+            width: 260px; 
+            border: 2px solid #ccc; 
+            background: white; 
+            border-radius: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 15px;
+            box-sizing: border-box;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        
+        canvas { 
+            width: 100%; 
+            height: 200px; 
+            cursor: crosshair; 
+            object-fit: contain; 
+        }
+
+        .label {
+            margin-top: 10px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        #global-controls { 
+            display: flex; 
+            gap: 20px; 
+        }
+        
+        button { 
+            padding: 15px 30px; 
+            cursor: pointer; 
+            border-radius: 15px; 
+            border: none; 
+            font-size: 18px;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            font-weight: bold; 
+            background: #6e8efb; 
+            color: white; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        button:active { transform: scale(0.95); }
+        
+        /* Enhanced Modal Backdrop and Content */
+        .modal-backdrop { 
+            display: flex; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.6); 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 100; 
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal-content { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 30px; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3); 
+            text-align: center; 
+            max-width: 450px;
+            width: 80%;
+            border: 6px solid #6e8efb;
+            box-sizing: border-box;
+            animation: popIn 0.3s ease-out;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-title {
+            font-size: 28px;
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .modal-text {
+            font-size: 20px;
+            color: #555;
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .modal-actions button {
+            padding: 12px 25px;
+            font-size: 16px;
+        }
+
+        /* Small screen scaling to prevent layout breaking or scrolling */
+        @media (max-width: 600px) {
+            .main-wrapper {
+                transform: scale(0.90);
+                transform-origin: center top;
+                gap: 15px;
+            }
+            .instructions { font-size: 26px; }
+            .modal-content { padding: 25px; width: 85%; }
+            .modal-title { font-size: 22px; }
+            .modal-text { font-size: 16px; margin-bottom: 20px; }
+        }
+
+        @media (max-width: 450px) {
+            .main-wrapper {
+                transform: scale(0.78);
+            }
+            .instructions { font-size: 22px; }
+        }
     </style>
 </head>
 <body>
 
-    <div id="palette">
-        <div class="color-swatch active" style="background-color: #FFD700;" data-color="255,215,0"></div>
-        <div class="color-swatch" style="background-color: #FF4757;" data-color="255,71,87"></div>
-        <div class="color-swatch" style="background-color: #2ED573;" data-color="46,213,115"></div>
+    <div id="welcome-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <h2 class="modal-title">Добро пожаловать!</h2>
+            <p class="modal-text">Пожалуйста, выберите и раскрасьте только те предметы, которые начинаются на букву <b>"У"</b>.</p>
+            <div class="modal-actions">
+                <button onclick="closeWelcome()">Начать!</button>
+            </div>
+        </div>
     </div>
 
-    <div class="game-grid">
-        <div class="item-card" data-is-u="true"><canvas data-src="../pictures/U/snail-nocolor.png"></canvas><div class="label">Улитка</div></div>
-        <div class="item-card" data-is-u="false"><canvas data-src="../pictures/U/tiger-nocolor.png"></canvas><div class="label">Тигр</div></div>
-        <div class="item-card" data-is-u="true"><canvas data-src="../pictures/U/mustage.png"></canvas><div class="label">Усы</div></div>
-        <div class="item-card" data-is-u="true"><canvas data-src="../pictures/U/iron.png"></canvas><div class="label">Утюг</div></div>
-        <div class="item-card" data-is-u="false"><canvas data-src="../pictures/U/elephant-nocolor.png"></canvas><div class="label">Слон</div></div>
-        <div class="item-card" data-is-u="true"><canvas data-src="../pictures/U/rod.png"></canvas><div class="label">Удочка</div></div>
+    <div class="main-wrapper">
+        <h1 class="instructions">Раскрась только те предметы, которые начинаются на букву У! ⭐</h1>
+
+        <div id="palette">
+            <div class="color-swatch active" style="background-color: #FFD700;" data-color="255,215,0"></div>
+            <div class="color-swatch" style="background-color: #FF4757;" data-color="255,71,87"></div>
+            <div class="color-swatch" style="background-color: #2ED573;" data-color="46,213,115"></div>
+        </div>
+
+        <div class="game-grid">
+            <div class="item-card" data-is-u="true"><canvas data-src="../pictures/U/snail-nocolor.png"></canvas><div class="label">Улитка</div></div>
+            <div class="item-card" data-is-u="false"><canvas data-src="../pictures/U/tiger-nocolor.png"></canvas><div class="label">Тигр</div></div>
+            <div class="item-card" data-is-u="true"><canvas data-src="../pictures/U/mustage.png"></canvas><div class="label">Усы</div></div>
+            <div class="item-card" data-is-u="true"><canvas data-src="../pictures/U/iron.png"></canvas><div class="label">Утюг</div></div>
+            <div class="item-card" data-is-u="false"><canvas data-src="../pictures/U/elephant-nocolor.png"></canvas><div class="label">Слон</div></div>
+            <div class="item-card" data-is-u="true"><canvas data-src="../pictures/U/rod.png"></canvas><div class="label">Удочка</div></div>
+        </div>
+
+        <div id="global-controls">
+            <button onclick="resetGame()">Сбросить всё</button>
+            <button onclick="checkAll()">Проверить</button>
+        </div>
     </div>
 
-    <div id="global-controls">
-        <button onclick="resetGame()">Сбросить всё</button>
-        <button onclick="checkAll()">Проверить</button>
-    </div>
-
-    <div id="popup">
-        <h2 id="popup-text"></h2>
-        <div id="popup-actions"></div>
+    <div id="popup" class="modal-backdrop" style="display: none;">
+        <div class="modal-content">
+            <h2 id="popup-title" class="modal-title">Результат</h2>
+            <p id="popup-text" class="modal-text"></p>
+            <div id="popup-actions" class="modal-actions"></div>
+        </div>
     </div>
 
     <script>
         let currentFillColor = {r: 255, g: 215, b: 0};
         
+        function closeWelcome() {
+            document.getElementById('welcome-modal').style.display = 'none';
+        }
+
         document.querySelectorAll('.color-swatch').forEach(s => s.onclick = function() {
             document.querySelector('.active').classList.remove('active');
             this.classList.add('active');
@@ -55,19 +264,19 @@
             currentFillColor = {r: parseInt(rgb[0]), g: parseInt(rgb[1]), b: parseInt(rgb[2])};
         });
 
-        function showPopup(message, isSuccess = false) {
+        function showPopup(title, message, isSuccess = false) {
+            document.getElementById('popup-title').innerText = title;
             document.getElementById('popup-text').innerText = message;
             const actions = document.getElementById('popup-actions');
             actions.innerHTML = ''; 
 
             if (isSuccess) {
-                
                 actions.innerHTML += `<button onclick="closePopup()">Играть снова</button>`;
                 actions.innerHTML += `<button onclick="window.location.href='U3.html'">Следующая страница</button>`;
             } else {
-                actions.innerHTML += `<button onclick="closePopup()">Закрыть</button>`;
+                actions.innerHTML += `<button onclick="closePopup()">Продолжить</button>`;
             }
-            document.getElementById('popup').style.display = 'block';
+            document.getElementById('popup').style.display = 'flex';
         }
 
         function closePopup() {
@@ -90,7 +299,11 @@
             c.dataset.hasBeenColored = "false";
             const img = new Image();
             img.src = c.dataset.src;
-            img.onload = () => { c.width = img.naturalWidth; c.height = img.naturalHeight; ctx.drawImage(img, 0, 0); };
+            img.onload = () => { 
+                c.width = img.naturalWidth; 
+                c.height = img.naturalHeight; 
+                ctx.drawImage(img, 0, 0); 
+            };
             c.onclick = (e) => {
                 c.dataset.hasBeenColored = "true";
                 const rect = c.getBoundingClientRect();
@@ -103,6 +316,7 @@
         function checkAll() {
             let hasErrors = false;
             let correctColored = 0;
+            let anyColored = false;
             const totalCorrect = document.querySelectorAll('[data-is-u="true"]').length;
 
             document.querySelectorAll('.item-card').forEach(card => {
@@ -110,17 +324,25 @@
                 const isCorrect = card.dataset.isU === "true";
                 const isColored = canvas.dataset.hasBeenColored === "true";
 
-                if (isColored && !isCorrect) hasErrors = true;
-                if (isColored && isCorrect) correctColored++;
+                if (isColored) {
+                    anyColored = true;
+                    if (!isCorrect) hasErrors = true;
+                    else correctColored++;
+                }
             });
 
             if (hasErrors) {
-                showPopup("Ошибка! Ты раскрасил предмет, который не начинается на звук У.", false);
+                // Mistake made: reset everything automatically and notify user
+                showPopup("Ой-ой!", "Ты раскрасил предмет, который не начинается на букву 'У'. Всё сбрасывается, попробуй ещё раз!", false);
+                resetGame();
             } else if (correctColored === totalCorrect) {
                 confetti();
-                showPopup("Молодец! Всё верно!", true);
-            } else {
-                showPopup("Почти готово! Раскрась только те предметы, которые начинаются на звук У.", false);
+                showPopup("Молодец!", "Всё верно!", true);
+            } else if (correctColored > 0 && correctColored < totalCorrect) {
+                // Missing some correct ones but no mistakes, let them continue
+                showPopup("Почти готово!", "Ты на правильном пути! Продолжай раскрашивать остальные предметы, которые начинаются на букву 'У'.", false);
+            } else if (!anyColored) {
+                showPopup("Внимание!", "Сначала раскрась предметы, которые начинаются на букву 'У'!", false);
             }
         }
 

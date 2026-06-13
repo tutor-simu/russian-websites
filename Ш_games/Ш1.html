@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Космические Игры - Буква Х | Bilingvi Online</title>
+    <title>Космические Игры - Буква Ш | Bilingvi Online</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght=400;600;700;800&display=swap');
@@ -314,8 +314,8 @@
 
     <div id="intro-stage">
         <div class="bear-container">
-            <img src="../pictures/game4/bear.png" alt="Bear" class="space-bear" onerror="this.src='https://placehold.co/280x350/4a69bd/ffffff?text=Медведь'">
-            <div class="speech-bubble">Добро пожаловать к букве Х!</div>
+            <img src="../P_games/pictures/robot.png" alt="Bear" class="space-bear" onerror="this.src='https://placehold.co/280x350/4a69bd/ffffff?text=Медведь'">
+            <div class="speech-bubble">Добро пожаловать к букве Ш!</div>
         </div>
     </div>
 
@@ -323,21 +323,21 @@
     
     <div id="stage2-popup" class="popup">
         <h1>Отличная работа!</h1>
-        <p style="font-size: 18px; font-weight: 600;">Теперь давай научимся правильно писать букву "Х".</p>
+        <p style="font-size: 18px; font-weight: 600;">Теперь давай научимся правильно писать букву "Ш".</p>
         <button class="btn" style="background:#6e8efb; max-width:200px; margin:0 auto;" onclick="startStage2()">Начать</button>
     </div>
 
     <div id="congrats-popup" class="popup">
         <h1 style="color: #2ed573;">Молодец!</h1>
-        <p style="font-size: 18px; font-weight: 600;">Ты успешно прошёл все задания с буквой Х!</p>
+        <p style="font-size: 18px; font-weight: 600;">Ты успешно прошёл все задания с буквой Ш!</p>
         <div style="display:flex; gap:15px; justify-content:center; margin-top:20px;">
             <button class="btn" style="background:#ff4757;" onclick="location.reload()">Заново</button>
-            <button class="btn" style="background:#2ed573;" onclick="window.location.href='X2.html'">Далее</button>
+            <button class="btn" style="background:#2ed573;" onclick="window.location.href='Ш2.html'">Далее</button>
         </div>
     </div>
 
     <div id="game-container">
-        <div id="title-bubble">Посмотри на букву Х! Заштрихуй её цветными карандашами!</div>
+        <div id="title-bubble">Посмотри на букву Ш! Заштрихуй её цветными карандашами!</div>
         
         <div id="layer-coloring" class="game-layer active">
             <canvas id="coloringCanvas"></canvas>
@@ -345,11 +345,11 @@
 
         <div id="layer-tracing" class="game-layer">
             <div id="tracing-grid">
-                <div class="trace-container"><div class="guide-letter">Х</div><canvas class="trace-canvas"></canvas></div>
-                <div class="trace-container"><div class="guide-letter">Х</div><canvas class="trace-canvas"></canvas></div>
-                <div class="trace-container"><div class="guide-letter">Х</div><canvas class="trace-canvas"></canvas></div>
-                <div class="trace-container"><div class="guide-letter">Х</div><canvas class="trace-canvas"></canvas></div>
-                <div class="trace-container"><div class="guide-letter">Х</div><canvas class="trace-canvas"></canvas></div>
+                <div class="trace-container"><div class="guide-letter">Ш</div><canvas class="trace-canvas"></canvas></div>
+                <div class="trace-container"><div class="guide-letter">Ш</div><canvas class="trace-canvas"></canvas></div>
+                <div class="trace-container"><div class="guide-letter">Ш</div><canvas class="trace-canvas"></canvas></div>
+                <div class="trace-container"><div class="guide-letter">Ш</div><canvas class="trace-canvas"></canvas></div>
+                <div class="trace-container"><div class="guide-letter">Ш</div><canvas class="trace-canvas"></canvas></div>
             </div>
         </div>
     </div>
@@ -403,7 +403,7 @@
            STAGE 1: GRAPHICS RENDERING & FLOODFILL LOGIC
            ======================================================== */
         const gameAsset = new Image();
-        gameAsset.src = 'pictures/x_outline.png'; 
+        gameAsset.src = 'pictures/sh_outline.png'; 
 
         gameAsset.onload = () => {
             canvas.width = gameAsset.naturalWidth || 700;
@@ -426,11 +426,12 @@
             ctx.lineJoin = 'round';
             ctx.lineCap = 'round';
 
+            // Coordinates vector mapped structure for block letter "Ш"
             const frontFace = [
-                {x: 180, y: 140}, {x: 290, y: 140}, {x: 410, y: 300},
-                {x: 530, y: 140}, {x: 640, y: 140}, {x: 495, y: 345},
-                {x: 615, y: 510}, {x: 505, y: 510}, {x: 385, y: 350},
-                {x: 265, y: 510}, {x: 155, y: 510}, {x: 300, y: 305}
+                {x: 150, y: 150}, {x: 230, y: 150}, {x: 230, y: 420},
+                {x: 310, y: 420}, {x: 310, y: 150}, {x: 390, y: 150},
+                {x: 390, y: 420}, {x: 470, y: 420}, {x: 470, y: 150},
+                {x: 550, y: 150}, {x: 550, y: 500}, {x: 150, y: 500}
             ];
 
             const dx = -30; const dy = 28;
@@ -438,7 +439,7 @@
             ctx.strokeStyle = '#1a252c';
             ctx.fillStyle = '#e2e5e9'; 
 
-            const visibleSideIndices = [0, 5, 6, 7, 8, 9, 10, 11];
+            const visibleSideIndices = [1, 5, 10, 11];
             visibleSideIndices.forEach(i => {
                 let next = (i + 1) % frontFace.length;
                 ctx.beginPath();
@@ -553,7 +554,6 @@
                 document.getElementById('dim-overlay').style.display = 'block';
                 document.getElementById('stage2-popup').style.display = 'block';
             } else if (currentStage === 2) {
-                // Clicking the check button manually runs validation engine
                 evaluateManualTracing();
             }
         });
@@ -568,7 +568,7 @@
             document.getElementById('layer-tracing').classList.add('active');
             
             // Update Text Context
-            titleBubble.textContent = 'Правила игры: Обведи букву "Х" на всех карточках, а затем нажми "Проверить"!';
+            titleBubble.textContent = 'Правила игры: Обведи букву "Ш" на всех карточках, а затем нажми "Проверить"!';
             titleBubble.style.borderColor = "#6e8efb";
 
             // Hide Side Palette Panel elements
@@ -578,7 +578,7 @@
             // Transform Next Button into a static "Check" submission controller
             nextBtn.textContent = 'Проверить';
             nextBtn.style.background = '#6e8efb';
-            nextBtn.style.display = 'none'; // Will show once they start drawing lines
+            nextBtn.style.display = 'none'; 
 
             initializeTracingEngine();
         }
@@ -591,7 +591,7 @@
 
         function initializeTracingEngine() {
             const traceCanvases = document.querySelectorAll('.trace-canvas');
-            trackingCanvasesState = []; // Reset internal states map
+            trackingCanvasesState = []; 
             
             traceCanvases.forEach((tCanvas, index) => {
                 const container = tCanvas.parentElement;
@@ -601,7 +601,6 @@
                 const tCtx = tCanvas.getContext('2d');
                 let isDrawing = false;
                 
-                // Track states manually per canvas
                 trackingCanvasesState.push({ drawn: false });
                 
                 tCtx.strokeStyle = '#6e8efb';
@@ -620,7 +619,6 @@
                     isDrawing = true; 
                     tCtx.beginPath(); 
                     tCtx.moveTo(getTracePos(e).x, getTracePos(e).y); 
-                    // Make the manual verification submission button visible
                     nextBtn.style.display = 'block';
                 };
                 
@@ -650,7 +648,6 @@
         }
 
         function evaluateManualTracing() {
-            // Count total arrays that have registration markers drawn on them
             const totalDrawnCards = trackingCanvasesState.filter(item => item.drawn === true).length;
             
             if (totalDrawnCards === trackingCanvasesState.length) {
@@ -658,7 +655,6 @@
                 confetti({ particleCount: 180, spread: 80, origin: { y: 0.55 } });
                 document.getElementById('congrats-popup').style.display = 'block';
             } else {
-                // Flash alert notification to prompt completing outstanding letter paths
                 alert("Обведи все буквы на экране перед проверкой!");
             }
         }

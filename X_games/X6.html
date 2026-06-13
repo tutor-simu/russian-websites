@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Космические картинки и слоги | Bilingvi Online</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            background: url('../pictures/background/space_backround.jpeg') center center/cover no-repeat fixed;
+            background-color: #0b0b1e;
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            color: #fff;
+            overflow: hidden;
+            position: relative;
+        }
+
+        h1 {
+            background: rgba(110, 142, 251, 0.9);
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-size: 22px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            text-align: center;
+            margin: 0;
+            position: absolute;
+            top: 5%;
+            z-index: 10;
+            max-width: 90%;
+        }
+
+        /* Игровое поле строго по центру экрана */
+        #game-field {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            max-width: 100vw;
+            max-height: 80vh;
+        }
+
+        /* Зоны для слогов (увеличены в 2 раза: 110px -> 220px) */
+        .drop-zone {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border: 6px dashed #6e8efb;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 56px;
+            font-weight: 800;
+            background: #ffffff;
+            color: #1e272e;
+            transition: all 0.3s ease;
+            user-select: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 2;
+            margin-left: -110px;
+            margin-top: -110px;
+        }
+
+        /* Зоны расставлены по краям поля */
+        #zone-МА { top: 20%; left: 20%; }
+        #zone-СA { top: 20%; left: 80%; }
+        #zone-CO { top: 80%; left: 80%; }
+        #zone-МУ { top: 80%; left: 20%; }
+
+        .drop-zone.hovered {
+            background: #edf2ff;
+            transform: scale(1.05);
+        }
+
+        .drop-zone.correct {
+            border-color: #2ed573;
+            background: #e8fced;
+            border-style: solid;
+            color: #2ed573;
+        }
+
+        /* Карточки (квадраты, увеличенные до размера кругов: 220px x 220px) */
+        .item-card {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            background: white;
+            border: 6px solid #1e272e;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            box-shadow: 0 10px 0 #1e272e;
+            transition: transform 0.1s, opacity 0.3s ease;
+            user-select: none;
+            touch-action: none;
+            z-index: 3;
+            margin-left: -110px;
+            margin-top: -110px;
+        }
+
+        /* Карточки случайно разбросаны в центральной зоне, не перекрывая дроп-зоны */
+        #item-MA { top: 38%; left: 42%; }
+        #item-MU { top: 55%; left: 35%; }
+        #item-СA { top: 45%; left: 62%; }
+        #item-CO { top: 60%; left: 58%; }
+
+        /* Увеличенный размер изображений для устранения белого пространства (зум) */
+        .item-card img {
+            width: 90%;
+            height: 90%;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        .item-card:active {
+            cursor: grabbing;
+        }
+
+        .item-card.hidden {
+            opacity: 0;
+            transform: scale(0);
+            pointer-events: none;
+        }
+
+        #congrats-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            animation: fadeIn 0.6s ease forwards;
+            position: absolute;
+            z-index: 20;
+        }
+
+        #congrats-screen img {
+            width: 160px;
+            animation: floatUpDown 3s ease-in-out infinite;
+        }
+
+        .congrats-text {
+            color: #2ed573;
+            font-size: 32px;
+            font-weight: 800;
+            margin-top: 15px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            background: rgba(0,0,0,0.4);
+            padding: 10px 20px;
+            border-radius: 15px;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border-radius: 18px;
+            font-weight: 800;
+            font-size: 18px;
+            border: none;
+            cursor: pointer;
+            color: #fff;
+            background: #2ed573;
+            box-shadow: 0 4px 12px rgba(46, 213, 115, 0.3);
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #26af5d; }
+
+        .btn-next {
+            background: #6e8efb;
+            box-shadow: 0 4px 12px rgba(110, 142, 251, 0.3);
+        }
+        .btn-next:hover { background: #5575e7; }
+
+        @keyframes floatUpDown {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 16px; padding: 8px 16px; }
+            #game-field { width: 100vw; height: 550px; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Перетащите картинку к соответствующему слогу!</h1>
+
+    <div id="game-field">
+        <div class="drop-zone" id="zone-МА" ondrop="drop(event, 'МА')" ondragover="allowDrop(event)">МА</div>
+        <div class="drop-zone" id="zone-МУ" ondrop="drop(event, 'МУ')" ondragover="allowDrop(event)">МУ</div>
+        <div class="drop-zone" id="zone-СA" ondrop="drop(event, 'СА')" ondragover="allowDrop(event)">СА</div>
+        <div class="drop-zone" id="zone-CO" ondrop="drop(event, 'СО')" ondragover="allowDrop(event)">СО</div>
+
+        <div class="item-card" draggable="true" id="item-СA" ondragstart="drag(event)">
+            <img src="../C_games/pictures/sled.png" alt="Санки">
+        </div>
+        <div class="item-card" draggable="true" id="item-CO" ondragstart="drag(event)">
+            <img src="../pictures/items/sun.png" alt="Солнце">
+        </div>
+        <div class="item-card" draggable="true" id="item-MA" ondragstart="drag(event)">
+            <img src="../M_games/pictures/малина.png" alt="Малина">
+        </div>
+        <div class="item-card" draggable="true" id="item-MU" ondragstart="drag(event)">
+            <img src="../M_games/pictures/муравей.png" alt="Муравей">
+        </div>
+    </div>
+
+    <div id="congrats-screen">
+        <img src="../pictures/CHARACTERS/astro_cat.png" alt="Космокот">
+        <div class="congrats-text">Потрясающе! Все слоги разгаданы!</div>
+        <div class="btn-container">
+            <button class="btn" onclick="location.reload()">Сыграть снова</button>
+            <button class="btn" background-color: #2ed573; box-shadow: 0 4px 12px rgba(46, 213, 115, 0.3);" onclick="location.href='X7.html';">Далее</button>
+        </div>
+    </div>
+
+    <script>
+        let matchesCount = 0;
+        const totalMatches = 4;
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+        }
+
+        function drop(ev, expectedSyllable) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData("text");
+            const draggedElement = document.getElementById(data);
+            
+            if (
+                (data.includes('MA') && expectedSyllable === 'МА') ||
+                (data.includes('MU') && expectedSyllable === 'МУ') ||
+                (data.includes('СA') && expectedSyllable === 'СA') ||
+                (data.includes('CO') && expectedSyllable === 'СО') ||
+                (data.includes('СA') && expectedSyllable === 'СА') || 
+                (data.includes('CA') && expectedSyllable === 'СА')
+            ) {
+                handleSuccess(ev.target, draggedElement);
+            } else {
+                triggerError(ev.target);
+            }
+        }
+
+        function handleSuccess(zone, cardElement) {
+            zone.classList.add('correct');
+            if (cardElement) {
+                cardElement.classList.add('hidden');
+                setTimeout(() => cardElement.remove(), 300);
+            }
+            matchesCount++;
+
+            if (matchesCount === totalMatches) {
+                document.getElementById('game-field').style.display = 'none';
+                document.getElementById('congrats-screen').style.display = 'flex';
+            }
+        }
+
+        function triggerError(zone) {
+            const originalBorder = zone.style.borderColor;
+            zone.style.borderColor = '#ff4757';
+            setTimeout(() => zone.style.borderColor = originalBorder, 500);
+        }
+
+        function nextGame() {
+            // Placeholder: add your redirection link or function for the next step here
+            alert('Переход к следующему уровню!');
+            // window.location.href = 'next_level_url_here';
+        }
+
+        // Поддержка Touch-устройств (телефоны/планшеты)
+        const cards = document.querySelectorAll('.item-card');
+        let touchStartPos = { x: 0, y: 0 };
+        let activeCard = null;
+
+        cards.forEach(card => {
+            card.addEventListener('touchstart', function(e) {
+                activeCard = this;
+                const touch = e.touches[0];
+                touchStartPos = { x: touch.clientX, y: touch.clientY };
+                
+                // Фиксируем текущие стартовые координаты, если они не заданы в инлайне
+                if (!this.style.left) this.style.left = this.offsetLeft + 'px';
+                if (!this.style.top) this.style.top = this.offsetTop + 'px';
+                
+                this.style.zIndex = '1000';
+            }, {passive: false});
+
+            card.addEventListener('touchmove', function(e) {
+                if (!activeCard) return;
+                e.preventDefault();
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - touchStartPos.x;
+                const deltaY = touch.clientY - touchStartPos.y;
+                
+                const currentLeft = parseInt(activeCard.style.left) || activeCard.offsetLeft;
+                const currentTop = parseInt(activeCard.style.top) || activeCard.offsetTop;
+                
+                activeCard.style.left = (currentLeft + deltaX) + 'px';
+                activeCard.style.top = (currentTop + deltaY) + 'px';
+                
+                touchStartPos = { x: touch.clientX, y: touch.clientY };
+            }, {passive: false});
+
+            card.addEventListener('touchend', function(e) {
+                if (!activeCard) return;
+                
+                const card = activeCard;
+                activeCard = null;
+
+                const touch = e.changedTouches[0];
+                const elementUnderTouch = document.elementFromPoint(touch.clientX, touch.clientY);
+                
+                if (!elementUnderTouch) {
+                    resetCard(card);
+                    return;
+                }
+                
+                const targetZone = elementUnderTouch.closest('.drop-zone');
+                
+                if (targetZone && !targetZone.classList.contains('correct')) {
+                    const syllableMap = {
+                        'zone-МА': 'MA',
+                        'zone-МУ': 'МУ',
+                        'zone-СA': 'СA',
+                        'zone-СО': 'CO'
+                    };
+                    const expected = syllableMap[targetZone.id];
+                    
+                    if (card.id.includes(expected) || (card.id.includes('СA') && targetZone.id === 'zone-СA')) {
+                        handleSuccess(targetZone, card);
+                    } else {
+                        triggerError(targetZone);
+                        resetCard(card);
+                    }
+                } else {
+                    resetCard(card);
+                }
+            });
+        });
+
+        function resetCard(card) {
+            card.style.left = '';
+            card.style.top = '';
+            card.style.zIndex = '3';
+        }
+    </script>
+</body>
+</html>

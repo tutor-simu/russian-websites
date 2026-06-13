@@ -1,55 +1,114 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bilingvi Online | Portal</title>
     <style>
         :root {
-            --primary: #2e86de;
-            --accent: #4cd137;
-            --bg: #f4f7f6;
-            --text: #2f3640;
+            --primary: #4A90E2;
+            --accent: #B8E0BB;
+            --bg: #F8F9FA;
+            --text: #3A4750;
         }
 
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        body { 
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            margin: 0; 
+            padding: 40px 20px; 
+        }
 
-        .header { text-align: center; padding: 50px 20px; }
-        .logo { font-size: 3rem; font-weight: bold; color: var(--primary); margin-bottom: 10px; }
+        .header { text-align: center; padding: 30px 20px 50px; }
+        .logo { font-size: 3.2rem; font-weight: 800; color: var(--primary); margin-bottom: 10px; }
+        .header p { color: #748593; font-size: 1.2rem; font-weight: 600; margin: 0; }
         
-        .container { max-width: 900px; margin: 0 auto; }
+        .container { max-width: 950px; margin: 0 auto; }
         
-        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .card { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 24px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04); 
+            margin-bottom: 30px; 
+        }
 
-        .section-title { color: var(--primary); border-bottom: 3px solid var(--accent); padding-bottom: 10px; margin-top: 0; }
+        .section-title { 
+            color: var(--primary); 
+            padding-bottom: 12px; 
+            margin-top: 0; 
+            font-size: 2rem;
+            font-weight: 800;
+        }
 
-        .grid { 
+        .card p {
+            color: #748593;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        /* Group container formatting */
+        .group-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Layout constraints forcing items per row without screen size scaling wraps */
+        .grid-4 { 
             display: grid; 
-            /* Force exactly 4 columns of equal width */
             grid-template-columns: repeat(4, 1fr); 
-            gap: 15px; 
-            margin-top: 20px; 
-             text-align: center;
+            gap: 20px; 
+            text-align: center;
         }
 
-        @media (max-width: 600px) {
-            .grid {
-                grid-template-columns: repeat(2, 1fr); /* 2x2 grid on mobile */
-            }
+        .grid-3 { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 20px; 
+            text-align: center;
         }
+
         .nav-btn { 
-            display: block; padding: 15px; background: #eee; text-decoration: none; 
-            color: var(--text); border-radius: 10px; text-align: center; font-weight: bold;
-            transition: 0.3s;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            padding: 20px 10px; 
+            text-decoration: none; 
+            color: var(--text); 
+            border-radius: 16px; 
+            font-weight: 700;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 0px rgba(0, 0, 0, 0.04);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
         }
-        .nav-btn:hover { background: var(--primary); color: white; transform: translateY(-3px); }
+
+        .nav-btn:hover { 
+            transform: translateY(-4px); 
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.06);
+        }
+
+        .nav-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Color configurations for specific button loops */
+        .btn-1 { background-color: #E3F2FD; border: 2px solid #BAD7F2; } 
+        .btn-2 { background-color: #E8F5E9; border: 2px solid #B8E0BB; } 
+        .btn-3 { background-color: #FFF3E0; border: 2px solid #F3D3A2; } 
+        .btn-4 { background-color: #F3E5F5; border: 2px solid #D8B4E2; } 
+        .btn-5 { background-color: #E0F7FA; border: 2px solid #A5E5EC; } 
+        .btn-6 { background-color: #FFFDE7; border: 2px solid #F1EAA7; } 
+        .btn-7 { background-color: #FFEAEF; border: 2px solid #F3BCC8; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <div class="logo">Bilingvi Online</div>
-        <p>Interactive educational experiences for young learners.</p>
+        <p>Интерактивное обучение для юных учеников.</p>
     </div>
 
     <div class="container">
@@ -58,50 +117,84 @@
             <p>Добро пожаловать в наше цифровое рабочее пространство. Выберите модуль ниже, чтобы запустить интерактивные уроки и попрактиковаться.</p>
         </div>
 
-
         <div class="card">
-            <h2 class="section-title">Алфавит (Alphabet Practice)</h2>
-            <div class="grid">
-                <a href="entrence_pages/A.html" class="nav-btn">А</a>
-                <a href="entrence_pages/O.html" class="nav-btn">О</a>
-                <a href="entrence_pages/O.html" class="nav-btn">У</a>                
-                <a href="04_AOU_exercises/AOU_01.html" class="nav-btn">Упражнение А,O,У</a>
+            <h2 class="section-title">Алфавит (Практика)</h2>
+            
+            <div class="group-container">
+                <div class="grid-4">
+                    <a href="entrence_pages/A.html" class="nav-btn btn-1">А</a>
+                    <a href="entrence_pages/O.html" class="nav-btn btn-2">О</a>
+                    <a href="entrence_pages/O.html" class="nav-btn btn-3">У</a>                
+                    <a href="04_AOU_exercises/AOU_01.html" class="nav-btn btn-4">Упражнение А,O,У</a>
+                </div>
 
-                
-                <a href="entrence_pages/" class="nav-btn">М</a>                
-                <a href="game_s.html" class="nav-btn">С</a>
-                <a href="04_AOU_exercises/AOU_01.html" class="nav-btn">Упражнение М,С</a>
+                <div class="grid-3">
+                    <a href="entrence_pages/" class="nav-btn btn-5">М</a>                
+                    <a href="game_s.html" class="nav-btn btn-6">С</a>
+                    <a href="04_AOU_exercises/AOU_01.html" class="nav-btn btn-7">Упражнение М,С</a>
+                </div>
 
+                <div class="grid-3">
+                    <a href="game_b.html" class="nav-btn btn-1">Б</a>
+                    <a href="game_v.html" class="nav-btn btn-2">В</a>
+                    <a href="game_g.html" class="nav-btn btn-3">Г</a>
+                </div>
 
-                <a href="game_b.html" class="nav-btn">Б</a>
-                <a href="game_v.html" class="nav-btn">В</a>
-                <a href="game_g.html" class="nav-btn">Г</a>
-                <a href="game_d.html" class="nav-btn">Д</a>
-                <a href="game_ye.html" class="nav-btn">Е</a>
-                <a href="game_yo.html" class="nav-btn">Ё</a>
-                <a href="game_zh.html" class="nav-btn">Ж</a>
-                <a href="game_z.html" class="nav-btn">З</a>
-                <a href="game_i.html" class="nav-btn">И</a>
-                <a href="game_iy.html" class="nav-btn">Й</a>
-                <a href="game_k.html" class="nav-btn">К</a>
-                <a href="game_l.html" class="nav-btn">Л</a>
-                <a href="game_n.html" class="nav-btn">Н</a>
-                <a href="game_p.html" class="nav-btn">П</a>
-                <a href="game_r.html" class="nav-btn">Р</a>
-                <a href="game_t.html" class="nav-btn">Т</a>x
-                <a href="game_f.html" class="nav-btn">Ф</a>
-                <a href="game_kh.html" class="nav-btn">Х</a>
-                <a href="game_ts.html" class="nav-btn">Ц</a>
-                <a href="game_ch.html" class="nav-btn">Ч</a>
-                <a href="game_sh.html" class="nav-btn">Ш</a>
-                <a href="game_shch.html" class="nav-btn">Щ</a>
-                <a href="game_hard.html" class="nav-btn">Ъ</a>
-                <a href="game_y.html" class="nav-btn">Ы</a>
-                <a href="game_soft.html" class="nav-btn">Ь</a>
-                <a href="game_e.html" class="nav-btn">Э</a>
-                <a href="game_yu.html" class="nav-btn">Ю</a>
-                <a href="game_ya.html" class="nav-btn">Я</a>
+                <div class="grid-3">
+                    <a href="game_d.html" class="nav-btn btn-4">Д</a>
+                    <a href="game_ye.html" class="nav-btn btn-5">Е</a>
+                    <a href="game_yo.html" class="nav-btn btn-6">Ё</a>
+                </div>
+
+                <div class="grid-3">
+                    <a href="game_zh.html" class="nav-btn btn-7">Ж</a>
+                    <a href="game_z.html" class="nav-btn btn-1">З</a>
+                    <a href="game_i.html" class="nav-btn btn-2">И</a>
+                </div>
+
+                <div class="grid-3">
+                    <a href="game_iy.html" class="nav-btn btn-3">Й</a>
+                    <a href="game_k.html" class="nav-btn btn-4">К</a>
+                    <a href="game_l.html" class="nav-btn btn-5">Л</a>
+                </div>
+
+                <div class="grid-3">
+                    <a href="game_n.html" class="nav-btn btn-6">Н</a>
+                    <a href="game_p.html" class="nav-btn btn-7">П</a>
+                    <a href="game_r.html" class="nav-btn btn-1">Р</a>
+                </div>
+
+                <div class="grid-3">
+                    <a href="game_t.html" class="nav-btn btn-2">Т</a>
+                    <a href="game_f.html" class="nav-btn btn-3">Ф</a>
+                    <a href="game_kh.html" class="nav-btn btn-4">Х</a>
+                </div>
+
+                <div class="grid-3">
+                    <a href="game_ts.html" class="nav-btn btn-5">Ц</a>
+                    <a href="game_ch.html" class="nav-btn btn-6">Ч</a>
+                    <a href="game_sh.html" class="nav-btn btn-7">Ш</a>
+                </div>
+
+                <div class="grid-3">
+                    <a href="game_shch.html" class="nav-btn btn-1">Щ</a>
+                    <a href="game_hard.html" class="nav-btn btn-2">Ъ</a>
+                    <a href="game_y.html" class="nav-btn btn-3">Ы</a>
+                </div>
+
+                <div class="grid-3">
+                    <a href="game_soft.html" class="nav-btn btn-4">Ь</a>
+                    <a href="game_e.html" class="nav-btn btn-5">Э</a>
+                    <a href="game_yu.html" class="nav-btn btn-6">Ю</a>
+                </div>
+
+                <div class="grid-3">
+                    <a href="game_ya.html" class="nav-btn btn-7">Я</a>
+                    <div></div>
+                    <div></div>
+                </div>
             </div>
+
         </div>
     </div>
 

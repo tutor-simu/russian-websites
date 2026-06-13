@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Прочитай слоги с Астро-котиком | Bilingvi Online</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght=400;600;700;800&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: url('../pictures/background/space_backround.jpeg') center center/cover no-repeat fixed;
+            background-color: #0b0b1e;
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow-x: hidden;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* ========================================================
+           CINEMATIC INTRO ANIMATION SYSTEM
+           ======================================================== */
+        #intro-stage {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 2000;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(11, 11, 30, 0.55);
+            backdrop-filter: blur(4px);
+            transition: opacity 0.6s ease;
+        }
+
+        .elephant-container {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            transform: translateY(50px);
+            opacity: 0;
+            animation: slideUpIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.15) forwards;
+        }
+
+        .circus-elephant-avatar {
+            width: 200px;
+            height: auto;
+            filter: drop-shadow(0 10px 25px rgba(0,0,0,0.5));
+        }
+
+        .speech-bubble {
+            background: white;
+            border-radius: 25px;
+            padding: 22px 30px;
+            font-size: 22px;
+            font-weight: 800;
+            color: #1e272e;
+            position: relative;
+            max-width: 340px;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.4);
+            border: 4px solid #ff9f43;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            left: -15px; top: 50%;
+            transform: translateY(-50%);
+            border-width: 15px 15px 15px 0;
+            border-style: solid;
+            border-color: transparent white transparent transparent;
+        }
+
+        /* ========================================================
+           MAIN WORKSPACE (SYLLABLES TRACKS)
+           ======================================================== */
+        #title-bubble {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px 30px;
+            border-radius: 20px;
+            font-size: 22px;
+            font-weight: 800;
+            color: #1e272e;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            border: 3px solid #ff9f43;
+            text-align: center;
+            max-width: 90%;
+            transition: all 0.3s ease;
+        }
+
+        #main-workspace {
+            width: 100%;
+            max-width: 850px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 35px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            transition: opacity 0.4s ease;
+        }
+
+        .syllable-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            background: #f8f9fa;
+            padding: 15px 25px;
+            border-radius: 20px;
+            border: 2px dashed #dcdde1;
+        }
+
+        .letter {
+            font-size: 70px;
+            font-weight: 800;
+            color: #1e272e;
+            user-select: none;
+            width: 70px;
+            text-align: center;
+        }
+
+        .track-container {
+            flex: 1;
+            margin: 0 30px;
+            position: relative;
+            height: 80px;
+            display: flex;
+            align-items: center;
+        }
+
+        .dotted-line {
+            width: 100%;
+            height: 4px;
+            border-top: 4px dotted #a4b0be;
+        }
+
+        .cat-runner {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 75px;
+            height: auto;
+            transition: left 0.6s cubic-bezier(0.42, 0, 0.58, 1);
+            z-index: 10;
+        }
+
+        .action-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-weight: 800;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+
+        .read-btn {
+            background: #6e8efb;
+        }
+        .read-btn:hover {
+            background: #5a75e0;
+        }
+        .read-btn.completed {
+            background: #2ed573;
+            cursor: default;
+        }
+
+        /* ========================================================
+           POPUP MODALS ARCHITECTURE
+           ======================================================== */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 30px;
+            z-index: 1000;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+            width: 95%;
+            max-width: 480px;
+            box-sizing: border-box;
+        }
+
+        .popup-layout {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            text-align: left;
+        }
+
+        .popup-elephant {
+            width: 120px;
+            height: auto;
+            flex-shrink: 0;
+        }
+
+        .popup-content {
+            flex: 1;
+        }
+
+        .popup-content h1 { 
+            margin-top: 0; 
+            font-weight: 800; 
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        #congrats-popup { border: 5px solid #2ed573; }
+
+        #dim-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 999;
+        }
+
+        @keyframes slideUpIn { to { opacity: 1; transform: translateY(0); } }
+
+        /* ========================================================
+           RESPONSIVE MOBILE VIEWPORTS
+           ======================================================== */
+        @media (max-width: 768px) {
+            #title-bubble { font-size: 16px; padding: 10px 15px; margin-top: 10px; margin-bottom: 10px; }
+            #main-workspace { padding: 15px; gap: 20px; border-radius: 20px; width: 95%; }
+            
+            .syllable-row { padding: 10px; flex-direction: column; gap: 10px; }
+            .track-container { width: 100%; margin: 10px 0; height: 60px; }
+            .letter { font-size: 45px; width: auto; }
+            .cat-runner { width: 55px; }
+            .action-panel { width: 100%; }
+            .read-btn { width: 100%; padding: 12px; font-size: 18px; }
+
+            .popup-layout { flex-direction: column; text-align: center; gap: 15px; }
+            .popup-elephant { width: 100px; }
+            #intro-stage { padding: 20px; }
+            .elephant-container { flex-direction: column; text-align: center; gap: 15px; }
+            .speech-bubble::after {
+                left: 50%; top: -15px;
+                transform: translateX(-50%);
+                border-width: 0 15px 15px 15px;
+                border-color: transparent transparent white transparent;
+            }
+            .circus-elephant-avatar { width: 130px; }
+            .speech-bubble { font-size: 17px; padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="intro-stage">
+        <div class="elephant-container">
+            <img src="../pictures/CHARACTERS/astro_cat.png" alt="Cat" class="circus-elephant-avatar" onerror="this.src='https://placehold.co/200x200/6e8efb/ffffff?text=🐱'">
+            <div class="speech-bubble">Привет! Нажимай на кнопочки, читай слоги вместе со мной!</div>
+        </div>
+    </div>
+
+    <div id="title-bubble">Нажми "Прочитать" и соединяй звуки вместе с котиком!</div>
+
+    <div id="main-workspace">
+        
+        <div class="syllable-row">
+            <div class="letter" id="left-L1">Х</div>
+            <div class="track-container" id="track-1">
+                <div class="dotted-line"></div>
+                <img id="cat-1" class="cat-runner" src="../pictures/CHARACTERS/astro_cat.png" alt="Cat" onerror="this.src='https://placehold.co/75x75/6e8efb/ffffff?text=🐱'">
+            </div>
+            <div class="letter" id="right-L1" style="color: #ff4757;">А</div>
+            <div class="action-panel">
+                <button id="btn-1" class="btn read-btn" onclick="launchCat(1)">Прочитать</button>
+            </div>
+        </div>
+
+        <div class="syllable-row">
+            <div class="letter" id="left-L2">Х</div>
+            <div class="track-container" id="track-2">
+                <div class="dotted-line"></div>
+                <img id="cat-2" class="cat-runner" src="../pictures/CHARACTERS/astro_cat.png" alt="Cat" onerror="this.src='https://placehold.co/75x75/6e8efb/ffffff?text=🐱'">
+            </div>
+            <div class="letter" id="right-L2" style="color: #ff9f43;">О</div>
+            <div class="action-panel">
+                <button id="btn-2" class="btn read-btn" onclick="launchCat(2)">Прочитать</button>
+            </div>
+        </div>
+
+        <div class="syllable-row">
+            <div class="letter" id="left-L3">Х</div>
+            <div class="track-container" id="track-3">
+                <div class="dotted-line"></div>
+                <img id="cat-3" class="cat-runner" src="../pictures/CHARACTERS/astro_cat.png" alt="Cat" onerror="this.src='https://placehold.co/75x75/6e8efb/ffffff?text=🐱'">
+            </div>
+            <div class="letter" id="right-L3" style="color: #2ed573;">У</div>
+            <div class="action-panel">
+                <button id="btn-3" class="btn read-btn" onclick="launchCat(3)">Прочитать</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="dim-overlay"></div>
+    
+    <div id="congrats-popup" class="popup">
+        <div class="popup-layout">
+            <img src="../pictures/CHARACTERS/astro_cat.png" class="popup-elephant" alt="Cat Victory" onerror="this.src='https://placehold.co/120x120/6e8efb/ffffff?text=🐱'">
+            <div class="popup-content">
+                <h1 style="color: #2ed573;">Мяу-супер!</h1>
+                <p style="font-size: 17px; font-weight: 600; color: #1e272e; margin-bottom: 15px;">Ты отлично прочитал все слоги с буквой "Х" в обе стороны!</p>
+                <div style="display:flex; gap:12px; justify-content:flex-start; flex-wrap: wrap;">
+                    <button class="btn" style="background:#ff4757; padding: 10px 20px;" onclick="resetGame()">Заново</button>
+                    <button class="btn" style="background:#2ed573; padding: 10px 20px;" onclick="window.location.href='X5.html'">Далее</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dimOverlay = document.getElementById('dim-overlay');
+        const completedTracks = new Set();
+        const totalTracks = 3;
+        let currentStage = 1; // 1 = ХА, ХО, ХУ; 2 = АХ, ОХ, УХ
+
+        // Исчезновение интро
+        setTimeout(() => {
+            const intro = document.getElementById('intro-stage');
+            if(intro) {
+                intro.style.opacity = '0';
+                setTimeout(() => intro.remove(), 600);
+            }
+        }, 4500);
+
+        function launchCat(id) {
+            const cat = document.getElementById(`cat-${id}`);
+            const track = document.getElementById(`track-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+
+            if (btn.classList.contains('completed')) return;
+
+            btn.disabled = true;
+
+            const maxDistance = track.clientWidth - cat.clientWidth;
+            cat.style.left = `${maxDistance}px`;
+
+            // Полет длится 0.6 секунды
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.textContent = "Готово! ✓";
+                btn.classList.add('completed');
+                
+                completedTracks.add(id);
+
+                if (completedTracks.size === totalTracks) {
+                    setTimeout(() => {
+                        handleStageCompletion();
+                    }, 500);
+                }
+            }, 600);
+        }
+
+        function handleStageCompletion() {
+            if (currentStage === 1) {
+                // Переключаем на второй этап (АХ, ОХ, УХ)
+                currentStage = 2;
+                completedTracks.clear();
+                
+                const workspace = document.getElementById('main-workspace');
+                workspace.style.opacity = '0';
+
+                setTimeout(() => {
+                    document.getElementById('title-bubble').textContent = 'Отлично! А теперь прочитай наоборот!';
+                    
+                    // Меняем буквы местами: теперь гласные слева, Х - справа
+                    // Строка 1
+                    document.getElementById('left-L1').textContent = 'А';
+                    document.getElementById('left-L1').style.color = '#ff4757';
+                    document.getElementById('right-L1').textContent = 'Х';
+                    document.getElementById('right-L1').style.color = '#1e272e';
+                    
+                    // Строка 2
+                    document.getElementById('left-L2').textContent = 'О';
+                    document.getElementById('left-L2').style.color = '#ff9f43';
+                    document.getElementById('right-L2').textContent = 'Х';
+                    document.getElementById('right-L2').style.color = '#1e272e';
+                    
+                    // Строка 3
+                    document.getElementById('left-L3').textContent = 'У';
+                    document.getElementById('left-L3').style.color = '#2ed573';
+                    document.getElementById('right-L3').textContent = 'Х';
+                    document.getElementById('right-L3').style.color = '#1e272e';
+
+                    // Сбрасываем положение котиков и состояние кнопок
+                    for (let i = 1; i <= totalTracks; i++) {
+                        document.getElementById(`cat-${i}`).style.left = '0px';
+                        const btn = document.getElementById(`btn-${i}`);
+                        btn.textContent = "Прочитать";
+                        btn.classList.remove('completed');
+                    }
+
+                    workspace.style.opacity = '1';
+                }, 400);
+
+            } else {
+                // Финал игры (после завершения второго этапа)
+                dimOverlay.style.display = 'block';
+                document.getElementById('congrats-popup').style.display = 'block';
+                confetti({ particleCount: 160, spread: 80, origin: { y: 0.6 } });
+            }
+        }
+
+        function resetGame() {
+            currentStage = 1;
+            completedTracks.clear();
+            dimOverlay.style.display = 'none';
+            document.getElementById('congrats-popup').style.display = 'none';
+            document.getElementById('title-bubble').textContent = 'Нажми "Прочитать" и соединяй звуки вместе с котиком!';
+
+            // Возвращаем исходные прямые слоги
+            document.getElementById('left-L1').textContent = 'Х';
+            document.getElementById('left-L1').style.color = '#1e272e';
+            document.getElementById('right-L1').textContent = 'А';
+            document.getElementById('right-L1').style.color = '#ff4757';
+
+            document.getElementById('left-L2').textContent = 'Х';
+            document.getElementById('left-L2').style.color = '#1e272e';
+            document.getElementById('right-L2').textContent = 'О';
+            document.getElementById('right-L2').style.color = '#ff9f43';
+
+            document.getElementById('left-L3').textContent = 'Х';
+            document.getElementById('left-L3').style.color = '#1e272e';
+            document.getElementById('right-L3').textContent = 'У';
+            document.getElementById('right-L3').style.color = '#2ed573';
+
+            for (let i = 1; i <= totalTracks; i++) {
+                const cat = document.getElementById(`cat-${i}`);
+                const btn = document.getElementById(`btn-${i}`);
+                
+                cat.style.left = '0px';
+                btn.textContent = "Прочитать";
+                btn.classList.remove('completed');
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

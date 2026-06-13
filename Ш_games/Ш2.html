@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Игра "Чего не стало?" с Астро-роботом | Bilingvi Online</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: url('../pictures/background/space_backround.jpeg') center center/cover no-repeat fixed;
+            background-color: #0b0b1e;
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow-x: hidden;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* ========================================================
+           INTRO STAGE WITH START BUTTON
+           ======================================================== */
+        #intro-stage {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(11, 11, 30, 0.85);
+            backdrop-filter: blur(6px);
+            transition: opacity 0.6s ease;
+        }
+
+        .robot-container {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: slideUpIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.15) forwards;
+            max-width: 90%;
+        }
+
+        .circus-robot-avatar {
+            width: 130px;
+            height: auto;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+        }
+
+        .speech-bubble {
+            background: white;
+            border-radius: 20px;
+            padding: 18px 25px;
+            font-size: 18px;
+            font-weight: 800;
+            color: #1e272e;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            border: 4px solid #ff9f43;
+        }
+
+        /* ========================================================
+           MAIN WORKSPACE
+           ======================================================== */
+        #title-bubble {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px 25px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: 800;
+            color: #1e272e;
+            margin-top: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            border: 3px solid #ff9f43;
+            text-align: center;
+            max-width: 90%;
+        }
+
+        .status-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 750px;
+            padding: 0 15px;
+            box-sizing: border-box;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .timer-bar-container {
+            width: 100%;
+            max-width: 750px;
+            background: rgba(255, 255, 255, 0.2);
+            height: 6px;
+            border-radius: 3px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .timer-bar {
+            width: 100%;
+            height: 100%;
+            background: #ff4757;
+            transform-origin: left;
+            transform: scaleX(1);
+        }
+
+        #main-workspace {
+            width: 100%;
+            max-width: 750px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 25px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            transition: opacity 0.4s ease;
+        }
+
+        /* ========================================================
+           CARDS DISPLAY SYSTEM
+           ======================================================== */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            width: 100%;
+        }
+
+        .game-card {
+            background: white;
+            border: 3px solid #dcdde1;
+            border-radius: 16px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 1/1;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .game-card.hidden-card {
+            border-color: #ff9f43;
+            background: #fff5eb;
+            box-shadow: inset 0 0 20px rgba(255, 159, 67, 0.2);
+        }
+
+        .game-card.hidden-card .card-img {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .game-card.hidden-card::after {
+            content: '?';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 55px;
+            font-weight: 800;
+            color: #ff9f43;
+            animation: pulse 1.5s infinite;
+        }
+
+        .card-img {
+            width: 95%;
+            height: 95%;
+            max-height: 95%;
+            object-fit: contain;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-weight: 800;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 6px 15px rgba(255, 159, 67, 0.3);
+            text-align: center;
+        }
+
+        .start-btn { background: #ff9f43; }
+        .start-btn:hover { background: #ff8f26; transform: translateY(-2px); }
+
+        /* ========================================================
+           POPUP MODALS ARCHITECTURE
+           ======================================================== */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 25px;
+            border-radius: 25px;
+            z-index: 1000;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            width: 95%;
+            max-width: 420px;
+            box-sizing: border-box;
+            border: 4px solid #2ed573;
+        }
+
+        .popup-layout {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            text-align: center;
+        }
+
+        .popup-robot { width: 100px; height: auto; }
+        .popup-content { width: 100%; }
+        .popup-content h1 { margin-top: 0; font-weight: 800; font-size: 22px; margin-bottom: 8px; }
+        
+        .popup-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        #dim-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 999;
+        }
+
+        @keyframes slideUpIn { to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.1); } 100% { transform: translate(-50%, -50%) scale(1); } }
+
+        /* ========================================================
+           RESPONSIVE MOBILE VIEWPORTS
+           ======================================================== */
+        @media (max-width: 768px) {
+            #title-bubble { font-size: 14px; padding: 8px 12px; margin-top: 12px; }
+            #main-workspace { padding: 12px; border-radius: 18px; width: 95%; }
+            .status-panel { font-size: 13px; padding: 0 10px; }
+            .game-card.hidden-card::after { font-size: 45px; }
+            
+            .popup-robot { width: 85px; }
+            .speech-bubble { font-size: 14px; padding: 12px; }
+            .circus-robot-avatar { width: 100px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="intro-stage">
+        <div class="robot-container">
+            <img src="../P_games/pictures/robot.png" alt="Robot" class="circus-robot-avatar" onerror="this.src='https://placehold.co/200x200/6e8efb/ffffff?text=🤖'">
+            <div class="speech-bubble">Привет! Сыграем в космическую игру «Чего не стало?»! Запоминай картинки!</div>
+            <button class="btn start-btn" onclick="startGame()">Начать игру</button>
+        </div>
+    </div>
+
+    <div id="title-bubble">Запомни все картинки на экране!</div>
+
+    <div class="status-panel">
+        <div id="round-indicator">Раунд: 1 / 2</div>
+        <div id="status-text">Запоминай!</div>
+    </div>
+
+    <div class="timer-bar-container">
+        <div id="progress-bar" class="timer-bar"></div>
+    </div>
+
+    <div id="main-workspace">
+        <div class="cards-grid" id="cards-container"></div>
+    </div>
+
+    <div id="dim-overlay"></div>
+    
+    <div id="congrats-popup" class="popup">
+        <div class="popup-layout">
+            <img src="../P_games/pictures/robot.png" class="popup-robot" alt="Robot Victory" onerror="this.src='https://placehold.co/120x120/6e8efb/ffffff?text=🤖'">
+            <div class="popup-content">
+                <h1 style="color: #2ed573;">Супер-космос!</h1>
+                <p style="font-size: 15px; font-weight: 600; color: #1e272e; margin: 0;">Ты отлично натренировал память и знаешь все слова на букву "Ш"!</p>
+                <div class="popup-buttons">
+                    <button class="btn" style="background:#ff4757; padding: 8px 16px; box-shadow: none; font-size: 14px;" onclick="resetGame()">Заново</button>
+                    <button class="btn" style="background:#2ed573; padding: 8px 16px; box-shadow: none; font-size: 14px;" onclick="window.location.href='Ш3.html'">Далее</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cardsData = [
+            { id: 'shar', text: 'ШАР', img: 'pictures/shar.png' },
+            { id: 'shmel', text: 'ШМЕЛЬ', img: 'pictures/shmel.png' },
+            { id: 'shum', text: 'ШУМ', img: 'pictures/shum.png' },
+            { id: 'sharf', text: 'ШАРФ', img: 'pictures/sharf.png' },
+            { id: 'shishka', text: 'ШИШКА', img: 'pictures/shishka.png' },
+            { id: 'shlyapa', text: 'ШЛЯПА', img: 'pictures/shlyapa.png' },
+            { id: 'shakhmaty', text: 'ШАХМАТЫ', img: 'pictures/shakhmaty.png' },
+            { id: 'shkaf', text: 'ШКАФ', img: 'pictures/shkaf.png' }
+        ];
+
+        let shuffledPool = [];
+        let currentRound = 1;
+        let roundCards = [];
+        let gameTimer = null;
+
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function startGame() {
+            const intro = document.getElementById('intro-stage');
+            intro.style.opacity = '0';
+            setTimeout(() => {
+                intro.style.display = 'none';
+                initGameSession();
+            }, 600);
+        }
+
+        function initGameSession() {
+            shuffledPool = shuffle([...cardsData]);
+            currentRound = 1;
+            executeRound();
+        }
+
+        function animateProgressBar(seconds, callback) {
+            const bar = document.getElementById('progress-bar');
+            bar.style.transition = 'none';
+            bar.style.transform = 'scaleX(1)';
+            bar.offsetHeight; 
+            bar.style.transition = `transform ${seconds}s linear`;
+            bar.style.transform = 'scaleX(0)';
+
+            gameTimer = setTimeout(callback, seconds * 1000);
+        }
+
+        function executeRound() {
+            document.getElementById('round-indicator').textContent = `Раунд: ${currentRound} / 2`;
+            document.getElementById('status-text').textContent = 'Запоминай!';
+            document.getElementById('title-bubble').textContent = 'Внимательно рассмотри и запомни все картинки!';
+            
+            const startIdx = (currentRound - 1) * 4;
+            roundCards = shuffledPool.slice(startIdx, startIdx + 4);
+
+            renderCards(roundCards);
+
+            animateProgressBar(5, () => {
+                hideOneCardStep();
+            });
+        }
+
+        function hideOneCardStep() {
+            document.getElementById('status-text').textContent = 'Чего не стало?';
+            document.getElementById('title-bubble').textContent = 'Посмотри внимательно: какая картинка исчезла?';
+            
+            const hiddenCardIndex = Math.floor(Math.random() * 4);
+            
+            let gridItems = [...roundCards.filter((_, i) => i !== hiddenCardIndex), { type: 'hidden' }];
+            shuffle(gridItems);
+
+            renderMixedCards(gridItems);
+
+            animateProgressBar(7, () => {
+                advanceWorkflow();
+            });
+        }
+
+        function advanceWorkflow() {
+            if (currentRound < 2) {
+                currentRound++;
+                const workspace = document.getElementById('main-workspace');
+                workspace.style.opacity = '0';
+                
+                setTimeout(() => {
+                    executeRound();
+                    workspace.style.opacity = '1';
+                }, 400);
+            } else {
+                document.getElementById('progress-bar').style.transform = 'scaleX(0)';
+                document.getElementById('dim-overlay').style.display = 'block';
+                document.getElementById('congrats-popup').style.display = 'block';
+                confetti({ particleCount: 160, spread: 80, origin: { y: 0.6 } });
+            }
+        }
+
+        function renderCards(cardsToRender) {
+            const container = document.getElementById('cards-container');
+            container.innerHTML = '';
+
+            cardsToRender.forEach((card, idx) => {
+                const cardHtml = `
+                    <div class="game-card" id="card-${idx}">
+                        <img src="${card.img}" class="card-img" alt="${card.text}" onerror="this.src='https://placehold.co/150x150/ffffff/6e8efb?text=📦'">
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            });
+        }
+
+        function renderMixedCards(items) {
+            const container = document.getElementById('cards-container');
+            container.innerHTML = '';
+
+            items.forEach((item, idx) => {
+                if (item.type === 'hidden') {
+                    container.innerHTML += `<div class="game-card hidden-card" id="card-${idx}"></div>`;
+                } else {
+                    container.innerHTML += `
+                        <div class="game-card" id="card-${idx}">
+                            <img src="${item.img}" class="card-img" alt="${item.text}" onerror="this.src='https://placehold.co/150x150/ffffff/6e8efb?text=📦'">
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        function resetGame() {
+            clearTimeout(gameTimer);
+            document.getElementById('dim-overlay').style.display = 'none';
+            document.getElementById('congrats-popup').style.display = 'none';
+            initGameSession();
+        }
+    </script>
+</body>
+</html>
