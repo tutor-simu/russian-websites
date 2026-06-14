@@ -2,89 +2,120 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-select=yes">
     <title>Собери букву А</title>
     <style>
-        /* Prevents mobile pull-to-refresh gestures and text selection while dragging */
+        /* Allowing scrolling and zooming for better accessibility on computer screens */
         html, body {
-            overflow: hidden;
-            position: fixed;
             width: 100%;
             height: 100%;
             margin: 0;
             padding: 0;
-            user-select: none;
             -webkit-user-select: none;
+            user-select: none;
         }
 
         body { 
             font-family: sans-serif; 
-            /* Replace with your actual outside background image path */
             background-image: url('../pictures/background/space_backround.jpeg'); 
-            background-size: cover;          /* Scales image to completely cover the screen */
-            background-position: center;     /* Centers the background image */
-            background-repeat: no-repeat;    /* Prevents the image from repeating like a grid */
-            background-color: #e3f2fd;       /* Fallback color while image is loading */
+            background-size: cover;          
+            background-position: center;     
+            background-repeat: no-repeat;    
+            background-color: #e3f2fd;       
             display: flex; 
             align-items: center; 
             justify-content: center;
             box-sizing: border-box;
+            min-height: 100vh;
+            overflow: auto; /* Allow scrolling if it exceeds viewport */
         }
 
-        /* Responsive Wrapper: Scales everything down on small screens, keeps it full size on large screens */
         .game-container {
             display: flex; 
             flex-direction: column; 
             align-items: center;
             transform-origin: center center;
+            transform: scale(1.3); /* Made everything 30% larger by default for easier viewing */
+            margin: 50px 0;
         }
 
-        /* CSS Media Queries to handle screen scaling dynamically */
-        @media (max-width: 420px) {
-            .game-container { transform: scale(0.85); }
+        .workspace-row {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 25px;
         }
-        @media (max-width: 375px) {
-            .game-container { transform: scale(0.78); }
+
+        .reference-box {
+            width: 200px;
+            height: 540px;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 3px dashed rgba(255, 255, 255, 0.6);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            box-sizing: border-box;
         }
-        @media (max-width: 340px) {
-            .game-container { transform: scale(0.70); }
+
+        .reference-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+
+        /* Responsive scaling adjustments for smaller screens */
+        @media (max-width: 900px) {
+            .game-container { transform: scale(1.1); }
+        }
+        @media (max-width: 750px) {
+            .workspace-row { flex-direction: column; gap: 20px; }
+            .game-container { transform: scale(0.95); }
+        }
+        @media (max-width: 520px) {
+            .game-container { transform: scale(0.75); }
+        }
+        @media (max-width: 400px) {
+            .game-container { transform: scale(0.6); }
         }
         
         h2 {
-            font-size: 1.4rem;
-            margin: 0 0 15px 0;
+            font-size: 1.8rem;
+            margin: 0 0 20px 0;
             text-align: center;
-            color:white;
+            color: white;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.7);
         }
         
-        /* Restored to your preferred Large Layout Dimensions */
         #canvas {
             position: relative;
             width: 400px; height: 520px;
-            /* Replace with your actual background image path */
             background-image: url('../pictures/background/space_backround111.jpeg'); 
-            background-size: cover;       /* Scales the image nicely to fill the entire box */
-            background-position: center;  /* Centers the picture perfectly */
-            background-color: #fff;       /* Fallback color while the image loads */
+            background-size: cover;       
+            background-position: center;  
+            background-color: #fff;       
             border: 3px dashed #777; 
             border-radius: 20px;
-            margin-bottom: 25px;
             overflow: hidden;
             box-sizing: border-box;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.25);
         }
 
-        /* Target slots matching the worksheet layout silhouette */
         .drop-zone { 
             position: absolute; 
-            border: 2px dashed rgba(0, 0, 0, 0.2); /* Slightly darker so it's visible on backgrounds */
-            background: transparent;                /* Ensures the background image shows through */
+            border: 2px dashed rgba(0, 0, 0, 0.2); 
+            background: transparent;              
             border-radius: 10px; 
             z-index: 1; 
             box-sizing: border-box;
         }
                 
-        /* Original precise large layout coordinates */
         #zone-log-left { 
             width: 250px; height: 60px; 
             left: 20px; top: 310px; 
@@ -112,13 +143,12 @@
             left: 120px; top: 5px;
         }
 
-        /* Original Items panel styling */
         .panel { 
-            display: flex; gap: 16px; background: white; 
-            padding: 16px; border-radius: 20px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); align-items: center;
+            display: flex; gap: 20px; background: white; 
+            padding: 20px; border-radius: 20px; 
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15); align-items: center;
             flex-wrap: wrap; justify-content: center;
-            width: 400px;
+            width: 650px;
             box-sizing: border-box;
         }
 
@@ -127,37 +157,33 @@
             touch-action: none;
             object-fit: contain;
         }
+
         #confetti-canvas {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; 
-            z-index: 5001; /* Lifted up above the modal window */
+            z-index: 5001; 
             display: none;
         }
         
-        /* Restored original larger item assets sizing */
-        .long-log-asset { width: 120px; height: auto; }
-        #cross { width: 80px; height: auto; }
-        #nest { width: 100px; height: auto; }
-        #stork { 
-            width: 60px; 
-            height: auto; 
-        }
+        .long-log-asset { width: 130px; height: auto; }
+        #cross { width: 90px; height: auto; }
+        #nest { width: 110px; height: auto; }
+        #stork { width: 65px; height: auto; }
 
         .stork-large {
             transform: scale(2.2) translateY(12px) !important; 
         }
-        /* Victory Modal Overlay */
+        
         #victory-modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(10, 15, 30, 0.85);
-            z-index: 5001; /* Lowered down one layer */
+            z-index: 5001; 
             align-items: center; justify-content: center;
             backdrop-filter: blur(4px);
         }
 
-        /* Clean Modal Card Content */
         .modal-content {
             background: #1c2135;
             border: 2px solid #ffffff;
@@ -172,24 +198,17 @@
 
         .modal-content h3 {
             margin: 0 0 10px 0; 
-            font-size: 1.6rem;
-            color: #ffffff; /* Crisp white text */
+            font-size: 1.8rem;
+            color: #ffffff; 
         }
 
-        .modal-content p {
-            font-size: 1.1rem; 
-            margin-bottom: 25px; 
-            color: #d1d5db; /* Light gray text for readability */
-        }
-
-        /* Clean Buttons Setup */
         .modal-buttons { display: flex; gap: 15px; justify-content: center; }
         
         .neon-btn {
-            padding: 12px 24px; 
-            font-size: 1rem; 
+            padding: 15px 30px; 
+            font-size: 1.1rem; 
             font-weight: bold;
-            border-radius: 8px; 
+            border-radius: 10px; 
             cursor: pointer; 
             text-decoration: none;
             transition: background-color 0.2s ease, transform 0.1s ease;
@@ -218,12 +237,18 @@
     <div class="game-container">
         <h2>Собери картинку по образцу</h2>
 
-        <div id="canvas">
-            <div class="drop-zone" id="zone-stork"></div>
-            <div class="drop-zone" id="zone-nest"></div>
-            <div class="drop-zone" id="zone-cross"></div>
-            <div class="drop-zone" id="zone-log-left"></div>
-            <div class="drop-zone" id="zone-log-right"></div>
+        <div class="workspace-row">
+            <div class="reference-box">
+                <img src="../pictures/fullA.png" alt="Образец" class="reference-img">
+            </div>
+
+            <div id="canvas">
+                <div class="drop-zone" id="zone-stork"></div>
+                <div class="drop-zone" id="zone-nest"></div>
+                <div class="drop-zone" id="zone-cross"></div>
+                <div class="drop-zone" id="zone-log-left"></div>
+                <div class="drop-zone" id="zone-log-right"></div>
+            </div>
         </div>
 
         <div class="panel">
@@ -234,6 +259,7 @@
             <img src="../pictures/game3/stork.png" class="item" id="stork" data-target="stork">
         </div>
     </div>
+
     <div id="victory-modal">
         <div class="modal-content">
             <h3>Отличная работа!</h3>
@@ -260,8 +286,16 @@
                 const rect = item.getBoundingClientRect();
                 const canvasRect = canvas.getBoundingClientRect();
                 
-                // Track dragging scale offset caused by CSS scale transforms
-                const containerScale = canvasRect.width / 400; 
+                // Account for container scale when dragging
+                const gameContainer = document.querySelector('.game-container');
+                const transformMatrix = window.getComputedStyle(gameContainer).transform;
+                let currentScale = 1.3;
+                if (transformMatrix !== 'none') {
+                    const values = transformMatrix.split('(')[1].split(')')[0].split(',');
+                    currentScale = parseFloat(values[0]);
+                }
+                
+                const containerScale = (canvasRect.width / 400) * currentScale; 
                 
                 initialLeft = (rect.left - canvasRect.left) / containerScale;
                 initialTop = (rect.top - canvasRect.top) / containerScale;
@@ -286,12 +320,19 @@
                 e.preventDefault();
 
                 const canvasRect = canvas.getBoundingClientRect();
-                const containerScale = canvasRect.width / 400;
+                const gameContainer = document.querySelector('.game-container');
+                const transformMatrix = window.getComputedStyle(gameContainer).transform;
+                let currentScale = 1.3;
+                if (transformMatrix !== 'none') {
+                    const values = transformMatrix.split('(')[1].split(')')[0].split(',');
+                    currentScale = parseFloat(values[0]);
+                }
+
+                const containerScale = (canvasRect.width / 400) * currentScale;
 
                 const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
                 const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
 
-                // Adjust positioning updates to align with dynamic scale modifications
                 const deltaX = (clientX - startX) / containerScale;
                 const deltaY = (clientY - startY) / containerScale;
 
@@ -339,7 +380,6 @@
                     (zRect.top + zRect.height / 2) - (iRect.top + iRect.height / 2)
                 );
                 
-                // Safe distance threshold optimized across dynamic viewport alterations
                 const canvasRect = canvas.getBoundingClientRect();
                 const containerScale = canvasRect.width / 400;
                 const activeTolerance = 90 * containerScale;
@@ -361,13 +401,12 @@
                     zone.style.visibility = 'hidden'; 
                     snapped = true;
                     
-                    // Call the completion check after a brief snap delay
                     setTimeout(checkGameCompletion, 300);
                 }
             });
         }
+        
         function checkGameCompletion() {
-            // Count remaining hidden drop zones
             const activeZones = Array.from(document.querySelectorAll('.drop-zone'))
                                     .filter(z => z.style.visibility !== 'hidden');
             
@@ -413,7 +452,6 @@
                     ctx.stroke();
                 });
                 
-                // Stop animating loop if pop-up closes or modal resets
                 if (document.getElementById('victory-modal').style.display === 'flex') {
                     requestAnimationFrame(drawConfetti);
                 }

@@ -8,7 +8,7 @@
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: sans-serif; }
         #game-area { 
             width: 100vw; height: 100vh; position: relative; 
-            background: url("pictures/background/light_mode_backround.jpeg") no-repeat center center fixed;
+            background: url("../pictures/game6/findbackround.png") no-repeat center center fixed;
             background-size: cover;
         }
         
@@ -19,7 +19,6 @@
             justify-content: center; align-items: center; z-index: 200; color: white;
         }
 
-        .item-pic { position: absolute; z-index: 1; pointer-events: none; }
         .letter-a { 
             position: absolute; font-size: 7vw; font-weight: 400; cursor: pointer;
             z-index: 3; user-select: none; transition: opacity 0.3s;
@@ -66,13 +65,13 @@
 
     <script>
         const gameItems = [
-            { src: '../pictures/game4/bear.png', x: 5, y: 20, ax: 15, ay: 20, color: '#805115', w: 12 },
-            { src: '../pictures/game4/dog.png', x: 22, y: 8, ax: 38, ay: 20, color: '#863A1B', w: 12 },
-            { src: '../pictures/game4/alian.png', x: 51, y: 10, ax: 61, ay: 20, color: '#40929F', w: 12 },
-            { src: '../pictures/game3/pinapple.png', x: 75, y: 7, ax: 84, ay: 20, color: 'orange', w: 18 },
-            { src: '../pictures/game3/stork.png', x: 15, y: 55, ax: 25, ay: 65, color: 'gray', w: 18 },
-            { src: '../pictures/game3/watermellon.png', x: 40, y: 62, ax: 50, ay: 65, color: 'red', w: 18 },
-            { src: '../pictures/game3/shark.png', x: 60, y: 45, ax: 75, ay: 65, color: '#507188', w: 18 }
+            { ax: 15, ay: 20, color: '#805115' },
+            { ax: 38, ay: 20, color: '#863A1B' },
+            { ax: 61, ay: 20, color: '#40929F' },
+            { ax: 84, ay: 20, color: 'orange' },
+            { ax: 25, ay: 65, color: 'gray' },
+            { ax: 50, ay: 65, color: 'red' },
+            { ax: 75, ay: 65, color: '#507188' }
         ];
 
         const gameArea = document.getElementById('game-area');
@@ -96,14 +95,6 @@
         }
 
         gameItems.forEach((item) => {
-            const pic = document.createElement('img');
-            pic.src = item.src;
-            pic.className = 'item-pic';
-            pic.style.left = item.x + '%';
-            pic.style.top = item.y + '%';
-            pic.style.width = item.w + '%';
-            gameArea.appendChild(pic);
-
             const a = document.createElement('div');
             a.innerText = 'A';
             a.className = 'letter-a';
@@ -138,8 +129,9 @@
             };
             gameArea.appendChild(a);
         });
+        
         window.addEventListener('load', () => {
-            console.log("Images should be loaded. If not, check path case-sensitivity!");
+            console.log("Game loaded without character assets.");
         });
     </script>
 </body>
