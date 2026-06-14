@@ -13,7 +13,7 @@
             min-height: 100vh;
             font-family: 'Comic Sans MS', cursive, sans-serif;
             -webkit-tap-highlight-color: transparent;
-            background: #f0f8ff;
+            background: #FBB7C0;
         }
         
         body { 
@@ -50,11 +50,14 @@
 
         #palette { 
             display: flex; 
+            flex-wrap: wrap;
+            justify-content: center;
             gap: 15px; 
             padding: 15px 25px; 
             background: white; 
             border-radius: 20px; 
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            max-width: 100%;
         }
         
         .color-swatch { 
@@ -105,26 +108,38 @@
             font-weight: bold;
             color: #333;
         }
-        
-        #global-controls { 
-            display: flex; 
-            gap: 20px; 
+
+        /* Feedback Emoji Overlays */
+        .status-overlay {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) scale(0);
+            font-size: 80px;
+            z-index: 10;
+            pointer-events: none;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .status-overlay.show {
+            transform: translateX(-50%) scale(1);
         }
         
-        button { 
-            padding: 15px 30px; 
-            cursor: pointer; 
-            border-radius: 15px; 
-            border: none; 
-            font-size: 18px;
-            font-family: 'Comic Sans MS', cursive, sans-serif;
-            font-weight: bold; 
-            background: #6e8efb; 
-            color: white; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            transition: transform 0.1s;
+        /* Individual Check Button Layout */
+        .card-check-btn {
+            margin-top: 12px;
+            padding: 8px 20px;
+            font-size: 16px;
+            background: #ffbc00;
+            color: #333;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        button:active { transform: scale(0.95); }
+        .card-check-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
         
         /* Enhanced Modal Backdrop and Content */
         .modal-backdrop { 
@@ -173,18 +188,6 @@
             line-height: 1.4;
         }
 
-        .modal-actions {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .modal-actions button {
-            padding: 12px 25px;
-            font-size: 16px;
-        }
-
         /* Small screen scaling to prevent layout breaking or scrolling */
         @media (max-width: 600px) {
             .main-wrapper {
@@ -212,41 +215,32 @@
         <div class="modal-content">
             <h2 class="modal-title">Добро пожаловать!</h2>
             <p class="modal-text">Пожалуйста, выберите и раскрасьте только те предметы, которые начинаются на букву <b>"У"</b>.</p>
-            <div class="modal-actions">
-                <button onclick="closeWelcome()">Начать!</button>
+            <div style="margin-top: 30px;">
+                <button onclick="closeWelcome()" style="padding: 12px 30px; font-size: 18px; border-radius: 15px; border: none; background: #6e8efb; color: white; font-family: inherit; font-weight: bold; cursor: pointer;">Начать!</button>
             </div>
         </div>
     </div>
 
     <div class="main-wrapper">
-        <h1 class="instructions">Раскрась только те предметы, которые начинаются на букву У! ⭐</h1>
+        <h1 class="instructions">Раскрась только те предметы, которые начинаются на букву У!</h1>
 
         <div id="palette">
             <div class="color-swatch active" style="background-color: #FFD700;" data-color="255,215,0"></div>
             <div class="color-swatch" style="background-color: #FF4757;" data-color="255,71,87"></div>
             <div class="color-swatch" style="background-color: #2ED573;" data-color="46,213,115"></div>
+            <div class="color-swatch" style="background-color: #1E90FF;" data-color="30,144,255"></div>
+            <div class="color-swatch" style="background-color: #FF8C00;" data-color="255,140,0"></div>
+            <div class="color-swatch" style="background-color: #9B59B6;" data-color="155,89,182"></div>
+            <div class="color-swatch" style="background-color: #FF69B4;" data-color="255,105,180"></div>
         </div>
 
         <div class="game-grid">
-            <div class="item-card" data-is-u="true"><canvas data-src="../pictures/U/snail-nocolor.png"></canvas><div class="label">Улитка</div></div>
-            <div class="item-card" data-is-u="false"><canvas data-src="../pictures/U/tiger-nocolor.png"></canvas><div class="label">Тигр</div></div>
-            <div class="item-card" data-is-u="true"><canvas data-src="../pictures/U/mustage.png"></canvas><div class="label">Усы</div></div>
-            <div class="item-card" data-is-u="true"><canvas data-src="../pictures/U/iron.png"></canvas><div class="label">Утюг</div></div>
-            <div class="item-card" data-is-u="false"><canvas data-src="../pictures/U/elephant-nocolor.png"></canvas><div class="label">Слон</div></div>
-            <div class="item-card" data-is-u="true"><canvas data-src="../pictures/U/rod.png"></canvas><div class="label">Удочка</div></div>
-        </div>
-
-        <div id="global-controls">
-            <button onclick="resetGame()">Сбросить всё</button>
-            <button onclick="checkAll()">Проверить</button>
-        </div>
-    </div>
-
-    <div id="popup" class="modal-backdrop" style="display: none;">
-        <div class="modal-content">
-            <h2 id="popup-title" class="modal-title">Результат</h2>
-            <p id="popup-text" class="modal-text"></p>
-            <div id="popup-actions" class="modal-actions"></div>
+            <div class="item-card" data-is-u="true"><div class="status-overlay"></div><canvas data-src="../pictures/U/snail-nocolor.png"></canvas><div class="label">Улитка</div><button class="card-check-btn" onclick="checkCard(this)">❓ Проверить</button></div>
+            <div class="item-card" data-is-u="false"><div class="status-overlay"></div><canvas data-src="../pictures/U/tiger-nocolor.png"></canvas><div class="label">Тигр</div><button class="card-check-btn" onclick="checkCard(this)">❓ Проверить</button></div>
+            <div class="item-card" data-is-u="true"><div class="status-overlay"></div><canvas data-src="../pictures/U/mustage.png"></canvas><div class="label">Усы</div><button class="card-check-btn" onclick="checkCard(this)">❓ Проверить</button></div>
+            <div class="item-card" data-is-u="true"><div class="status-overlay"></div><canvas data-src="../pictures/U/iron.png"></canvas><div class="label">Утюг</div><button class="card-check-btn" onclick="checkCard(this)">❓ Проверить</button></div>
+            <div class="item-card" data-is-u="false"><div class="status-overlay"></div><canvas data-src="../pictures/U/elephant-nocolor.png"></canvas><div class="label">Слон</div><button class="card-check-btn" onclick="checkCard(this)">❓ Проверить</button></div>
+            <div class="item-card" data-is-u="true"><div class="status-overlay"></div><canvas data-src="../pictures/U/rod.png"></canvas><div class="label">Удочка</div><button class="card-check-btn" onclick="checkCard(this)">❓ Проверить</button></div>
         </div>
     </div>
 
@@ -258,40 +252,23 @@
         }
 
         document.querySelectorAll('.color-swatch').forEach(s => s.onclick = function() {
-            document.querySelector('.active').classList.remove('active');
+            const activeSwatch = document.querySelector('.color-swatch.active');
+            if (activeSwatch) activeSwatch.classList.remove('active');
             this.classList.add('active');
             const rgb = this.dataset.color.split(',');
             currentFillColor = {r: parseInt(rgb[0]), g: parseInt(rgb[1]), b: parseInt(rgb[2])};
         });
 
-        function showPopup(title, message, isSuccess = false) {
-            document.getElementById('popup-title').innerText = title;
-            document.getElementById('popup-text').innerText = message;
-            const actions = document.getElementById('popup-actions');
-            actions.innerHTML = ''; 
-
-            if (isSuccess) {
-                actions.innerHTML += `<button onclick="closePopup()">Играть снова</button>`;
-                actions.innerHTML += `<button onclick="window.location.href='U3.html'">Следующая страница</button>`;
-            } else {
-                actions.innerHTML += `<button onclick="closePopup()">Продолжить</button>`;
-            }
-            document.getElementById('popup').style.display = 'flex';
-        }
-
-        function closePopup() {
-            document.getElementById('popup').style.display = 'none';
-        }
-
-        function resetGame() {
-            document.querySelectorAll('canvas').forEach(c => {
-                c.dataset.hasBeenColored = "false";
-                const ctx = c.getContext('2d');
-                const img = new Image();
-                img.src = c.dataset.src;
-                img.onload = () => ctx.drawImage(img, 0, 0);
-            });
-            closePopup();
+        function resetCanvas(c) {
+            c.dataset.hasBeenColored = "false";
+            c.style.pointerEvents = "auto";
+            const ctx = c.getContext('2d');
+            const img = new Image();
+            img.src = c.dataset.src;
+            img.onload = () => {
+                ctx.clearRect(0, 0, c.width, c.height);
+                ctx.drawImage(img, 0, 0);
+            };
         }
 
         document.querySelectorAll('canvas').forEach(c => {
@@ -313,36 +290,61 @@
             };
         });
 
-        function checkAll() {
-            let hasErrors = false;
-            let correctColored = 0;
-            let anyColored = false;
-            const totalCorrect = document.querySelectorAll('[data-is-u="true"]').length;
+        // --- Individual Card Validation Logic ---
+        function checkCard(btn) {
+            const card = btn.closest('.item-card');
+            const canvas = card.querySelector('canvas');
+            const overlay = card.querySelector('.status-overlay');
+            
+            const isU = card.dataset.isU === "true";
+            const isColored = canvas.dataset.hasBeenColored === "true";
+            
+            const isCorrect = (isU && isColored) || (!isU && !isColored);
+            
+            if (isCorrect) {
+                overlay.innerText = "✅";
+                overlay.classList.add('show');
+                btn.style.display = "none";
+                canvas.style.pointerEvents = "none"; 
+                card.dataset.verified = "true";
+                
+                // Trigger internalized confetti right at the correct picture
+                const rect = canvas.getBoundingClientRect();
+                confetti({
+                    particleCount: 120, 
+                    spread: 90, 
+                    scalar: 2.5, // Keeps the massive visibility size
+                    origin: { 
+                        x: (rect.left + rect.width / 2) / window.innerWidth, 
+                        y: (rect.top + rect.height / 2) / window.innerHeight 
+                    }
+                });
+                
+                checkGameCompletion();
+            } else {
+                overlay.innerText = "❌";
+                overlay.classList.add('show');
+                btn.disabled = true;
+                
+                setTimeout(() => {
+                    overlay.classList.remove('show');
+                    btn.disabled = false;
+                    
+                    if (isColored) {
+                        resetCanvas(canvas);
+                    }
+                }, 1500);
+            }
+        }
 
-            document.querySelectorAll('.item-card').forEach(card => {
-                const canvas = card.querySelector('canvas');
-                const isCorrect = card.dataset.isU === "true";
-                const isColored = canvas.dataset.hasBeenColored === "true";
-
-                if (isColored) {
-                    anyColored = true;
-                    if (!isCorrect) hasErrors = true;
-                    else correctColored++;
-                }
-            });
-
-            if (hasErrors) {
-                // Mistake made: reset everything automatically and notify user
-                showPopup("Ой-ой!", "Ты раскрасил предмет, который не начинается на букву 'У'. Всё сбрасывается, попробуй ещё раз!", false);
-                resetGame();
-            } else if (correctColored === totalCorrect) {
-                confetti();
-                showPopup("Молодец!", "Всё верно!", true);
-            } else if (correctColored > 0 && correctColored < totalCorrect) {
-                // Missing some correct ones but no mistakes, let them continue
-                showPopup("Почти готово!", "Ты на правильном пути! Продолжай раскрашивать остальные предметы, которые начинаются на букву 'У'.", false);
-            } else if (!anyColored) {
-                showPopup("Внимание!", "Сначала раскрась предметы, которые начинаются на букву 'У'!", false);
+        function checkGameCompletion() {
+            const totalCards = document.querySelectorAll('.item-card').length;
+            const verifiedCards = document.querySelectorAll('.item-card[data-verified="true"]').length;
+            
+            if (verifiedCards === totalCards) {
+                setTimeout(() => {
+                    window.location.href = 'U3.html';
+                }, 2000);
             }
         }
 

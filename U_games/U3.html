@@ -21,15 +21,15 @@
 
         /* Game Specific Styles */
         #game-area { 
-            min-height: 100vh; display: flex; align-items: center; justify-content: space-between; 
-            padding: 20px; box-sizing: border-box; flex-direction: row;
+            min-height: 100vh; display: flex; align-items: center; justify-content: center; 
+            gap: 100px; padding: 20px; box-sizing: border-box;
         }
         #canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
         .column { display: flex; flex-direction: column; gap: 20px; z-index: 2; }
         
         .node { 
-            width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; 
-            font-size: 3rem; font-weight: bold; border: 4px solid #6e8efb; border-radius: 20px; 
+            width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; 
+            font-size: 3.5rem; font-weight: bold; border: 4px solid #6e8efb; border-radius: 25px; 
             background: white; cursor: pointer; transition: transform 0.2s;
             user-select: none; -webkit-user-drag: none;
         }
@@ -37,9 +37,9 @@
 
         /* Media queries for larger screens */
         @media (min-width: 768px) {
-            #game-area { padding: 50px; }
+            #game-area { padding: 50px; max-width: 1200px; margin: 0 auto; justify-content: space-between; gap: 0; }
             .column { gap: 40px; }
-            .node { width: 150px; height: 150px; font-size: 4rem; }
+            .node { width: 180px; height: 180px; font-size: 5rem; border-radius: 35px; }
             .box { padding: 40px; }
         }
     </style>
@@ -57,14 +57,14 @@
     <div id="game-area">
         <div class="column" id="left-col">
             <div class="node" data-id="A">А</div>
-            <div class="node" data-id="U"><img src="../pictures/U/iron.png" alt="iron"></div>
+            <div class="node" data-id="U">У</div>
             <div class="node" data-id="O">О</div>
         </div>
 
         <div class="column" id="right-col">
+            <div class="node" data-id="U"><img src="../pictures/U/iron.png" alt="iron"></div>
             <div class="node" data-id="O"><img src="../pictures/U/shoes.png" alt="shoes"></div>
             <div class="node" data-id="A"><img src="../pictures/game3/shark-scary.png" alt="shark"></div>
-            <div class="node" data-id="U">У</div>
         </div>
     </div>
 
@@ -72,7 +72,7 @@
         <div class="box">
             <h1>Молодец!</h1>
             <button class="btn" onclick="location.reload()">Играть снова</button>
-            <button class="btn" onclick="window.location.href='U4.html'">Следующая страница</button>
+            <button class="btn" onclick="window.location.href='U4.html'">Далее</button>
         </div>
     </div>
 
@@ -128,7 +128,6 @@
 
         // --- Event Handlers (Mouse & Touch) ---
         
-        // Start Dragging
         function dragStart(e) {
             const clientX = e.clientX || (e.touches && e.touches[0].clientX);
             const clientY = e.clientY || (e.touches && e.touches[0].clientY);
@@ -137,7 +136,6 @@
             if (startNode) isDrawing = true;
         }
 
-        // Dragging
         function dragMove(e) {
             if (!isDrawing) return;
             const clientX = e.clientX || (e.touches && e.touches[0].clientX);
@@ -147,10 +145,8 @@
             draw(); 
         }
 
-        // End Dragging
         function dragEnd(e) {
             if (!isDrawing) return;
-            // For touchend, client coordinates are usually in changedTouches
             const clientX = e.clientX || (e.changedTouches && e.changedTouches[0].clientX);
             const clientY = e.clientY || (e.changedTouches && e.changedTouches[0].clientY);
             

@@ -4,36 +4,69 @@
     <meta charset="UTF-8">
     <title>Раскрась рыбок</title>
     <style>
-        body { background: #1a1a3a; margin: 0; font-family: sans-serif; overflow-x: hidden; }
+        body { 
+            background: linear-gradient(180deg, #0096c7 0%, #0077b6 35%, #03045e 100%); 
+            margin: 0; 
+            font-family: sans-serif; 
+            overflow-x: hidden; 
+            min-height: 100vh;
+        }
         
-        /* Fixed Header Area */
+        /* Fixed Header Area with a semi-transparent deep ocean blur */
         .header {
             position: sticky;
             top: 0;
-            background: #1a1a3a;
-            padding: 10px 0;
-            border-bottom: 2px solid #2f2f5f;
+            background: rgba(3, 4, 94, 0.9);
+            backdrop-filter: blur(5px);
+            padding: 15px 0;
+            border-bottom: 3px solid #00b4d8;
             display: flex;
             flex-direction: column;
             align-items: center;
             z-index: 500;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
 
         .instructions { color: white; text-align: center; margin: 5px 0; font-size: 1.2rem; }
-        .palette { display: flex; gap: 20px; padding: 10px; }
-        .btn { width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 4px solid white; }
+        .palette { display: flex; gap: 20px; padding: 5px; }
+        
+        .btn { 
+            width: 65px; 
+            height: 65px; 
+            border-radius: 50%; 
+            cursor: pointer; 
+            border: 4px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            transition: transform 0.1s;
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
         
         /* Grid with top margin to clear the fixed header */
-        .fish-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; padding: 20px; width: 90%; max-width: 1000px; margin: 0 auto; }
+        .fish-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; padding: 30px 20px; width: 90%; max-width: 1000px; margin: 0 auto; }
         
         .fish-container { position: relative; width: 100%; aspect-ratio: 1; cursor: pointer; background-color: transparent; transition: background-color 0.3s; }
         .fish-img { width: 100%; height: 100%; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; }
-        .fish-letter { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; font-weight: bold; color: black; pointer-events: none; text-shadow: 1px 1px 2px white; }
-        .error-x { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 50px; color: red; pointer-events: none; opacity: 0; transition: 0.2s; }
+        .fish-letter { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2.2rem; font-weight: bold; color: #03045e; pointer-events: none; text-shadow: 2px 2px 0px white, -2px -2px 0px white, 2px -2px 0px white, -2px 2px 0px white; }
+        .error-x { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 60px; color: #ff3333; pointer-events: none; opacity: 0; transition: 0.2s; text-shadow: 0 0 10px black; }
         
-        #modal, #completion-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); color: white; display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        #modal, #completion-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 62, 138, 0.95); color: white; display: flex; align-items: center; justify-content: center; z-index: 1000; }
         #canvas { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 999; }
-        .next-btn { padding: 15px 30px; font-size: 20px; cursor: pointer; background: #4caf50; color: white; border: none; border-radius: 10px; margin: 10px; }
+        .next-btn { padding: 15px 30px; font-size: 22px; font-weight: bold; cursor: pointer; background: #00b4d8; color: white; border: 2px solid white; border-radius: 15px; margin: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .next-btn:hover { background: #0096c7; }
+        
+        .modal-box { text-align: center; background: #03045e; padding: 40px; border-radius: 25px; border: 4px solid #00b4d8; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .modal-box h1 { margin-top: 0; font-size: 2.5rem; color: #00b4d8; }
+        .modal-box button { padding: 15px 40px; font-size: 20px; font-weight: bold; cursor: pointer; background: #00b4d8; color: white; border: 2px solid white; border-radius: 12px; margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .modal-box button:hover { background: #0096c7; }
     </style>
 </head>
 <body>
@@ -41,24 +74,23 @@
     <canvas id="canvas"></canvas>
 
     <div class="header">
-        <div class="instructions">А — Красный | О — Синий | У — Жёлтый</div>
         <div class="palette">
-            <div class="btn" style="background:red" onclick="activeLetter='A'; activeColor='red'"></div>
-            <div class="btn" style="background:blue" onclick="activeLetter='O'; activeColor='blue'"></div>
-            <div class="btn" style="background:yellow" onclick="activeLetter='Y'; activeColor='yellow'"></div>
+            <div class="btn" style="background:#ff3333" onclick="activeLetter='A'; activeColor='#ff3333'">А</div>
+            <div class="btn" style="background:#0055ff" onclick="activeLetter='O'; activeColor='#0055ff'">О</div>
+            <div class="btn" style="background:#ffcc00; color:#03045e; text-shadow:none;" onclick="activeLetter='Y'; activeColor='#ffcc00'">У</div>
         </div>
     </div>
 
     <div id="modal">
-        <div style="text-align: center; background: #2f2f5f; padding: 40px; border-radius: 20px;">
-            <h1>Правила:</h1>
-            <p>А — Красный | О — Синий | У — Жёлтый</p>
+        <div class="modal-box">
+            <h1>Раскрась рыбок!</h1>
+            <p style="font-size: 1.3rem; line-height: 1.6;"> Выбирай цвет сверху и нажимай на рыбок с подходящей буквой.</p>
             <button onclick="document.getElementById('modal').style.display='none'">Начать</button>
         </div>
     </div>
 
     <div id="completion-screen" style="display: none; flex-direction: column;">
-        <h1>Молодец!</h1>
+        <h1 style="font-size: 3.5rem; text-shadow: 0 4px 10px rgba(0,0,0,0.5); margin-bottom: 30px;">Молодец! 🌊</h1>
         <button class="next-btn" onclick="location.reload()">Играть снова</button>
         <button class="next-btn" onclick="window.location.href='U5.html'">Следующая страница</button>
     </div>
@@ -84,7 +116,7 @@
             div.className = 'fish-container';
             div.dataset.solved = "false";
             div.innerHTML = `
-                <div class="fish-img" style="-webkit-mask-image: url('../pictures/U/fish1.png'); mask-image: url('../pictures/U/fish1.png'); background-color: #ddd;"></div>
+                <div class="fish-img" style="-webkit-mask-image: url('../pictures/U/fish1.png'); mask-image: url('../pictures/U/fish1.png'); background-color: #e2eafc;"></div>
                 <div class="fish-letter">${fish.letter}</div>
                 <div class="error-x" id="x${i}">✖</div>
             `;
@@ -117,7 +149,7 @@
             canvas.height = window.innerHeight;
             let particles = Array.from({length: 100}, () => ({
                 x: Math.random() * canvas.width, y: Math.random() * canvas.height,
-                r: Math.random() * 5 + 2, color: ['red', 'blue', 'yellow'][Math.floor(Math.random()*3)],
+                r: Math.random() * 5 + 2, color: ['#ff3333', '#0055ff', '#ffcc00'][Math.floor(Math.random()*3)],
                 vy: Math.random() * 3 + 1
             }));
             function draw() {

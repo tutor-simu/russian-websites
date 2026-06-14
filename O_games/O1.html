@@ -9,7 +9,7 @@
             margin: 0;
             padding: 0;
             height: 100vh;
-            background: linear-gradient(135deg, #121224, #1a1a3a);
+            background: linear-gradient(135deg, #f4f7f6, #e2e8f0);
             font-family: sans-serif;
             display: flex;
             flex-direction: row;
@@ -29,14 +29,14 @@
         }
 
         #title-bubble {
-            background: rgba(255, 255, 255, 0.95);
+            background: #ffffff;
             padding: 8px 25px;
             border-radius: 15px;
             font-size: 20px;
             font-weight: bold;
-            color: #1a1a3a;
+            color: #2d3748;
             margin-bottom: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             text-align: center;
             z-index: 5;
         }
@@ -44,7 +44,7 @@
         canvas {
             background: #ffffff;
             border-radius: 20px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
             cursor: pointer;
             width: 100%;
             height: 100%;
@@ -55,9 +55,9 @@
 
         #palette-sidebar {
             width: 140px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.5);
             backdrop-filter: blur(12px);
-            border-left: 2px solid rgba(255, 255, 255, 0.1);
+            border-left: 2px solid rgba(0, 0, 0, 0.05);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -78,19 +78,19 @@
             padding: 5px 0;
             margin-bottom: 10px;
             scrollbar-width: thin;
-            scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+            scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
         }
 
         .swatch-container::-webkit-scrollbar {
             width: 6px;
         }
         .swatch-container::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.15);
             border-radius: 10px;
         }
 
         .sidebar-label {
-            color: #ffffff;
+            color: #4a5568;
             font-size: 14px;
             font-weight: bold;
             text-transform: uppercase;
@@ -105,7 +105,7 @@
             cursor: pointer;
             border: 3px solid transparent;
             transition: transform 0.2s, border-color 0.2s;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             flex-shrink: 0;
         }
 
@@ -114,8 +114,8 @@
         }
 
         .color-swatch.active {
-            border-color: #ffffff;
-            box-shadow: 0 0 15px rgba(255,255,255,0.6);
+            border-color: #4a5568;
+            box-shadow: 0 0 12px rgba(0,0,0,0.15);
         }
 
         .btn-group {
@@ -142,14 +142,14 @@
 
         #reset-btn {
             background: #ff4757;
-            box-shadow: 0 4px 10px rgba(255, 71, 87, 0.4);
+            box-shadow: 0 4px 10px rgba(255, 71, 87, 0.3);
         }
 
         #reset-btn:hover { background: #ff6b81; }
 
         #next-btn {
             background: #2ed573;
-            box-shadow: 0 4px 10px rgba(46, 213, 115, 0.4);
+            box-shadow: 0 4px 10px rgba(46, 213, 115, 0.3);
         }
 
         #next-btn:hover { background: #26af5f; }
@@ -181,7 +181,7 @@
                 width: 100%;
                 height: 28vh;
                 border-left: none;
-                border-top: 2px solid rgba(255, 255, 255, 0.1);
+                border-top: 2px solid rgba(0, 0, 0, 0.05);
                 padding: 8px 10px;
                 flex-direction: row;
                 justify-content: space-between;
@@ -247,7 +247,7 @@
             <div class="color-swatch" style="background-color: #70a1ff;" data-color="#70a1ff"></div>
             <div class="color-swatch" style="background-color: #7bed9f;" data-color="#7bed9f"></div>
             <div class="color-swatch" style="background-color: #ff7f50;" data-color="#ff7f50"></div>
-            <div class="color-swatch" style="background-color: #ffffff;" data-color="#ffffff"></div>
+            <div class="color-swatch" style="background-color: #ffffff; border: 3px solid #e2e8f0;" data-color="#ffffff"></div>
             <div class="color-swatch" style="background-color: #a4b0be;" data-color="#a4b0be"></div>
         </div>
         
@@ -378,6 +378,9 @@
 
             const x = Math.floor((e.clientX - rect.left) * scaleX);
             const y = Math.floor((e.clientY - rect.top) * scaleY);
+
+            boxX = (e.clientX - rect.left) * scaleX;
+            boxY = (e.clientY - rect.top) * scaleY;
 
             floodFill(x, y, selectedColor);
             document.getElementById('next-btn').style.display = 'block';

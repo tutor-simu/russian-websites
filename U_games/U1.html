@@ -26,77 +26,113 @@
             align-items: center; 
             justify-content: space-evenly; /* Distributes everything nicely on one screen */
             box-sizing: border-box;
-            padding: 10px;
-        }
-
-        /* Large visual title reminder for 3-year-olds */
-        .instructions {
-            color: #ffffff;
-            font-size: 26px;
-            font-weight: bold;
-            text-align: center;
-            margin: 45px 10px 0 10px;
-            text-shadow: 0 0 15px #ffa502, 0 2px 4px rgba(0,0,0,0.5);
-            max-width: 85%;
-            user-select: none;
+            padding: 20px;
         }
         
-        /* Grid Layout: Compact row/column spacing */
+        /* Grid Layout: Scaled up significantly to make the stars way bigger */
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(4, 1fr); /* 3 clean rows total on desktop/tablets */
-            gap: 15px;
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 30px;
             width: 85vw;
-            max-width: 550px;
+            max-width: 900px; /* Massive stars on desktop */
             box-sizing: border-box;
+            margin-top: 40px;
         }
 
-        @media (max-width: 500px) {
-            .instructions {
-                font-size: 22px;
-                margin-top: 55px;
-            }
+        @media (max-width: 600px) {
             .grid-container {
-                grid-template-columns: repeat(3, 1fr); /* 3 columns balances aspect ratio beautifully on tall mobile phones */
-                gap: 10px;
-                width: 90vw;
+                grid-template-columns: repeat(3, 1fr); /* Balanced layout for mobile screens */
+                gap: 15px;
+                width: 92vw;
             }
         }
 
         .star-group { 
             cursor: pointer; 
             width: 100%; 
-            max-height: 11vh; /* Scales down automatically on short mobile displays to preserve room */
+            height: auto; /* Lets the SVG scale naturally up and down */
             transition: transform 0.2s; 
         }
         .star-group:active { transform: scale(0.92); }
         .star { fill: #ffffff; stroke: #333; stroke-width: 3; transition: fill 0.3s; }
-        .letter { pointer-events: none; font-size: 35px; font-weight: bold; fill: #333; user-select: none; }
+        
+        /* Font size relative to the 100x100 SVG box so it stays perfectly inside the star */
+        .letter { 
+            pointer-events: none; 
+            font-size: 38px; 
+            font-weight: bold; 
+            fill: #333; 
+            user-select: none; 
+        }
         
         .controls { 
             display: flex; 
             gap: 20px; 
             align-items: center; 
+            margin-top: 10px;
             margin-bottom: 10px;
         }
         
         button { 
-            padding: 12px 28px; 
-            font-size: 18px; 
+            padding: 16px 32px; 
+            font-size: 22px; 
             border: none; 
-            border-radius: 15px; 
+            border-radius: 20px; 
             cursor: pointer; 
             font-weight: bold; 
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             transition: transform 0.1s;
+            color: white;
         }
         button:active { transform: scale(0.95); }
-        #reset-btn { background: #ff4757; color: white; }
-        #submit-btn { background: #2ed573; color: white; }
+        #reset-btn { background: #ff4757; }
+        #submit-btn { background: #2ed573; }
+        .modal-btn { background: #ffa502; color: #121224; margin-top: 15px; }
 
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 100; }
-        .modal-content { background: #ffffff; padding: 40px; border-radius: 20px; text-align: center; color: #121224; max-width: 85%; }
+        /* Space-themed translucent modals */
+        .modal { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(10, 10, 25, 0.88); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 100; 
+        }
+        
+        .modal-content { 
+            background: rgba(20, 20, 45, 0.95); 
+            padding: 40px; 
+            border-radius: 25px; 
+            text-align: center; 
+            color: #ffffff; 
+            max-width: 85%;
+            border: 3px solid #ffa502;
+            box-shadow: 0 0 30px rgba(255, 165, 2, 0.4);
+        }
+        
         #completion-modal { display: none; }
+
+        /* Corner Russian U with a styled container */
+        .top-left-u { 
+            position: absolute; 
+            top: 15px; 
+            left: 20px; 
+            font-size: 55px; 
+            font-weight: bold; 
+            color: #ffa502; 
+            z-index: 50;
+            user-select: none;
+            background: rgba(20, 20, 45, 0.9);
+            padding: 5px 18px;
+            border-radius: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            border: 2px solid #ffa502;
+        }
 
         .top-right-cat { 
             position: absolute; 
@@ -106,22 +142,30 @@
             z-index: 50; 
         }
         
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
         @media (max-width: 500px) {
             .top-right-cat { width: 50px; }
-            button { padding: 10px 22px; font-size: 16px; }
+            .top-left-u { font-size: 36px; top: 12px; left: 15px; padding: 4px 14px; border-radius: 15px; }
+            button { padding: 12px 28px; font-size: 18px; }
         }
     </style>
 </head>
 <body>
+    <div class="top-left-u">У</div>
     <img src="../pictures/CHARACTERS/astro_cat.png" class="top-right-cat" alt="Cat Character">
-    
-    <h1 class="instructions">Нажми на все буквы У! ⭐</h1>
 
     <div id="welcome-modal" class="modal">
         <div class="modal-content">
             <h2>Добро пожаловать!</h2>
             <p>Пожалуйста, нажмите на все буквы "У", чтобы их раскрасить.</p>
-            <button onclick="document.getElementById('welcome-modal').style.display='none'">Начать!</button>
+            <button class="modal-btn" onclick="document.getElementById('welcome-modal').style.display='none'">Начать!</button>
         </div>
     </div>
 
@@ -135,8 +179,10 @@
     <div id="completion-modal" class="modal">
         <div class="modal-content">
             <h2>Отлично!</h2>
-            <button onclick="location.reload()" style="margin-bottom: 10px;">Играть снова</button><br>
-            <button onclick="location.href='U2.html'">Далее</button>
+            <div class="modal-buttons">
+                <button id="reset-btn" onclick="location.reload()">Играть снова</button>
+                <button id="submit-btn" onclick="location.href='U2.html'">Далее</button>
+            </div>
         </div>
     </div>
 
@@ -152,7 +198,7 @@
             group.classList.add('star-group');
             group.innerHTML = `
                 <polygon class="star" points="50,5 61,35 95,35 67,55 78,85 50,65 22,85 33,55 5,35 39,35" />
-                <text x="50" y="55" text-anchor="middle" dominant-baseline="middle" class="letter">${char}</text>
+                <text x="50" y="58" text-anchor="middle" dominant-baseline="middle" class="letter">${char}</text>
             `;
             group.dataset.char = char;
             group.onclick = () => {

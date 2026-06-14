@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,13 +12,26 @@
             height: 100vh;
             overflow: hidden;
             font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #game-field {
+            position: relative;
+            width: 1280px;
+            height: 800px;
+            transform: translate(-50%, -50%) scale(var(--game-scale, 1));
+            top: 50%;
+            left: 50%;
+            position: absolute;
+            transform-origin: center center;
         }
 
         .cloud-container {
             position: absolute;
             width: 280px;
             height: 180px;
-            /* Using your image as the cloud background */
             background: url('../pictures/O/cloude.png') no-repeat center center;
             background-size: contain;
             display: flex;
@@ -29,7 +42,6 @@
         .guide-o {
             font-size: 80px;
             color: rgba(0, 0, 0, 0.6);
-            /* Centering the guide O */
             pointer-events: none;
             z-index: 1;
         }
@@ -56,6 +68,7 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.5);
             z-index: 100;
         }
+        
         .btn {
             padding: 12px 20px; margin: 10px; border: none; border-radius: 15px;
             background: #6e8efb; color: white; font-size: 18px; cursor: pointer;
@@ -64,19 +77,33 @@
 </head>
 <body>
 
-    <div class="cloud-container" style="top: 5%; left: 5%;"><div class="guide-o">O</div><canvas class="cloud-canvas"></canvas></div>
-    <div class="cloud-container" style="top: 10%; left: 60%;"><div class="guide-o">O</div><canvas class="cloud-canvas"></canvas></div>
-    <div class="cloud-container" style="top: 40%; left: 35%;"><div class="guide-o">O</div><canvas class="cloud-canvas"></canvas></div>
-    <div class="cloud-container" style="top: 65%; left: 5%;"><div class="guide-o">O</div><canvas class="cloud-canvas"></canvas></div>
-    <div class="cloud-container" style="top: 60%; left: 65%;"><div class="guide-o">O</div><canvas class="cloud-canvas"></canvas></div>
+    <div id="game-field">
+        <div class="cloud-container" style="top: 40px; left: 60px;"><div class="guide-o">O</div><canvas class="cloud-canvas"></canvas></div>
+        <div class="cloud-container" style="top: 80px; left: 768px;"><div class="guide-o">O</div><canvas class="cloud-canvas"></canvas></div>
+        <div class="cloud-container" style="top: 320px; left: 448px;"><div class="guide-o">O</div><canvas class="cloud-canvas"></canvas></div>
+        <div class="cloud-container" style="top: 520px; left: 60px;"><div class="guide-o">O</div><canvas class="cloud-canvas"></canvas></div>
+        <div class="cloud-container" style="top: 480px; left: 832px;"><div class="guide-o">O</div><canvas class="cloud-canvas"></canvas></div>
+    </div>
 
     <div id="congrats-popup">
-        <h1 style="color: #6e8efb;">Well Done! 🎉</h1>
-        <button class="btn" onclick="location.reload()">Try again</button>
-        <button class="btn" onclick="window.location.href='O3.html'">Next</button>
+        <h1 style="color: #6e8efb;">Отличная работа!</h1>
+        <button class="btn" onclick="location.reload()">Снова</button>
+        <button class="btn" onclick="window.location.href='O3.html'">Далее</button>
     </div>
 
     <script>
+        function updateScale() {
+            const fieldW = 1280;
+            const fieldH = 800;
+            const scaleX = window.innerWidth / fieldW;
+            const scaleY = window.innerHeight / fieldH;
+            const finalScale = Math.min(scaleX, scaleY);
+            document.documentElement.style.setProperty('--game-scale', finalScale);
+        }
+
+        window.addEventListener('resize', updateScale);
+        window.addEventListener('DOMContentLoaded', updateScale);
+
         let completed = 0;
         const total = 5;
 
@@ -85,17 +112,20 @@
             const ctx = canvas.getContext('2d');
             let isDrawing = false, hasDrawn = false;
             
-            // Set yellow color and increased thickness
             ctx.strokeStyle = '#FFD700'; 
             ctx.lineWidth = 15; 
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
             const getPos = (e) => {
-                const rect = canvas.getBoundingClientRect();
-                return { x: (e.touches ? e.touches[0].clientX : e.clientX) - rect.left, 
-                         y: (e.touches ? e.touches[0].clientY : e.clientY) - rect.top };
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = rect.width / canvas.width;
+            const scaleY = rect.height / canvas.height;
+            return { 
+                x: ((e.touches ? e.touches[0].clientX : e.clientX) - rect.left) / scaleX, 
+                y: ((e.touches ? e.touches[0].clientY : e.clientY) - rect.top) / scaleY 
             };
+        };
 
             const start = (e) => { isDrawing = true; ctx.beginPath(); ctx.moveTo(getPos(e).x, getPos(e).y); };
             const draw = (e) => { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
