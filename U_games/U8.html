@@ -7,7 +7,7 @@
     <style>
         body {
             margin: 0;
-            background: #f0f8ff;
+            background: #add8e6; /* Baby blue */
             font-family: sans-serif;
             min-height: 100vh;
             overflow: hidden;
@@ -15,15 +15,67 @@
             flex-direction: column;
         }
 
-        .syllable {
+        .word-wrapper {
             position: absolute;
-            font-size: 15vw;
-            font-weight: bold;
-            transition: color 0.5s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             user-select: none;
+            transform: translate(-50%, -50%);
         }
 
-        .active { color: red; }
+        .sun {
+            font-size: 6vw;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            white-space: nowrap;
+            margin-bottom: -1vw;
+        }
+
+        .letters-row {
+            display: flex;
+            gap: 0; /* Zero space between letters side-by-side */
+        }
+
+        .letter-group {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .syllable {
+            font-size: 12vw; 
+            font-weight: bold;
+            transition: color 0.2s ease;
+            color: black;
+            line-height: 1;
+        }
+
+        .finger {
+            position: absolute;
+            top: 100%; 
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 6vw;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            white-space: nowrap;
+        }
+
+        /* Word activation (show sun) */
+        .word-wrapper.show-sun .sun {
+            opacity: 1;
+        }
+
+        /* Letter activation (turn letter red and show finger) */
+        .letter-group.active .syllable {
+            color: red;
+        }
+
+        .letter-group.active .finger {
+            opacity: 1;
+        }
 
         /* Popups */
         .overlay {
@@ -58,20 +110,21 @@
         <div class="box">
             <h1>Молодец!</h1>
             <div class="button-row">
-                <button class="btn" onclick="location.reload()">Ещё раз</button>
+                <button class="btn" onclick="location.reload()">Играть снова</button>
                 <button class="btn" onclick="window.location.href='../entrence_pages/AOU.html'">Далее</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Syllables placed in reading order (Top-Left, Top-Right, Bottom-Left, Bottom-Right)
         const syllablesData = [
-            { text: 'АУ', top: '5%', left: '10%' },
-            { text: 'АУ', top: '15%', left: '60%' },
-            { text: 'АО', top: '60%', left: '10%' },
-            { text: 'УА', top: '65%', left: '55%' }
+            { text: 'AY', top: '20%', left: '30%', delay: 1000 },
+            { text: 'AU', top: '40%', left: '65%', delay: 3000 },
+            { text: 'AO', top: '65%', left: '65%', delay: 5000 },
+            { text: 'УА', top: '85%', left: '30%', delay: 7000 }
         ];
+
+        const letterStepTime = 800;
 
         function startGame() {
             document.getElementById('start-overlay').style.display = 'none';
@@ -82,27 +135,57 @@
         function renderSyllables() {
             const area = document.getElementById('game-area');
             syllablesData.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = 'syllable';
-                div.innerText = item.text;
-                div.style.top = item.top;
-                div.style.left = item.left;
-                div.id = 'syl-' + index;
-                area.appendChild(div);
+                const wrapper = document.createElement('div');
+                wrapper.className = 'word-wrapper';
+                wrapper.style.top = item.top;
+                wrapper.style.left = item.left;
+                wrapper.id = 'wrapper-' + index;
+
+                const lettersHTML = item.text.split('').map(char => `
+                    <div class="letter-group">
+                        <div class="syllable">${char}</div>
+                        <div class="finger">&#128070;</div>
+                    </div>
+                `).join('');
+
+                wrapper.innerHTML = `
+                    <div class="sun">&#9728;</div>
+                    <div class="letters-row">${lettersHTML}</div>
+                `;
+                area.appendChild(wrapper);
             });
         }
 
         async function animateSequence() {
             for (let i = 0; i < syllablesData.length; i++) {
-                // Wait for the previous one to "sing"
-                await new Promise(r => setTimeout(r, 1000));
-                document.getElementById('syl-' + i).classList.add('active');
+                const wrapper = document.getElementById('wrapper-' + i);
+                const letterGroups = wrapper.querySelectorAll('.letter-group');
+                
+                await new Promise(r => setTimeout(r, (i === 0 ? syllablesData[i].delay : syllablesData[i].delay - syllablesData[i-1].delay)));
+
+                // 1. Show sun above the entire word
+                wrapper.classList.add('show-sun');
+                
+                // Pause briefly before the finger starts moving
+                await new Promise(r => setTimeout(r, 600));
+
+                // 2. Animate finger underneath letters sequentially
+                for (let j = 0; j < letterGroups.length; j++) {
+                    if (j > 0) {
+                        await new Promise(r => setTimeout(r, letterStepTime));
+                        letterGroups[j-1].classList.remove('active');
+                    }
+                    letterGroups[j].classList.add('active');
+                }
+                
+                // Turn off the last letter and the sun
+                await new Promise(r => setTimeout(r, letterStepTime));
+                letterGroups[letterGroups.length - 1].classList.remove('active');
+                wrapper.classList.remove('show-sun');
             }
             
-            // Show modal after a short delay once finished
-            setTimeout(() => {
-                document.getElementById('end-modal').style.display = 'flex';
-            }, 1000);
+            await new Promise(r => setTimeout(r, 1000));
+            document.getElementById('end-modal').style.display = 'flex';
         }
     </script>
 </body>
