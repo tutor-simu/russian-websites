@@ -231,19 +231,21 @@
 
         .fridge-slot {
             position: absolute;
-            width: 90px;
-            height: 90px;
-            border: 2px dashed rgba(255, 255, 255, 0.3);
-            border-radius: 14px;
+            width: 120px;
+            height: 120px;
+            border: 3px dashed rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
             box-sizing: border-box;
             z-index: 3;
             pointer-events: none;
         }
 
-        #slot-1 { top: 15%; left: 22%; }
-        #slot-2 { top: 15%; left: 53%; }
-        #slot-3 { top: 28%; left: 22%; }
-        #slot-4 { top: 28%; left: 53%; }
+        /* Увеличенные и распределенные 5 слотов */
+        #slot-1 { top: 15%; left: 15%; }
+        #slot-2 { top: 15%; left: 55%; }
+        #slot-3 { top: 38%; left: 15%; }
+        #slot-4 { top: 38%; left: 55%; }
+        #slot-5 { top: 60%; left: 35%; }
 
         /* ========================================================
            RIGHT SIDEBAR ITEM CONTAINER
@@ -312,8 +314,8 @@
 
         .food-item.placed-inside {
             position: absolute !important;
-            width: 90px;
-            height: 90px;
+            width: 120px;
+            height: 120px;
             border-color: #2ed573;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             cursor: default;
@@ -336,15 +338,16 @@
         /* Mobile Adaptations */
         @media (max-width: 768px) {
             body { flex-direction: column-reverse; overflow: auto; height: auto; }
-            #main-workspace { height: 60vh; padding: 10px; }
+            #main-workspace { height: 70vh; padding: 10px; }
             #title-instructions { font-size: 15px; padding: 8px 15px; margin-bottom: 5px; }
-            #fridge-container { height: 45vh; max-width: 300px; }
+            #fridge-container { height: 50vh; max-width: 300px; }
             
-            .fridge-slot { width: 65px; height: 65px; }
-            #slot-1 { left: 22%; }
-            #slot-2 { left: 53%; }
-            #slot-3 { left: 22%; }
-            #slot-4 { left: 53%; }
+            .fridge-slot { width: 80px; height: 80px; }
+            #slot-1 { left: 15%; top: 10%; }
+            #slot-2 { left: 55%; top: 10%; }
+            #slot-3 { left: 15%; top: 28%; }
+            #slot-4 { left: 55%; top: 28%; }
+            #slot-5 { left: 35%; top: 46%; }
 
             #intro-stage { padding: 15px; }
             .space-bear { width: 150px; }
@@ -363,7 +366,7 @@
             .sidebar-header { margin-bottom: 10px; font-size: 14px; }
             .scrollable-shelf { display: flex; flex-direction: row; overflow-x: auto; overflow-y: hidden; height: 160px; justify-content: flex-start; align-items: center; }
             .food-item { width: 110px; height: 110px; flex-shrink: 0; }
-            .food-item.placed-inside { width: 65px; height: 65px; }
+            .food-item.placed-inside { width: 80px; height: 80px; }
         }
     </style>
 </head>
@@ -396,6 +399,7 @@
             <div class="fridge-slot" id="slot-2" data-occupied="false"></div>
             <div class="fridge-slot" id="slot-3" data-occupied="false"></div>
             <div class="fridge-slot" id="slot-4" data-occupied="false"></div>
+            <div class="fridge-slot" id="slot-5" data-occupied="false"></div>
         </div>
     </div>
 
@@ -406,9 +410,9 @@
             <div class="food-item" data-match="true" data-name="молоко"><img src="pictures/молоко.png" alt="Молоко"></div>
             <div class="food-item" data-match="true" data-name="мед"><img src="pictures/мед.png" alt="Мед"></div>
             <div class="food-item" data-match="true" data-name="мороженое"><img src="pictures/мороженое.png" alt="Мороженое"></div>
+            <div class="food-item" data-match="true" data-name="малина"><img src="pictures/малина.png" alt="Малина"></div>
             <div class="food-item" data-match="false" data-name="бананы"><img src="pictures/бананы.png" alt="Бананы"></div>
             <div class="food-item" data-match="false" data-name="виноград"><img src="pictures/виноград.png" alt="Виноград"></div>
-            <div class="food-item" data-match="false" data-name="малина"><img src="pictures/малина.png" alt="Малина"></div>
         </div>
     </div>
 
@@ -492,7 +496,8 @@
                         (sRect.top + sRect.height / 2) - (iRect.top + iRect.height / 2)
                     );
 
-                    const activeTolerance = Math.max(sRect.width, 90);
+                    // Увеличиваем радиус захвата для удобства попадания в увеличенные слоты
+                    const activeTolerance = Math.max(sRect.width, 120);
 
                     if (dist < activeTolerance) {
                         fridge.appendChild(item);
@@ -538,8 +543,8 @@
     }
 
     function checkWinCondition() {
-        if (correctSnappedCount === 4) {
-            // Activates the custom victory pop-up flex design instead of revealing an independent button
+        // Увеличено условие победы до 5 правильных элементов
+        if (correctSnappedCount === 5) {
             victoryPopup.style.display = 'flex';
         }
     }

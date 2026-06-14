@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Космический полет | Bilingvi Online</title>
+    <title>Космический полет</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
 
@@ -17,7 +17,6 @@
             width: 100%;
             height: 100vh;
             font-family: 'Nunito', sans-serif;
-            /* Custom space background image */
             background-image: url('../pictures/background/space_backround.jpeg');
             background-size: cover;
             background-position: center;
@@ -68,7 +67,6 @@
             transition: transform 0s, opacity 0s;
         }
 
-        /* Light Mode Planet Surface */
         .planet {
             position: absolute;
             bottom: 0;
@@ -82,7 +80,6 @@
             transition: opacity 0.5s ease;
         }
 
-        /* Spaceship / Rocket on the side (Game 1) */
         .spaceship {
             position: absolute;
             bottom: 10vh;
@@ -94,12 +91,10 @@
             transition: transform 2.5s cubic-bezier(0.5, 0, 1, 0.5);
         }
 
-        /* Launch animation state */
         .spaceship.launch {
             transform: translateY(-120vh);
         }
 
-        /* Game Container */
         .game-board {
             position: relative;
             z-index: 10;
@@ -110,11 +105,10 @@
             justify-content: space-around;
             align-items: flex-end;
             margin-bottom: 12vh;
-            margin-right: 150px; /* Make space for the rocket on the right */
+            margin-right: 150px;
             transition: opacity 0.5s ease;
         }
 
-        /* Flag Pole and Base */
         .flag-pole {
             position: relative;
             width: 10px;
@@ -135,7 +129,6 @@
             border-radius: 50%;
         }
 
-        /* Flag Cloth */
         .flag-cloth {
             position: absolute;
             top: 10px;
@@ -156,7 +149,6 @@
             transform-origin: left center;
         }
 
-        /* Colorful Border Animation using CSS Gradient Border */
         .flag-cloth.active {
             border: 5px solid transparent;
             animation: border-rainbow 3s linear infinite;
@@ -176,7 +168,6 @@
             100% { border-color: #ee82ee; }
         }
 
-        /* Instructions */
         .instruction {
             position: absolute;
             top: 5%;
@@ -192,7 +183,6 @@
             transition: opacity 0.5s ease;
         }
 
-        /* Popup Modal Styles */
         .popup-overlay {
             position: fixed;
             top: 0;
@@ -296,45 +286,44 @@
 <body>
 
     <div id="space-scene">
-        <img src="pictures/saturn.png" alt="Saturn" class="planet-saturn" onerror="this.src='https://placehold.co/220x220/ffa502/ffffff?text=Сатурн'">
-        <img src="../pictures/rackets/racket.png" alt="Rocket" class="rocket-ship" onerror="this.src='https://placehold.co/150x150/ff4757/ffffff?text=Ракета'">
+        <img src="pictures/saturn.png" alt="Сатурн" class="planet-saturn" onerror="this.src='https://placehold.co/220x220/ffa502/ffffff?text=Сатурн'">
+        <img src="../pictures/rackets/racket.png" alt="Ракета" class="rocket-ship" onerror="this.src='https://placehold.co/150x150/ff4757/ffffff?text=Ракета'">
     </div>
 
     <div class="planet"></div>
     
-    <img src="../pictures/rackets/racket.png" alt="Spaceship" class="spaceship" onerror="this.src='https://placehold.co/150x150/ff4757/ffffff?text=Ракета'">
+    <img src="../pictures/rackets/racket.png" alt="Ракета" class="spaceship" onerror="this.src='https://placehold.co/150x150/ff4757/ffffff?text=Ракета'">
 
     <div class="instruction">
-        Rocket landed successfully! Watch the flags transition one by one.
+        Ракета успешно приземлилась! Наблюдайте за поочередным переключением флажков.
     </div>
 
     <div class="game-board">
         <div class="flag-pole">
-            <div class="flag-cloth" id="flag-0">AM</div>
+            <div class="flag-cloth" id="flag-0">АМ</div>
         </div>
         <div class="flag-pole">
-            <div class="flag-cloth" id="flag-1">OM</div>
+            <div class="flag-cloth" id="flag-1">ОМ</div>
         </div>
         <div class="flag-pole">
-            <div class="flag-cloth" id="flag-2">UM</div>
+            <div class="flag-cloth" id="flag-2">УМ</div>
         </div>
     </div>
 
     <div id="completion-popup" class="popup-overlay">
         <div class="popup-content">
-            <img src="../pictures/game4/bear.png" alt="Bear" class="popup-bear" onerror="this.src='https://placehold.co/150x200/4a69bd/ffffff?text=Медведь'">
+            <img src="../pictures/game4/bear.png" alt="Медведь" class="popup-bear" onerror="this.src='https://placehold.co/150x200/4a69bd/ffffff?text=Медведь'">
             <div class="popup-text">
-                <p>Ты закончил эту букву!Нажми "Далее" для следующей страницы или сыграй снова.</p>
+                <p>Ты закончил эту букву! Нажми "Далее" для следующей страницы или сыграй снова.</p>
                 <div class="popup-buttons">
                     <button class="btn-popup btn-repeat" onclick="location.reload()">Снова</button>
-                    <button class="btn-popup btn-next" onclick="location.href='../entrance_pages/C.html'">Далее</button>
+                    <button class="btn-popup btn-next" onclick="location.href='../entrence_pages/C.html'">Далее</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Game 1 Logic
         const flags = [
             document.getElementById('flag-0'),
             document.getElementById('flag-1'),
@@ -344,28 +333,21 @@
 
         let currentIndex = 0;
         let activationCount = 0;
-        const transitionInterval = 2000; // Time in milliseconds each flag stays highlighted
+        const transitionInterval = 2000;
 
         function highlightNextFlag() {
-            // Remove active class from all flags
             flags.forEach(flag => flag.classList.remove('active'));
 
-            // Add active class to current flag
             flags[currentIndex].classList.add('active');
 
             activationCount++;
 
-            // Check if all 3 flags have finished their cycle
             if (activationCount === 3) {
-                // Wait one final interval before stopping loop and launching
                 setTimeout(() => {
                     clearInterval(timer);
-                    // Deactivate the last flag
                     flags[currentIndex].classList.remove('active');
-                    // Launch spaceship
                     spaceship.classList.add('launch');
                     
-                    // Fade out Game 1 elements after launch animation finishes (2500ms)
                     setTimeout(() => {
                         const game1Planet = document.querySelector('.planet');
                         const game1Board = document.querySelector('.game-board');
@@ -377,7 +359,6 @@
                         if (game1Instruction) game1Instruction.style.opacity = '0';
                         if (game1Spaceship) game1Spaceship.style.opacity = '0';
 
-                        // Completely remove them from layout and start Game 2
                         setTimeout(() => {
                             if (game1Planet) game1Planet.style.display = 'none';
                             if (game1Board) game1Board.style.display = 'none';
@@ -394,33 +375,26 @@
             currentIndex = (currentIndex + 1) % flags.length;
         }
 
-        // Start the continuous cycle
         const timer = setInterval(highlightNextFlag, transitionInterval);
         
-        // Run immediately on load
         highlightNextFlag();
 
-        // Game 2 Sequence Triggered after Game 1 ends
         function startSecondGame() {
             const saturn = document.querySelector('.planet-saturn');
             const rocket2 = document.querySelector('.rocket-ship');
 
-            // Make Saturn appear
             saturn.classList.add('visible');
 
-            // Fade in and initialize the rocket near Saturn after the planet appears
             setTimeout(() => {
                 rocket2.style.opacity = '1';
                 rocket2.style.transform = 'scale(0.5) rotate(-140deg)';
             }, 1500);
 
-            // Travel from Saturn (top right area) towards the bottom left corner while increasing size
             setTimeout(() => {
                 rocket2.style.transition = 'transform 4s cubic-bezier(0.45, 0, 0.55, 1)';
                 rocket2.style.transform = 'translate(-80vw, 80vh) scale(1.9) rotate(-140deg)';
             }, 3000); 
 
-            // Show popup screen after the travel animation completes (3000ms delay + 4000ms transition = 7000ms)
             setTimeout(() => {
                 const popup = document.getElementById('completion-popup');
                 if (popup) {

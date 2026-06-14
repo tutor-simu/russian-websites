@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Космическое Чтение | Слоги М</title>
+    <title>Космическое Чтение | Слоги</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap');
 
@@ -11,16 +11,13 @@
             --bg-dark: #0b0b1e;
             --card-bg: rgba(255, 255, 255, 0.95);
             --active-border: #ffa502;
-            --char-m: #1e272e;
-            --vowel-base: #7f8c8d;
-            --vowel-singing: #ff4757; 
+            --char-color: #1e272e;
         }
 
         body { 
             margin: 0;
             padding: 20px;
             min-height: 100vh; 
-            /* Kept static space background as requested */
             background: radial-gradient(circle at center, #1b1b3a 0%, #080811 100%);
             font-family: 'Nunito', sans-serif;
             display: flex;
@@ -32,7 +29,7 @@
             overflow-x: hidden;
         }
 
-        /* Welcome Screen Overlay */
+        /* Welcome Screen */
         #welcome-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -69,14 +66,14 @@
         }
         #start-btn:hover { transform: scale(1.05); }
 
-        /* Game Main Board - Top to Bottom */
+        /* Game Board */
         .game-card { 
             background: rgba(17, 24, 39, 0.6); 
             padding: 30px; 
             border-radius: 35px; 
             box-shadow: 0 20px 40px rgba(0,0,0,0.5); 
             width: 100%;
-            max-width: 600px; 
+            max-width: 650px; 
             text-align: center; 
             box-sizing: border-box;
             border: 4px solid rgba(255, 255, 255, 0.1);
@@ -101,6 +98,7 @@
             flex-direction: column;
             gap: 20px;
             width: 100%;
+            align-items: center;
         }
 
         .card-row-item {
@@ -110,65 +108,41 @@
             align-items: center;
             justify-content: center;
             border: 6px solid transparent;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
-            padding: 20px 0;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            padding: 20px 15px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-        }
-
-        .text-word-container {
-            font-size: 100px;
-            font-weight: 900;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            line-height: 1;
-        }
-
-        .letter-m {
-            color: var(--char-m);
-        }
-
-        /* Red Fill Progress Wave Container Configuration */
-        .vowel-holder {
-            position: relative;
-            display: inline-block;
-            color: var(--vowel-base); /* Unfilled grey color */
-        }
-
-        .vowel-filling-red {
-            position: absolute;
-            top: 0;
-            left: 0;
-            color: var(--vowel-singing); /* Filled red color */
-            clip-path: inset(0 100% 0 0); /* Starts completely hidden (0% width) */
-            transition: clip-path 0.03s linear; /* Ultra-smooth pixel increments */
-        }
-
-        /* Active highlight containment tracking */
-        .card-row-item.active {
-            border-color: var(--active-border);
-            box-shadow: 0 0 30px rgba(255, 165, 2, 0.6);
-            transform: translateY(-2px);
-        }
-
-        /* Responsive Floating Space Bear (Bottom Right Corner) */
-        #bear-anchor {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            pointer-events: none;
-            width: 12vw;            /* Scales dynamically with screen width */
-            min-width: 80px;
-            max-width: 180px; 
-        }
-
-        .space-bear {
+            min-height: 140px;
             width: 100%;
-            height: auto;
-            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.6));
-            animation: floatingBear 3.5s ease-in-out infinite;
+            box-sizing: border-box;
+        }
+
+        /* Animation Track Layout */
+        .animation-track {
+            position: relative;
+            width: 90%;
+            max-width: 500px;
+            height: 100px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 90px;
+            font-weight: 900;
+            color: var(--char-color);
+            margin: 0 auto;
+        }
+
+        .static-letter {
+            z-index: 2;
+            position: absolute;
+            right: 0;
+        }
+
+        .moving-letter {
+            position: absolute;
+            left: 0;
+            transition: transform 2.0s cubic-bezier(0.25, 1, 0.5, 1);
+            z-index: 3;
+            will-change: transform;
         }
 
         /* End-Game Victory Popup */
@@ -229,13 +203,31 @@
             flex-direction: column;
         }
 
+        #bear-anchor {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            pointer-events: none;
+            width: 12vw;
+            min-width: 80px;
+            max-width: 180px; 
+        }
+
+        .space-bear {
+            width: 100%;
+            height: auto;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.6));
+            animation: floatingBear 3.5s ease-in-out infinite;
+        }
+
         @keyframes floatingBear {
             0%, 100% { transform: translateY(0px) rotate(0deg); }
             50% { transform: translateY(-12px) rotate(2deg); }
         }
 
         @media (max-width: 768px) {
-            .text-word-container { font-size: 75px; }
+            .animation-track { font-size: 70px; height: 80px; max-width: 320px; }
             .game-card { padding: 20px; }
         }
     </style>
@@ -245,7 +237,7 @@
     <div id="finalModal" class="modal">
         <div class="modal-content">
             <h1>Миссия выполнена!</h1>
-            <p style="font-size: 18px; font-weight: 700; margin-bottom: 25px;">Ты прочитал все космические слоги без ошибок!</p>
+            <p style="font-size: 18px; font-weight: 700; margin-bottom: 25px;">Ты прочитал все космические слоги!</p>
             <div class="btn-group">
                 <button class="btn btn-restart" onclick="location.reload()">Заново</button>
                 <button class="btn btn-next" onclick="location.href='M6.html'">Далее</button>
@@ -256,7 +248,7 @@
     <div id="welcome-screen">
         <div class="welcome-bubble">
             <h1>Космическое чтение</h1>
-            <p>Читай слоги за ракетой! Следи пальчиком, называй буковки слева направо и пой их громко-громко, не отрывая голос!</p>
+            <p>Смотри, как левая буква летит к правой и они соединяются в слог!</p>
             <button id="start-btn" onclick="startGame()">Начать миссию</button>
         </div>
     </div>
@@ -291,121 +283,77 @@
             initScreen(currentScreen);
         }
 
-        function initScreen(screenIndex) {
+        async function initScreen(screenIndex) {
             const screenId = `grid${screenIndex + 1}`;
             const targetContainer = document.getElementById(screenId);
             targetContainer.innerHTML = '';
 
-            screensData[screenIndex].forEach(wordString => {
+            const rowsData = [];
+
+            // Создаем элементы для всех трех слогов, но пока не запускаем анимацию
+            screensData[screenIndex].forEach(syllable => {
                 const cardRow = document.createElement('div');
                 cardRow.className = 'card-row-item';
-                
-                const cleanStr = wordString.replace(/\s+/g, '');
-                const textContainer = document.createElement('div');
-                textContainer.className = 'text-word-container';
-                
-                // Construct characters structurally to support left-to-right clip fills
-                for (let char of cleanStr) {
-                    if (char === 'М') {
-                        const spanM = document.createElement('span');
-                        spanM.className = 'letter-m';
-                        spanM.innerText = char;
-                        textContainer.appendChild(spanM);
-                    } else {
-                        // Vowel container mimicking fluid wave fill bar
-                        const vowelWrapper = document.createElement('div');
-                        vowelWrapper.className = 'vowel-holder';
-                        
-                        const baseVowel = document.createElement('span');
-                        baseVowel.innerText = char;
-                        baseVowel.style.visibility = 'hidden'; // Keeps spacing bounds stable
 
-                        const visibleVowel = document.createElement('span');
-                        visibleVowel.innerText = char;
-                        
-                        // Red filled element layered strictly above base
-                        const fillingRed = document.createElement('span');
-                        fillingRed.className = 'vowel-filling-red';
-                        fillingRed.innerText = char;
+                const track = document.createElement('div');
+                track.className = 'animation-track';
 
-                        vowelWrapper.appendChild(baseVowel);
-                        vowelWrapper.appendChild(visibleVowel);
-                        vowelWrapper.appendChild(fillingRed);
-                        
-                        textContainer.appendChild(vowelWrapper);
-                    }
-                }
+                const firstChar = syllable[0];
+                const secondChar = syllable[1];
+
+                const staticLetter = document.createElement('div');
+                staticLetter.className = 'static-letter';
+                staticLetter.innerText = secondChar;
+
+                const movingLetter = document.createElement('div');
+                movingLetter.className = 'moving-letter';
+                movingLetter.innerText = firstChar;
+                movingLetter.style.left = '0px';
                 
-                cardRow.appendChild(textContainer);
+                track.appendChild(movingLetter);
+                track.appendChild(staticLetter);
+
+                cardRow.appendChild(track);
                 targetContainer.appendChild(cardRow);
+
+                rowsData.push({ cardRow, movingLetter, staticLetter });
             });
 
-            animateCards(screenIndex);
-        }
-
-        async function animateCards(screenIndex) {
-            const cards = document.querySelectorAll(`#screen${screenIndex + 1} .card-row-item`);
-            
-            for (let card of cards) {
-                card.classList.add('active');
-                
-                const mLetter = card.querySelector('.letter-m');
-                const redFill = card.querySelector('.vowel-filling-red');
-
-                // Reverse syllable layout adjustments (e.g. АМ)
-                if (card.innerText.startsWith('М')) {
-                    if (mLetter) {
-                        mLetter.style.transform = 'scale(1.1)';
-                        await new Promise(r => setTimeout(r, 400));
-                        mLetter.style.transform = 'scale(1)';
-                    }
-                }
-
-                // Smooth fluid fill progression logic running left-to-right smoothly
-                if (redFill) {
-                    let clipPercent = 100;
-                    const duration = 2000; // Total duration holding the drawn letter in ms
-                    const steps = 100;
-                    const stepVal = 1;
-                    const delay = duration / steps;
-
-                    await new Promise(resolve => {
-                        let fillInterval = setInterval(() => {
-                            clipPercent -= stepVal;
-                            if (clipPercent <= 0) {
-                                clipPercent = 0;
-                                clearInterval(fillInterval);
-                                resolve();
-                            }
-                            redFill.style.clipPath = `inset(0 ${clipPercent}% 0 0)`;
-                        }, delay);
-                    });
-                }
-
-                if (!card.innerText.startsWith('М')) {
-                    if (mLetter) {
-                        mLetter.style.transform = 'scale(1.1)';
-                        await new Promise(r => setTimeout(r, 400));
-                        mLetter.style.transform = 'scale(1)';
-                    }
-                }
-
-                await new Promise(resolve => setTimeout(resolve, 300)); // Post-sing frame stability
-                card.classList.remove('active');
-                await new Promise(resolve => setTimeout(resolve, 300)); // Delay gap between stacked rows
+            // Запуск анимации строго по очереди (1 -> 2 -> 3)
+            for (let i = 0; i < rowsData.length; i++) {
+                await triggerAnimation(rowsData[i].cardRow, rowsData[i].movingLetter, rowsData[i].staticLetter);
             }
 
-            // Target screen sequencing
-            setTimeout(() => {
-                if (screenIndex < screensData.length - 1) {
-                    document.getElementById(`screen${currentScreen + 1}`).classList.remove('active-screen');
-                    currentScreen++;
-                    document.getElementById(`screen${currentScreen + 1}`).classList.add('active-screen');
-                    initScreen(currentScreen);
-                } else {
-                    document.getElementById('finalModal').style.display = 'flex';
-                }
-            }, 400);
+            // Переключение экранов или завершение
+            if (screenIndex < screensData.length - 1) {
+                document.getElementById(`screen${currentScreen + 1}`).classList.remove('active-screen');
+                currentScreen++;
+                document.getElementById(`screen${currentScreen + 1}`).classList.add('active-screen');
+                initScreen(currentScreen);
+            } else {
+                document.getElementById('finalModal').style.display = 'flex';
+            }
+        }
+
+        function triggerAnimation(cardRow, movingEl, staticEl) {
+            return new Promise(async (resolve) => {
+                await new Promise(r => setTimeout(r, 400));
+                cardRow.style.borderColor = 'var(--active-border)';
+                
+                // Вычисляем точное расстояние между левой и правой буквой
+                const staticRect = staticEl.getBoundingClientRect();
+                const movingRect = movingEl.getBoundingClientRect();
+                const distance = staticRect.left - movingRect.left - movingRect.width;
+
+                movingEl.style.transform = `translateX(${distance}px)`;
+
+                await new Promise(r => setTimeout(r, 2000)); // Время удержания в соединенном виде
+                cardRow.style.borderColor = 'transparent';
+                movingEl.style.transform = 'translateX(0px)'; // Возврат на исходную
+                await new Promise(r => setTimeout(r, 800));
+                
+                resolve();
+            });
         }
     </script>
 </body>

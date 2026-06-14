@@ -125,7 +125,7 @@
             z-index: 10;
         }
         #right-column {
-            gap: 60px; /* Increase this value (e.g., 60px or 80px) to push the right-side boxes further apart vertically */
+            gap: 60px;
         }
         .card {
             background: var(--card-bg);
@@ -142,7 +142,6 @@
             width: 100%;
         }
 
-        /* Fluidly scaling cards to fit screen, maintaining side-by-side layout without scrolling */
         .card.image-card {
             aspect-ratio: 1;
             padding: 0;
@@ -180,7 +179,7 @@
         }
 
         .card.image-card:hover:not(.matched) img {
-            transform: scale(1.15); /* Zoom in effect */
+            transform: scale(1.15);
         }
 
         .card.image-card:hover:not(.matched) {
@@ -294,20 +293,19 @@
     <div id="welcome-screen">
         <div class="welcome-bubble">
             <h1>Космическое чтение</h1>
-            <p>Зажми и проведи линию от картинки к правильному звуку!</p>
+            <p>Зажми и проведи линию от текста к правильной картинке!</p>
             <button id="start-btn" onclick="startGame()">Начать игру</button>
         </div>
     </div>
 
     <div id="game-layout">
-        <div class="screen-title">Протяни линию от картинки к звуку</div>
-        <div class="instruction-text">Зажми на картинке и веди линию к звуку</div>
+        <div class="screen-title">Протяни линию от звука к картинке</div>
+        <div class="instruction-text">Зажми на звуке и веди линию к картинке</div>
         
         <div class="matching-board" id="board-container">
             <svg id="lines-canvas"></svg>
             
             <div class="column" id="left-column"></div>
-            
             <div class="column" id="right-column"></div>
         </div>
     </div>
@@ -317,10 +315,11 @@
     </div>
 
     <script>
+        // Использованы русские кириллические буквы
         const pairs = [
-            { id: 'cow', img: 'pictures/cow.png', text: 'MY' },
-            { id: 'crying', img: 'pictures/crying-kid.png', text: 'AY' },
-            { id: 'lost', img: 'pictures/woman-on-tree.png', text: 'YA' }
+            { id: 'cow', img: 'pictures/cow.png', text: 'МУ' },
+            { id: 'crying', img: 'pictures/crying-kid.png', text: 'УА' },
+            { id: 'lost', img: 'pictures/woman-on-tree.png', text: 'АУ' }
         ];
 
         let matchedCount = 0;
@@ -349,8 +348,20 @@
             leftCol.innerHTML = '';
             rightCol.innerHTML = '';
 
-            const shuffledPairsImages = shuffleArray([...pairs]);
             const shuffledPairsText = shuffleArray([...pairs]);
+            const shuffledPairsImages = shuffleArray([...pairs]);
+
+            shuffledPairsText.forEach(pair => {
+                const card = document.createElement('div');
+                card.className = 'card text-card';
+                card.dataset.id = pair.id;
+                card.innerText = pair.text;
+                
+                card.addEventListener('mousedown', (e) => startDraw(e, card));
+                card.addEventListener('touchstart', (e) => startDraw(e, card), { passive: false });
+                
+                leftCol.appendChild(card);
+            });
 
             shuffledPairsImages.forEach(pair => {
                 const card = document.createElement('div');
@@ -363,18 +374,6 @@
                 img.onerror = () => { img.src = `https://placehold.co/150x150/7f8c8d/ffffff?text=${pair.id}`; };
                 
                 card.appendChild(img);
-                
-                card.addEventListener('mousedown', (e) => startDraw(e, card));
-                card.addEventListener('touchstart', (e) => startDraw(e, card), { passive: false });
-                
-                leftCol.appendChild(card);
-            });
-
-            shuffledPairsText.forEach(pair => {
-                const card = document.createElement('div');
-                card.className = 'card text-card';
-                card.dataset.id = pair.id;
-                card.innerText = pair.text;
                 rightCol.appendChild(card);
             });
 
@@ -385,7 +384,7 @@
             window.addEventListener('touchend', endDraw);
         }
 
-        function getCenter(element) {
+        function getLeftCenter(element) {
             const boardRect = document.getElementById('board-container').getBoundingClientRect();
             const rect = element.getBoundingClientRect();
             return {
@@ -394,7 +393,7 @@
             };
         }
 
-        function getCenterRight(element) {
+        function getRightCenter(element) {
             const boardRect = document.getElementById('board-container').getBoundingClientRect();
             const rect = element.getBoundingClientRect();
             return {
@@ -411,7 +410,7 @@
             startCard = card;
             
             const svg = document.getElementById('lines-canvas');
-            const startPoint = getCenter(startCard);
+            const startPoint = getLeftCenter(startCard);
 
             tempLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
             tempLine.setAttribute('x1', startPoint.x);
@@ -456,7 +455,7 @@
             const clientY = e.type.includes('touch') ? e.changedTouches[0].clientY : e.clientY;
             
             const elementBelow = document.elementFromPoint(clientX, clientY);
-            const rightCard = elementBelow ? elementBelow.closest('.text-card') : null;
+            const rightCard = elementBelow ? elementBelow.closest('.image-card') : null;
 
             if (rightCard && !rightCard.classList.contains('matched')) {
                 if (rightCard.dataset.id === startCard.dataset.id) {
@@ -464,8 +463,8 @@
                     startCard.classList.add('matched');
                     rightCard.classList.add('matched');
 
-                    const p1 = getCenter(startCard);
-                    const p2 = getCenterRight(rightCard);
+                    const p1 = getLeftCenter(startCard);
+                    const p2 = getRightCenter(rightCard);
 
                     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
                     line.setAttribute('x1', p1.x);
@@ -495,8 +494,8 @@
                         }, 800);
                     }
                 } else {
-                    const p1 = getCenter(startCard);
-                    const p2 = getCenterRight(rightCard);
+                    const p1 = getLeftCenter(startCard);
+                    const p2 = getRightCenter(rightCard);
 
                     const wrongLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
                     wrongLine.setAttribute('x1', p1.x);
@@ -523,12 +522,12 @@
                 svg.innerHTML = '';
                 
                 permanentLines.forEach((line, id) => {
-                    const leftCard = document.querySelector(`.image-card[data-id="${id}"]`);
-                    const rightCard = document.querySelector(`.text-card[data-id="${id}"]`);
+                    const leftCard = document.querySelector(`.text-card[data-id="${id}"]`);
+                    const rightCard = document.querySelector(`.image-card[data-id="${id}"]`);
                     
                     if (leftCard && rightCard) {
-                        const p1 = getCenter(leftCard);
-                        const p2 = getCenterRight(rightCard);
+                        const p1 = getLeftCenter(leftCard);
+                        const p2 = getRightCenter(rightCard);
                         
                         line.setAttribute('x1', p1.x);
                         line.setAttribute('y1', p1.y);

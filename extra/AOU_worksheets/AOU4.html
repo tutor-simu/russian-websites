@@ -107,6 +107,17 @@
             border-radius: 30px;
             text-align: center;
             border: 2px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 10px;
         }
 
         .btn {
@@ -119,6 +130,11 @@
             font-weight: bold;
             cursor: pointer;
             transition: filter 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-next {
+            background: #38BDF8;
         }
 
         .btn:hover { filter: brightness(1.1); }
@@ -136,13 +152,16 @@
     <div id="successModal" class="modal">
         <div class="modal-content">
             <h1>Миссия выполнена!</h1>
-            <button class="btn" onclick="location.reload()">Играть снова</button>
+            <div class="modal-buttons">
+                <button class="btn" onclick="location.reload()">Играть снова</button>
+                <a href="../../entrence_pages/M.html" class="btn btn-next">Далее</a>
+            </div>
         </div>
     </div>
 
     <script>
         // Syllables matching Image 3 layout
-        const pairs = ['АУ', 'УА', 'ОУ', 'УО', 'АО', 'ОА'];
+        const pairs = ['АУ', 'УА', 'ОУ', 'УО', 'АО', 'ОA'];
         // Create an array with two of each syllable for matching pairs
         const syllables = [...pairs, ...pairs];
 
