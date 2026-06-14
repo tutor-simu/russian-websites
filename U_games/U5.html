@@ -22,19 +22,20 @@
 
         /* Game Specific Styles */
         #game-area { 
-            height: 100vh; display: flex; align-items: center; justify-content: space-between; 
+            height: 100vh; display: flex; align-items: center; justify-content: center; 
+            gap: 120px; /* Brings columns closer on desktop */
             padding: 20px; box-sizing: border-box; touch-action: none;
         }
         #canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; touch-action: none; pointer-events: none; }
         .column { display: flex; flex-direction: column; gap: 20px; z-index: 2; }
         
         .node { 
-            width: 120px; 
-            height: 120px; 
+            width: 140px; 
+            height: 140px; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            font-size: 3.5rem; 
+            font-size: 4rem; 
             font-weight: bold; 
             border: 4px solid #6e8efb; 
             border-radius: 25px; 
@@ -56,10 +57,10 @@
         /* Responsive adjustments for larger tablet/desktop screens */
         @media (min-width: 768px) {
             .box { padding: 40px; max-width: 500px; }
-            #game-area { padding: 50px; }
+            #game-area { padding: 20px; gap: 200px; } /* Keeps distance manageable on large screens */
             .column { gap: 40px; }
-            .node { width: 250px; height: 200px; font-size: 6rem; border-radius: 40px; border-width: 6px; }
-            .node img { border-radius: 35px; }
+            .node { width: 300px; height: 250px; font-size: 8rem; border-radius: 45px; border-width: 6px; }
+            .node img { border-radius: 39px; }
         }
     </style>
 </head>
@@ -76,22 +77,22 @@
     <div id="game-area">
         <div class="column" id="left-col">
             <div class="node" data-id="A">А</div>
-            <div class="node" data-id="U"><img src="../pictures/U/U-say.png" alt="U"></div>
+            <div class="node" data-id="U">У</div>
             <div class="node" data-id="O">О</div>
         </div>
 
         <div class="column" id="right-col">
-            <div class="node" data-id="O"><img src="../pictures/U/O-say.png" alt="O"></div>
             <div class="node" data-id="A"><img src="../pictures/U/A-say.png" alt="A"></div>
-            <div class="node" data-id="U">У</div>
+            <div class="node" data-id="U"><img src="../pictures/U/U-say.png" alt="U"></div>
+            <div class="node" data-id="O"><img src="../pictures/U/O-say.png" alt="O"></div>
         </div>
     </div>
 
     <div id="end-modal" class="overlay" style="display: none;">
         <div class="box">
             <h1>Молодец!</h1>
-            <button class="btn" onclick="location.reload()">Играть снова</button>
-            <button class="btn" onclick="window.location.href='U6.html'">Следующая страница</button>
+            <button class="btn" onclick="location.reload()">Далее</button>
+            <button class="btn" onclick="window.location.href='U6.html'">Играть снова</button>
         </div>
     </div>
 
@@ -143,7 +144,6 @@
 
         // Unified Pointer Events (Works for Mouse AND Touch)
         window.addEventListener('pointerdown', (e) => {
-            // Ensure primary touch/mouse interaction works seamlessly
             const nodes = document.querySelectorAll('.node');
             startNode = Array.from(nodes).find(n => {
                 const r = n.getBoundingClientRect();

@@ -7,7 +7,7 @@
     <style>
         body {
             margin: 0;
-            background: #f0f8ff;
+            background: #3b9ae1; /* Ocean blue background */
             font-family: sans-serif;
             display: flex;
             flex-direction: column;
@@ -19,34 +19,40 @@
 
         #game-view {
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: nowrap; /* Forces everything strictly onto one line */
+            align-items: center;
             justify-content: center;
-            gap: 10px;
             width: 90vw;
+            gap: 2px;
         }
 
         .letter {
             color: black;
             font-weight: bold;
             transition: color 0.5s ease;
+            line-height: 1;
         }
 
-        .big { font-size: 15vw; }
-        .small { font-size: 8vw; }
         .active { color: red; }
 
         /* General Popup styles */
         .overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); z-index: 100;
+            background: rgba(0, 0, 0, 0.3); /* Semi-transparent start overlay so game behind is slightly visible */
+            z-index: 100;
             display: flex; justify-content: center; align-items: center;
         }
+
+        #end-modal {
+            background: rgba(0, 0, 0, 0.7); /* Keep end modal darker for focus */
+        }
+
         .popup, .box {
             background: white; padding: 30px; border-radius: 20px; 
             z-index: 101; text-align: center; width: 80%; max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
 
-        /* NEW: Button row to make them side-by-side */
         .button-row {
             display: flex;
             justify-content: center;
@@ -107,10 +113,15 @@
             container.innerHTML = ''; 
             
             const group = groups[currentIndex];
+            
+            // Calculate dynamic font size to ensure it fits perfectly in a single line
+            const calculatedSize = Math.min(14, 85 / group.count) + 'vw';
+
             for(let i = 0; i < group.count; i++) {
                 const span = document.createElement('span');
                 span.innerText = group.char;
-                span.className = `letter ${group.size}`;
+                span.className = 'letter';
+                span.style.fontSize = calculatedSize;
                 container.appendChild(span);
             }
             animateGroup();
