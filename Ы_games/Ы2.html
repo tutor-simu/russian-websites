@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Найди лишний предмет — Звук Ы</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            width: 100%;
+            min-height: 100vh;
+            background: #FCE4EC; /* Нежный мыльно-розовый фон */
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* --- Welcome Screen --- */
+        #welcome-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; min-height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .welcome-bubble {
+            background: #fff;
+            padding: 40px;
+            border-radius: 40px;
+            text-align: center;
+            border: 8px solid #e84118;
+            max-width: 650px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .welcome-bubble h1 {
+            font-size: 36px;
+            color: #e84118;
+            font-weight: 800;
+        }
+        .welcome-bubble p {
+            font-size: 22px;
+            line-height: 1.5;
+            color: #333;
+        }
+
+        /* --- Game Layout --- */
+        #game-layout {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 1000px;
+            padding: 20px;
+            z-index: 10;
+        }
+
+        .title {
+            font-size: 36px;
+            color: #d32f2f;
+            font-weight: 800;
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        #round-container { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 25px; 
+            justify-content: center; 
+            margin-bottom: 20px; 
+            width: 100%;
+        }
+        
+        /* Игровые карточки в стиле мыльных элементов */
+        .item-card { 
+            width: 240px; 
+            background: white;
+            border-radius: 25px; 
+            border: 5px solid white; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            cursor: pointer; 
+            transition: transform 0.2s, border-color 0.2s; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            gap: 15px;
+        }
+        .item-card:hover { 
+            transform: scale(1.05); 
+            border-color: #ce93d8;
+        }
+        
+        .item-card img {
+            width: 100%;
+            height: 160px;
+            object-fit: contain;
+        }
+
+        .item-card span {
+            font-size: 32px;
+            font-weight: 800;
+            color: #2c3e50;
+            letter-spacing: 2px;
+        }
+
+        #feedback { 
+            font-size: 80px; 
+            margin: 10px; 
+            height: 100px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- End Screen --- */
+        #end-screen { 
+            display: none; 
+            background: white; 
+            padding: 40px; 
+            border-radius: 40px; 
+            text-align: center; 
+            border: 8px solid #4cd137; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            z-index: 10;
+            max-width: 550px; /* Увеличено для лучшего размещения кнопок в ряд */
+            width: 90%;
+        }
+        #end-screen h2 {
+            font-size: 36px;
+            color: #4cd137;
+            margin-bottom: 25px;
+        }
+
+        /* Контейнер для кнопок в конце игры */
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap; /* Кнопки аккуратно перенесутся на мобильных экранах */
+            margin-top: 20px;
+        }
+
+        /* Кнопки управления */
+        .button-style {
+            display: inline-block;
+            padding: 15px 40px;
+            font-size: 22px;
+            font-weight: bold;
+            background-color: #4cd137;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(76, 209, 55, 0.4);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .btn-container .button-style {
+            margin: 0; /* Отступы теперь контролируются свойством gap */
+        }
+        .button-style:hover {
+            transform: scale(1.05);
+            background-color: #41b52c;
+        }
+        .blue-btn {
+            background-color: #2e86de;
+            box-shadow: 0 5px 20px rgba(46, 134, 222, 0.4);
+        }
+        .blue-btn:hover {
+            background-color: #256db8;
+        }
+
+        /* Мышка в углу */
+        #mouse-corner {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 120px;
+            height: auto;
+            animation: floatMouse 3s ease-in-out infinite alternate;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        @keyframes floatMouse {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-10px); }
+        }
+
+        @media (max-width: 600px) {
+            .item-card { width: 180px; padding: 15px; }
+            .item-card img { height: 120px; }
+            .item-card span { font-size: 24px; }
+            .title { font-size: 28px; }
+            .button-style { padding: 12px 30px; font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="welcome-screen">
+        <div class="welcome-bubble">
+            <h1>Вычеркни лишний предмет!</h1>
+            <p>Внимательно посмотри на картинки в ряду. В названии двух предметов прячется звук <b>Ы</b>, а в третьем его нет. Найди этот лишний предмет и нажми на него!</p>
+            <button id="start-btn" style="margin-top: 10px;" class="button-style" onclick="nextRound()">Начать игру</button>
+        </div>
+    </div>
+
+    <div id="game-layout">
+        <div class="title">Найди лишний предмет в ряду!</div>
+        <div id="round-container"></div>
+        <div id="feedback"></div>
+    </div>
+
+    <div id="end-screen">
+        <h2>Замечательно!</h2>
+        <p style="font-size: 20px; margin-bottom: 20px; color: #555;">Ты отлично находишь звук Ы!</p>
+        <div class="btn-container">
+            <button class="button-style blue-btn" onclick="location.reload()">Играть снова</button>
+            <a href="Ы3.html" class="button-style">Далее</a>
+        </div>
+    </div>
+
+    <img id="mouse-corner" src="pictures/mouse.png" alt="Мышка" onerror="this.src='https://placehold.co/120x120/e84118/ffffff?text=Мышка'">
+
+    <script>
+        // Функция для естественного и чистого озвучивания слов
+        function pronounceWord(text) {
+            if ('speechSynthesis' in window) {
+                let utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ru-RU';
+                utterance.rate = 0.85; // Слегка умеренная скорость, комфортная для детей
+                utterance.pitch = 1.0;  // Естественная тональность голоса
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Данные раундов с вашими оригинальными путями к файлам
+        const rounds = [
+            [
+                { name: 'pictures/smoke.png', text: 'ДЫМ', correct: true },
+                { name: 'pictures/soap.png', text: 'МЫЛО', correct: true },
+                { name: '../Ш_games/pictures/shar.png', text: 'ШАР', correct: false }
+            ],
+            [
+                { name: '../pictures/U/mustage.png', text: 'УСЫ', correct: true },
+                { name: 'pictures/mouse.png', text: 'МЫШЬ', correct: true },
+                { name: '../extra/07_ЗАКРЕПЛЕНИЕ/pictures/bee.jpeg', text: 'ОСА', correct: false }
+            ],
+            [
+                { name: '../C_games/pictures/chese.png', text: 'СЫР', correct: true },
+                { name: 'pictures/clock.png', text: 'ЧАСЫ', correct: true },
+                { name: 'pictures/house.png', text: 'ДОМ', correct: false }
+            ]
+        ];
+
+        let currentRoundIndex = 0;
+        let currentRoundItems = [];
+
+        function nextRound() {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('game-layout').style.display = 'flex';
+            currentRoundItems = [...rounds[currentRoundIndex]];
+            renderRound();
+        }
+
+        function renderRound() {
+            const container = document.getElementById('round-container');
+            container.innerHTML = '';
+            
+            currentRoundItems.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                
+                // Озвучивание при ручном нажатии на карточку
+                card.onclick = () => {
+                    pronounceWord(item.text);
+                    handleChoice(item);
+                };
+
+                const img = document.createElement('img');
+                img.src = item.name;
+                img.alt = item.text;
+                img.onerror = function() {
+                    this.src = `https://placehold.co/240x160/ce93d8/ffffff?text=${item.text}`;
+                };
+
+                const span = document.createElement('span');
+                span.innerText = item.text;
+
+                card.appendChild(img);
+                card.appendChild(span);
+                container.appendChild(card);
+            });
+
+            // Автоматическое перечисление слов раунда вслух при его начале
+            if ('speechSynthesis' in window) {
+                setTimeout(() => {
+                    currentRoundItems.forEach((item, index) => {
+                        setTimeout(() => {
+                            pronounceWord(item.text);
+                        }, index * 1400); // Четкий интервал между словами
+                    });
+                }, 500);
+            }
+        }
+
+        function handleChoice(item) {
+            const feedback = document.getElementById('feedback');
+            
+            if (item.correct === false) {
+                confetti({ particleCount: 60, spread: 60, origin: { y: 0.8 } });
+                feedback.innerText = "✅";
+                
+                setTimeout(() => {
+                    feedback.innerText = "";
+                    currentRoundIndex++;
+                    if (currentRoundIndex < rounds.length) {
+                        currentRoundItems = [...rounds[currentRoundIndex]];
+                        renderRound();
+                    } else {
+                        endGame();
+                    }
+                }, 1200);
+            } else {
+                feedback.innerText = "❌";
+                setTimeout(() => feedback.innerText = "", 1000);
+            }
+        }
+
+        function endGame() {
+            document.getElementById('game-layout').style.display = 'none';
+            document.getElementById('end-screen').style.display = 'block';
+            
+            if ('speechSynthesis' in window) {
+                let endUtterance = new SpeechSynthesisUtterance("Замечательно! Ты отлично находишь звук Ы!");
+                endUtterance.lang = 'ru-RU';
+                window.speechSynthesis.speak(endUtterance);
+            }
+        }
+    </script>
+</body>
+</html>

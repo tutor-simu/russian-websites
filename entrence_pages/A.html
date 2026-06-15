@@ -116,8 +116,7 @@
 
     <div class="container">
         <div class="header">
-            <h1>Буква A - Практика</h1>
-            <p>Выберите урок ниже</p>
+            <h1>Буква A</h1>
         </div>
 
         <div class="grid" id="lessons-grid"></div>
@@ -130,8 +129,6 @@
     <script>
         const gridContainer = document.getElementById('lessons-grid');
         let htmlContent = '';
-        
-        // Loop back up to 7 items for the Letter A files
         for (let i = 1; i <= 7; i++) {
             htmlContent += `
                 <a href="../A_games/A${i}.html" class="class-btn btn-${i}">
