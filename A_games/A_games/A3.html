@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Rescue - Game 3</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; 
+            height: 100vh; 
+            background: url('../pictures/background/space_backround.jpeg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Comic Sans MS', 'Segoe UI', cursive;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        #welcome-screen {
+            position: fixed;
+            top: 0; 
+            left: 0; 
+            width: 100vw; 
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .welcome-bubble {
+            background: beige;
+            opacity: 0.9; 
+            padding: 30px;
+            border-radius: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            max-width: 800px;
+            width: 90%; 
+            text-align: left;
+            border: 8px solid #333;
+            box-sizing: border-box;
+            position: relative;
+            margin: auto;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .welcome-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 30px 20px 0;
+            border-style: solid;
+            border-color: #333 transparent transparent;
+        }
+
+        .welcome-ear-icon {
+            font-size: 100px;
+            flex-shrink: 0;
+        }
+
+        .welcome-text-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .welcome-bubble h1 { font-size: 40px; margin-top: 0; color: #e84118; text-transform: uppercase; text-align: center; width: 100%; }
+        .welcome-bubble p { font-size: 22px; line-height: 1.5; margin-bottom: 25px; }
+        .welcome-bubble b { color: #2e86de; }
+
+        #start-btn {
+            padding: 15px 40px; font-size: 24px; font-weight: bold;
+            background-color: #4cd137; color: white; border: none; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.3); transition: transform 0.2s;
+        }
+        #start-btn:hover { transform: scale(1.1); }
+
+        #game-layout {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly; 
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #letter-cue {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            font-size: 100px;
+            font-weight: bold;
+            color: #4cd137;
+            text-shadow: 0 0 20px #4cd137, 2px 2px 5px rgba(0,0,0,0.8);
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        #item-container {
+            margin-top: 2vh; 
+            position: relative;
+        }
+
+        #item-image {
+            width: 450px;  
+            height: 450px; 
+            object-fit: cover; 
+            padding: 0; 
+            object-position: center; 
+            background: white;
+            border-radius: 50%;
+            border: 10px solid #2e86de;
+            box-shadow: 0 0 30px #2e86de;
+            display: block;
+        }
+
+        /* Play/Replay pronunciation button positioned to the right of the main picture */
+        #replay-btn {
+            position: absolute;
+            right: -80px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background-color: #fbc531;
+            border: 6px solid #fff;
+            font-size: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transition: transform 0.2s, background-color 0.2s;
+            z-index: 20;
+        }
+
+        #replay-btn:hover {
+            transform: translateY(-50%) scale(1.15);
+            background-color: #e1b12c;
+        }
+
+        /* Speaker / Mute Pop-up */
+        #speaker-popup {
+            position: absolute;
+            right: 50px;
+            top: 40%;
+            transform: translateY(-50%);
+            background: #fff;
+            padding: 20px;
+            border-radius: 25px;
+            border: 6px solid #fbc531;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: bounce 2s infinite alternate;
+            cursor: pointer;
+        }
+
+        .speaker-icon {
+            font-size: 60px;
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        #speaker-popup p {
+            margin: 0;
+            font-size: 20px;
+            font-weight: bold;
+            color: #2f3640;
+            pointer-events: none;
+        }
+
+        @keyframes bounce {
+            0% { transform: translateY(calc(-50% - 10px)); }
+            100% { transform: translateY(calc(-50% + 10px)); }
+        }
+
+        #feedback {
+            display: none;
+            font-size: 150px;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 30;
+            pointer-events: none;
+            animation: popFeedback 0.6s ease-out;
+        }
+
+        @keyframes popFeedback {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 1;}
+            80% { transform: translate(-50%, -50%) scale(1.3); opacity: 1;}
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0;} 
+        }
+
+        .options-outer {
+            display: flex;
+            justify-content: center;
+            gap: 5vw; 
+            margin-top: 2vh;
+        }
+
+        .option-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 80px;
+            font-weight: bold;
+            color: white;
+            transition: all 0.2s ease-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            -webkit-appearance: none;
+            line-height: 1;
+        }
+
+        .option-circle:disabled {
+            opacity: 0.5;
+            cursor: default;
+            transform: none !important;
+        }
+
+        #btn-A {
+            background-color: #2e86de; 
+            border: 8px solid #dfe6e9;
+        }
+        #btn-A:hover:not(:disabled) {
+            transform: translateY(-10px) scale(1.1);
+            box-shadow: 0 0 30px #2e86de;
+        }
+
+        #btn-hands {
+            background-color: #e84118; 
+            border: 8px solid #dfe6e9;
+        }
+        #btn-hands:hover:not(:disabled) {
+            transform: translateY(-10px) scale(1.1);
+            box-shadow: 0 0 30px #e84118;
+        }
+
+        #astro-cat {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 18vw; 
+            max-width: 180px;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        #end-screen {
+            display: none;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 8px solid #4cd137;
+        }
+        #end-screen h2 { font-size: 36px; color: #4cd137; margin-top: 0; }
+        #end-screen button { padding: 15px 30px; font-size: 20px; cursor: pointer; border-radius: 10px; border: none; background: #2e86de; color: white; margin-top: 20px;}
+
+        @media (max-width: 768px) {
+            .welcome-bubble { padding: 20px; border-radius: 20px; flex-direction: column; text-align: center; gap: 15px; }
+            .welcome-ear-icon { font-size: 60px; }
+            .welcome-bubble h1 { font-size: 28px; }
+            .welcome-bubble p { font-size: 16px; margin-bottom: 15px; }
+            #start-btn { padding: 12px 30px; font-size: 20px; }
+            
+            #item-image {
+                width: 300px;
+                height: 300px;
+            }
+            #replay-btn {
+                right: auto;
+                left: 50%;
+                bottom: -60px;
+                top: auto;
+                transform: translateX(-50%);
+            }
+            .option-circle {
+                width: 100px;
+                height: 100px;
+                font-size: 50px;
+            }
+            #letter-cue {
+                font-size: 50px;
+                top: 20px;
+                left: 20px;
+                padding: 5px 15px;
+            }
+            
+            #astro-cat {
+                width: 22vw;
+                max-width: 110px;
+                top: 10px;
+                right: 10px;
+            }
+
+            #speaker-popup {
+                right: 15px;
+                padding: 10px;
+                border-width: 4px;
+            }
+            .speaker-icon { font-size: 40px; }
+            #speaker-popup p { font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="welcome-screen">
+        <div class="welcome-bubble">
+            <div class="welcome-ear-icon">👂</div>
+            <div class="welcome-text-content">
+                <h1>Учимся слышать звук А</h1>
+                <p>Дальше тебя ждут картинки. Называй их, долго долго тяни первый звук. Если слышишь звук А, хлопни в ладоши и нажми знак ладошек; если слышишь другой звук, нажимай красный крестик.</p>
+                <button id="start-btn" onclick="startGame()">Начать</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-layout">
+        <div id="letter-cue">A</div>
+
+        <div id="item-container">
+            <div id="feedback"></div>
+            <img id="item-image" src="" alt="Game item">
+            <button id="replay-btn" onclick="playPronunciation()">🔊</button>
+        </div>
+
+        <div id="speaker-popup" onclick="toggleMute()">
+            <div class="speaker-icon" id="speaker-icon">🔊</div>
+            <p id="speaker-text">Выключить<br>звук</p>
+        </div>
+
+        <div class="options-outer">
+            <button id="btn-A" class="option-circle" onclick="checkAnswer('A')">👏</button>
+            <button id="btn-hands" class="option-circle" onclick="checkAnswer('hands')">❌</button>
+        </div>
+    </div>
+
+    <div id="end-screen">
+        <h2>Молодец!</h2>
+        <p></p>
+        <button onclick="location.reload()">Играть снова</button>
+        <button onclick="window.location.href='A4.html'">Далее</button>
+    </div>
+
+    <img id="astro-cat" src="../pictures/CHARACTERS/astro_cat.png" alt="Astro Cat Pilot">
+
+    <script>
+        const originalItems = [
+            { name: 'stork.png', rusName: 'Аист', correct: 'A' },    
+            { name: 'table.png', rusName: 'Стол', correct: 'hands' },    
+            { name: 'school-bus.png', rusName: 'Автобус', correct: 'A' },  
+            { name: 'shark.png', rusName: 'Акула', correct: 'A' },       
+            { name: 'pinapple.png', rusName: 'Ананас', correct: 'A' },      
+            { name: 'watermellon.png', rusName: 'Арбуз', correct: 'A' },
+            { name: 'chair.png', rusName: 'Стул', correct: 'hands' },   
+            { name: 'apricot.png', rusName: 'Aбрикос', correct: 'A' }      
+        ];
+
+        let gameQueue = [];
+        let currentItemIndex = 0;
+        let isMuted = false;
+
+        function startGame() {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('game-layout').style.display = 'flex';
+            
+            gameQueue = [...originalItems];
+            currentItemIndex = 0;
+            showNextItem();
+        }
+
+        function showNextItem() {
+            if (gameQueue.length === 0) {
+                endGame();
+                return;
+            }
+            const currentItem = gameQueue[currentItemIndex];
+            document.getElementById('item-image').src = '../pictures/game3/' + currentItem.name;
+            
+            // Play pronunciation directly without delay
+            playPronunciation();
+        }
+
+        function playPronunciation() {
+            if (isMuted) return;
+            const currentItem = gameQueue[currentItemIndex];
+            if (currentItem && currentItem.rusName) {
+                const utterance = new SpeechSynthesisUtterance(currentItem.rusName);
+                utterance.lang = 'ru-RU';
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            const iconEl = document.getElementById('speaker-icon');
+            const textEl = document.getElementById('speaker-text');
+            
+            if (isMuted) {
+                iconEl.innerText = "🔇";
+                textEl.innerHTML = "Включить<br>звук";
+            } else {
+                iconEl.innerText = "🔊";
+                textEl.innerHTML = "Выключить<br>звук";
+            }
+        }
+
+        function checkAnswer(playerChoice) {
+            const currentItem = gameQueue[currentItemIndex];
+            const feedbackEl = document.getElementById('feedback');
+            
+            document.querySelectorAll('.option-circle').forEach(b => b.disabled = true);
+
+            if (playerChoice === currentItem.correct) {
+                confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+                feedbackEl.innerText = "✅";
+                feedbackEl.style.display = "block";
+
+                gameQueue.splice(currentItemIndex, 1);
+            } else {
+                feedbackEl.innerText = "❌";
+                feedbackEl.style.display = "block";
+
+                currentItemIndex++;
+            }
+
+            setTimeout(() => {
+                feedbackEl.style.display = "none";
+                document.querySelectorAll('.option-circle').forEach(b => b.disabled = false);
+
+                if (gameQueue.length > 0 && currentItemIndex >= gameQueue.length) {
+                    currentItemIndex = 0;
+                }
+                
+                if (gameQueue.length > 0) {
+                    showNextItem();
+                } else {
+                    endGame();
+                }
+            }, 1200);
+        }
+
+        function endGame() {
+            document.getElementById('game-layout').style.display = 'none';
+            document.getElementById('end-screen').style.display = 'block';
+            
+            let duration = 3 * 1000;
+            let end = Date.now() + duration;
+
+            (function frame() {
+                confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 } });
+                confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 } });
+                if (Date.now() < end) { requestAnimationFrame(frame); }
+            }());
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-select=none">
+    <title>Читаем букву А</title>
+    <style>
+        body { 
+            margin: 0; padding: 20px; 
+            background: white;
+            color: #333;
+            display: flex; flex-direction: column; align-items: center; 
+            font-family: sans-serif; min-height: 100vh; 
+        }
+        .cat-corner { position: fixed; top: 10px; right: 10px; width: 80px; }
+        .instruction { font-size: 1.2rem; margin-bottom: 20px; text-align: center; color: #555; max-width: 600px; line-height: 1.4; }
+
+        .reading-area { 
+            position: relative;
+            display: flex; flex-direction: column; align-items: center;
+            gap: 40px; margin-top: 40px;
+            width: 400px;
+        }
+
+        .reading-row {
+            display: flex; justify-content: center; gap: 50px; font-size: 90px; font-weight: bold; color: #e91e63;
+            width: 100%;
+        }
+
+        .reading-row span {
+            display: inline-block; width: 60px; text-align: center;
+        }
+
+        .hand { 
+            position: absolute; font-size: 50px; transition: left 0.5s linear, top 0.5s ease; pointer-events: none; 
+        }
+
+        #start-btn { 
+            margin-top: 50px; padding: 15px 40px; font-size: 1.5rem; 
+            border-radius: 20px; border: none; background: #e91e63; color: white; cursor: pointer; 
+            box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
+            font-weight: bold;
+        }
+
+        #popup { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.8); flex-direction: column; justify-content: center; align-items: center; z-index: 10;
+            opacity: 0; transition: opacity 0.5s ease;
+        }
+        #popup.show { opacity: 1; display: flex; }
+
+        .popup-content { 
+            background: #fefefe; padding: 60px; border-radius: 30px; text-align: center; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            max-width: 500px;
+        }
+
+        .popup-content h2 { 
+            font-size: 3.5rem; color: #4caf50; margin: 0 0 40px 0; font-weight: bold;
+        }
+
+        .popup-buttons { 
+            display: flex; 
+            flex-direction: row; 
+            justify-content: center; 
+            gap: 20px; 
+            width: 100%; 
+        }
+
+        .popup-btn { 
+            border: none; padding: 15px 30px; font-size: 1.3rem; font-weight: bold;
+            border-radius: 15px; cursor: pointer; color: white; min-width: 130px;
+            transition: background 0.3s ease;
+        }
+
+        #replay-btn { background: #ff9800; }
+        #replay-btn:hover { background: #e68a00; }
+        #continue-btn { background: #e91e63; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;}
+        #continue-btn:hover { background: #d81b60; }
+    </style>
+</head>
+<body>
+
+    <img src="../pictures/CHARACTERS/astro_cat.png" class="cat-corner" alt="Cat">
+    <div class="instruction">А теперь мы по-настоящему будем читать! Попробуем?<br>
+Ставь палец под букву А, называй её и передвигай палец к следующей букве. Читайте ряд за рядом.</div>
+
+    <div class="reading-area" id="container">
+        <div class="reading-row"><span>А</span><span>А</span><span>А</span></div>
+        <div class="reading-row"><span>А</span><span>А</span></div>
+        <div class="reading-row"><span>А</span><span>А</span><span>А</span></div>
+        <div id="hand" class="hand" style="top: 100px; left: 20px;">👆</div>
+    </div>
+
+    <button id="start-btn" onclick="startExercise()">Начать</button>
+
+    <div id="popup">
+        <div class="popup-content">
+            <h2>Отлично!</h2>
+            <div class="popup-buttons">
+                <button class="popup-btn" id="replay-btn" onclick="location.reload()">Играть еще</button>
+                <a href="../entrence_pages/O.html" id="continue-btn" class="popup-btn">Дальше</a>
+            </div>
+        </div>
+    </div>
+
+    <audio id="a-audio" src="../pictures/game6/Asound.mp3" preload="auto"></audio>
+
+    <script>
+        async function startExercise() {
+            const hand = document.getElementById('hand');
+            const audio = document.getElementById('a-audio');
+            const spans = document.querySelectorAll('.reading-area span');
+            const container = document.getElementById('container');
+            const startBtn = document.getElementById('start-btn');
+            const popup = document.getElementById('popup');
+            
+            startBtn.style.display = 'none';
+
+            for (let i = 0; i < spans.length; i++) {
+                const rect = spans[i].getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                
+                const newLeft = rect.left - containerRect.left + (rect.width / 2) - (hand.offsetWidth / 2);
+                const newTop = rect.bottom - containerRect.top + 5;
+
+                hand.style.left = newLeft + 'px';
+                hand.style.top = newTop + 'px';
+
+                audio.currentTime = 0;
+                audio.play();
+
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+            
+            popup.classList.add('show');
+        }
+    </script>
+</body>
+</html>
