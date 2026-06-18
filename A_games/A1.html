@@ -11,6 +11,26 @@
             position: relative;
         }
 
+        #rules-sidebar {
+            position: absolute; 
+            top: 20px;
+            left: 20px;
+            width: 320px;
+            max-height: 90vh;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 25px;
+            font-family: sans-serif;
+            font-size: 16px; 
+            font-weight: bold; 
+            z-index: 10;
+            box-sizing: border-box;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+            text-align: left;
+            line-height: 1.5;
+        }
+
         #cat {
             position: absolute; 
             top: 410px;
@@ -19,14 +39,6 @@
             cursor: grab; 
             z-index: 20;
             transition: opacity 0.3s, filter 0.3s;
-        }
-
-        /* Locked state preventing drag while audio plays */
-        #cat.locked {
-            pointer-events: none;
-            opacity: 0.6;
-            filter: grayscale(0.5);
-            cursor: default;
         }
 
         #ship-container {
@@ -110,6 +122,14 @@
 
         /* Mobile responsiveness adjustments */
         @media (max-width: 900px) {
+            #rules-sidebar {
+                position: relative;
+                width: 90%;
+                max-height: 200px;
+                margin: 10px auto;
+                left: auto;
+                top: auto;
+            }
             #cat {
                 top: 50vh;
                 left: 10vw;
@@ -123,9 +143,15 @@
 </head>
 <body>
 
-    <audio id="entrance-audio" src="../audios/entrence.mp3" autoplay></audio>
+    <div id="rules-sidebar">
+        Здравствуй, дорогой друг!<br><br>
+        Я - котёнок Космик. Приглашаю тебя в удивительное космическое путешествие.<br><br>
+        Ты побываешь на далёких планетах, увидишь мерцание звёзд, а может быть мимо тебя пронесется комета. Тебя ждёт незабываемое приключение в мире букв и чтения.<br><br>
+        Полетим на ракете! Скорее помоги Космику сесть в неё!
+        <audio id="entrance-audio" src="../audios/entrence.mp4" autoplay></audio>
+    </div>
 
-    <img id="cat" src="../pictures/CHARACTERS/astro_cat.png" alt="Cat" draggable="true" class="locked">
+    <img id="cat" src="../pictures/CHARACTERS/astro_cat.png" alt="Cat" draggable="true">
 
     <div id="ship-container">
         <img id="rocket-img" src="../pictures/rackets/racket.png" alt="Rocket">
@@ -154,7 +180,6 @@
         // Function to attempt audio playback safely across browsers
         function playAudio() {
             entranceAudio.play().then(() => {
-                // If it successfully plays, clean up the manual click backups
                 document.removeEventListener('click', playAudio);
                 document.removeEventListener('pointerdown', playAudio);
             }).catch(error => {
@@ -162,20 +187,12 @@
             });
         }
 
-        // Run play sequence on load
         playAudio();
 
-        // Fallback: If autoplay fails, the very first screen interaction fires the audio
         document.addEventListener('click', playAudio);
         document.addEventListener('pointerdown', playAudio);
 
-        // Unlock the cat ONLY when the audio file completely finishes sounding
-        entranceAudio.addEventListener('ended', () => {
-            cat.classList.remove('locked');
-        });
-
         cat.addEventListener('pointerdown', (e) => {
-            if (cat.classList.contains('locked')) return;
             isDragging = true;
             const rect = cat.getBoundingClientRect();
             offsetX = e.clientX - rect.left;
@@ -185,14 +202,14 @@
         });
 
         cat.addEventListener('pointermove', (e) => {
-            if (!isDragging || cat.classList.contains('locked')) return;
+            if (!isDragging) return;
             
             cat.style.left = (e.clientX - offsetX) + 'px';
             cat.style.top = (e.clientY - offsetY) + 'px';
         });
 
         cat.addEventListener('pointerup', (e) => {
-            if (!isDragging || cat.classList.contains('locked')) return;
+            if (!isDragging) return;
             isDragging = false;
             
             const shipRect = container.getBoundingClientRect();
