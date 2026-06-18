@@ -17,7 +17,7 @@
         body {
             width: 100%;
             min-height: 100vh;
-            background: #FCE4EC; /* Нежный мыльно-розовый фон */
+            background: #FCE4EC;
             font-family: 'Nunito', sans-serif;
             display: flex;
             flex-direction: column;
@@ -92,7 +92,7 @@
             width: 100%;
         }
         
-        /* Игровые карточки в стиле мыльных элементов */
+        /* Игровые карточки */
         .item-card { 
             width: 240px; 
             background: white;
@@ -144,7 +144,7 @@
             border: 8px solid #4cd137; 
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
             z-index: 10;
-            max-width: 550px; /* Увеличено для лучшего размещения кнопок в ряд */
+            max-width: 550px;
             width: 90%;
         }
         #end-screen h2 {
@@ -153,13 +153,12 @@
             margin-bottom: 25px;
         }
 
-        /* Контейнер для кнопок в конце игры */
         .btn-container {
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 15px;
-            flex-wrap: wrap; /* Кнопки аккуратно перенесутся на мобильных экранах */
+            flex-wrap: wrap;
             margin-top: 20px;
         }
 
@@ -179,7 +178,7 @@
             transition: transform 0.2s, background-color 0.2s;
         }
         .btn-container .button-style {
-            margin: 0; /* Отступы теперь контролируются свойством gap */
+            margin: 0;
         }
         .button-style:hover {
             transform: scale(1.05);
@@ -247,18 +246,35 @@
     <img id="mouse-corner" src="pictures/mouse.png" alt="Мышка" onerror="this.src='https://placehold.co/120x120/e84118/ffffff?text=Мышка'">
 
     <script>
-        // Функция для естественного и чистого озвучивания слов
+        let currentUtterance = null;
+
+        // Функция для естественного озвучивания слов
         function pronounceWord(text) {
             if ('speechSynthesis' in window) {
-                let utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'ru-RU';
-                utterance.rate = 0.85; // Слегка умеренная скорость, комфортная для детей
-                utterance.pitch = 1.0;  // Естественная тональность голоса
-                window.speechSynthesis.speak(utterance);
+                // Очищаем предыдущую очередь звуков
+                window.speechSynthesis.cancel();
+
+                currentUtterance = new SpeechSynthesisUtterance(text);
+                currentUtterance.lang = 'ru-RU';
+                currentUtterance.rate = 0.85; 
+                currentUtterance.pitch = 1.0; 
+
+                // Принудительно выбираем русский голос, если он доступен в системе
+                const voices = window.speechSynthesis.getVoices();
+                const ruVoice = voices.find(v => v.lang.includes('ru'));
+                if (ruVoice) {
+                    currentUtterance.voice = ruVoice;
+                }
+
+                window.speechSynthesis.speak(currentUtterance);
             }
         }
 
-        // Данные раундов с вашими оригинальными путями к файлам
+        // Загружаем список голосов сразу при старте страницы, чтобы они инициализировались
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.getVoices();
+        }
+
         const rounds = [
             [
                 { name: 'pictures/smoke.png', text: 'ДЫМ', correct: true },
@@ -283,6 +299,12 @@
         function nextRound() {
             document.getElementById('welcome-screen').style.display = 'none';
             document.getElementById('game-layout').style.display = 'flex';
+            
+            // Запуск синтеза речи сразу по клику кнопки (в рамках одного потока событий), чтобы браузер не блокировал звук
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.getVoices();
+            }
+
             currentRoundItems = [...rounds[currentRoundIndex]];
             renderRound();
         }
@@ -295,7 +317,6 @@
                 const card = document.createElement('div');
                 card.className = 'item-card';
                 
-                // Озвучивание при ручном нажатии на карточку
                 card.onclick = () => {
                     pronounceWord(item.text);
                     handleChoice(item);
@@ -305,7 +326,7 @@
                 img.src = item.name;
                 img.alt = item.text;
                 img.onerror = function() {
-                    this.src = `https://placehold.co/240x160/ce93d8/ffffff?text=${item.text}`;
+                    this.src = 'https://placehold.co/240x160/ce93d8/ffffff?text=' + encodeURIComponent(item.text);
                 };
 
                 const span = document.createElement('span');
@@ -316,15 +337,13 @@
                 container.appendChild(card);
             });
 
-            // Автоматическое перечисление слов раунда вслух при его начале
+            // Автоматическое перечисление слов при начале раунда
             if ('speechSynthesis' in window) {
-                setTimeout(() => {
-                    currentRoundItems.forEach((item, index) => {
-                        setTimeout(() => {
-                            pronounceWord(item.text);
-                        }, index * 1400); // Четкий интервал между словами
-                    });
-                }, 500);
+                currentRoundItems.forEach((item, index) => {
+                    setTimeout(() => {
+                        pronounceWord(item.text);
+                    }, 300 + (index * 1400)); // Запуск сразу со стартовым небольшим буфером 300мс
+                });
             }
         }
 
@@ -356,6 +375,7 @@
             document.getElementById('end-screen').style.display = 'block';
             
             if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
                 let endUtterance = new SpeechSynthesisUtterance("Замечательно! Ты отлично находишь звук Ы!");
                 endUtterance.lang = 'ru-RU';
                 window.speechSynthesis.speak(endUtterance);

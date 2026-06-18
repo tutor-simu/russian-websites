@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лабиринт Космика</title>
+    <style>
+        body { margin: 0; display: flex; flex-direction: column; align-items: center; background: #fce4ec; height: 100vh; overflow: hidden; }
+        
+        #start-prompt { font-size: 24px; font-weight: bold; color: #e91e63; margin-top: 10px; }
+        
+        #game-container { position: relative; height: 85vh; aspect-ratio: 1 / 1; margin-top: 10px; }
+        #maze-bg { width: 100%; height: 100%; pointer-events: none; }
+        #debug-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; }
+        
+        #popup { 
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: white; padding: 40px; border-radius: 20px; border: 5px solid #e91e63;
+            font-size: 50px; font-weight: bold; display: none; z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-prompt">Начни здесь (сверху)</div>
+    <div id="game-container">
+        <img id="maze-bg" src="pictures/maze.png">
+        <canvas id="debug-canvas"></canvas>
+    </div>
+    <div id="popup">Буква: <span id="letter-val"></span></div>
+
+    <script>
+        const canvas = document.getElementById('debug-canvas');
+        const ctx = canvas.getContext('2d');
+        const popup = document.getElementById('popup');
+        const letterVal = document.getElementById('letter-val');
+        
+        let isDrawing = false;
+        let foundLetters = [];
+
+        // Coordinates (Updated to match your image)
+        const letterZones = [
+            {x: 230, y: 125, letter: "C"}, {x: 311, y: 127, letter: "X"}, {x: 400, y: 200, letter: "P"},
+            {x: 655, y: 212, letter: "C"}, {x: 737, y: 310, letter: "Y"}, {x: 230, y: 310, letter: "P"},
+            {x: 483, y: 302, letter: "Ы"}, {x: 482, y: 410, letter: "C"}, {x: 650, y: 410, letter: "Y"},
+            {x: 827, y: 410, letter: "M"}, {x: 142, y: 560, letter: "Y"}, {x: 397, y: 620, letter: "X"},
+            {x: 743, y: 513, letter: "O"}, {x: 657, y: 615, letter: "Ш"}, {x: 741, y: 720, letter: "P"},
+            {x: 138, y: 821, letter: "O"}, {x: 300, y: 810, letter: "Ш"}, {x: 485, y: 730, letter: "M"},
+            {x: 569, y: 820, letter: "A"}, {x: 402, y: 920, letter: "C"}, {x: 745, y: 920, letter: "C"}
+        ];
+
+        function initCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+
+        canvas.addEventListener('mousedown', () => { if(popup.style.display !== 'block') isDrawing = true; });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            if(!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+
+            // Draw Path
+            ctx.fillStyle = '#e91e63';
+            ctx.beginPath(); ctx.arc(mx, my, 5, 0, Math.PI * 2); ctx.fill();
+
+            // Collision with invisible letter zones
+            letterZones.forEach((zone, index) => {
+                let px = (zone.x / 1000) * canvas.width;
+                let py = (zone.y / 1000) * canvas.height;
+                if(Math.hypot(mx - px, my - py) < 30 && !foundLetters.includes(index)) {
+                    triggerPopup(zone.letter, index);
+                }
+            });
+        });
+
+        function triggerPopup(letter, index) {
+            isDrawing = false; // Freeze pen
+            foundLetters.push(index);
+            letterVal.innerText = letter;
+            popup.style.display = 'block';
+            
+            setTimeout(() => {
+                popup.style.display = 'none';
+                isDrawing = true; // Resume pen
+            }, 3000); // 3 seconds
+        }
+
+        canvas.addEventListener('mouseup', () => isDrawing = false);
+        window.addEventListener('resize', initCanvas);
+        initCanvas();
+    </script>
+</body>
+</html>

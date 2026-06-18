@@ -6,7 +6,7 @@
     <title>Космические Игры - Буква Ш | Bilingvi Online</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght=400;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
 
         body {
             margin: 0;
@@ -144,8 +144,8 @@
 
         .trace-container {
             position: relative;
-            width: 140px;
-            height: 190px;
+            width: 180px;
+            height: 240px;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
             display: flex;
@@ -156,7 +156,7 @@
         }
 
         .guide-letter {
-            font-size: 85px; 
+            font-size: 130px; 
             color: #e3e3e3;
             font-weight: 800;
             user-select: none;
@@ -305,8 +305,8 @@
             .color-swatch { width: 48px; height: 48px; }
             .btn-group { width: 32%; gap: 6px; }
             .btn { padding: 10px 5px; font-size: 13px; border-radius: 10px; }
-            .trace-container { width: 90px; height: 130px; }
-            .guide-letter { font-size: 55px; }
+            .trace-container { width: 120px; height: 160px; }
+            .guide-letter { font-size: 90px; }
         }
     </style>
 </head>
@@ -345,7 +345,6 @@
 
         <div id="layer-tracing" class="game-layer">
             <div id="tracing-grid">
-                <div class="trace-container"><div class="guide-letter">Ш</div><canvas class="trace-canvas"></canvas></div>
                 <div class="trace-container"><div class="guide-letter">Ш</div><canvas class="trace-canvas"></canvas></div>
                 <div class="trace-container"><div class="guide-letter">Ш</div><canvas class="trace-canvas"></canvas></div>
                 <div class="trace-container"><div class="guide-letter">Ш</div><canvas class="trace-canvas"></canvas></div>
@@ -595,8 +594,8 @@
             
             traceCanvases.forEach((tCanvas, index) => {
                 const container = tCanvas.parentElement;
-                tCanvas.width = container.clientWidth || 140;
-                tCanvas.height = container.clientHeight || 190;
+                tCanvas.width = container.clientWidth || 180;
+                tCanvas.height = container.clientHeight || 240;
                 
                 const tCtx = tCanvas.getContext('2d');
                 let isDrawing = false;

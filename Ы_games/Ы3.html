@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Игра: Соедини и Обведи</title>
+    <style>
+        :root { --pink: #e91e63; --green: #10b981; }
+        body { margin: 0; height: 100vh; overflow: hidden; font-family: sans-serif; background: #fce4ec; user-select: none; touch-action: none; }
+        
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+        .box { background: white; padding: 3vh 3vw; border-radius: 20px; text-align: center; border: 4px solid var(--pink); display: flex; flex-direction: column; align-items: center; gap: 20px; max-width: 80vw; }
+        .box img { width: 15vh; height: 15vh; }
+        .btn { padding: 2vh 4vw; font-size: 2vh; cursor: pointer; background: var(--pink); color: white; border: none; border-radius: 10px; width: 100%; }
+
+        #game-area { height: 100vh; display: flex; align-items: center; justify-content: space-around; padding: 5vw; position: relative; box-sizing: border-box; }
+        #canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        
+        .node { width: 15vw; height: 15vh; display: flex; align-items: center; justify-content: center; font-size: 5vw; font-weight: bold; border: 4px solid #6e8efb; border-radius: 20px; background: white; z-index: 2; position: relative; }
+        .node img { max-width: 70%; max-height: 70%; pointer-events: none; }
+        .column { display: flex; flex-direction: column; gap: 5vh; }
+
+        #tracing-container { display: none; width: 100vw; height: 100vh; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; padding: 2vh; box-sizing: border-box; }
+        .card { background: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 20vh; font-weight: bold; color: #eee; border: 4px solid #ddd; position: relative; }
+        #tracing-canvas { position: absolute; top: 0; left: 0; z-index: 100; touch-action: none; }
+
+        .bubble { position: absolute; width: 3vw; height: 3vw; background: radial-gradient(circle, #fff700, #ffae00); border-radius: 50%; z-index: 50; animation: float 2s ease-out forwards; pointer-events: none; }
+        @keyframes float { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(2) translateY(-10vh); opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <div id="start-modal" class="overlay"><div class="box"><img src="pictures/mouse.png"><h1>Привет!</h1><p>Соедини слоги с картинками.</p><button class="btn" onclick="startGame()">Начать</button></div></div>
+    <div id="trace-info-modal" class="overlay" style="display:none;"><div class="box"><img src="pictures/mouse.png"><h1>Отлично!</h1><p>Обведи буквы Ы.</p><button class="btn" onclick="startTracing()">Понятно</button></div></div>
+    <div id="end-modal" class="overlay" style="display:none;"><div class="box"><img src="pictures/mouse.png"><h1>Молодец!</h1><button class="btn" onclick="location.reload()">Еще раз</button><button class="btn" style="background:var(--green)" onclick="window.location.href='Ы4.html'">Далее</button></div></div>
+
+    <div id="game-area">
+        <div class="column" id="left-col">
+            <div class="node" data-pair="1">СЫ</div>
+            <div class="node" data-pair="2">РЫ</div>
+            <div class="node" data-pair="3">МЫ</div>
+        </div>
+        <div class="column" id="right-col">
+            <div class="node" data-pair="1"><img src="../C_games/pictures/chese.png"></div>
+            <div class="node" data-pair="2"><img src="pictures/knight.png"></div>
+            <div class="node" data-pair="3"><img src="pictures/soap.png"></div>
+        </div>
+    </div>
+
+    <div id="tracing-container">
+        <div class="card" id="card1">Ы</div><div class="card" id="card2">Ы</div>
+        <div class="card" id="card3">Ы</div><div class="card" id="card4">Ы</div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+    <canvas id="tracing-canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
+        const tc = document.getElementById('tracing-canvas'), tCtx = tc.getContext('2d');
+        let isDrawing = false, connections = [], startNode = null;
+        let progress = { card1: 0, card2: 0, card3: 0, card4: 0 }, lastPos = {x: 0, y: 0}, THRESHOLD = 230;
+
+        function shuffle(parent) {
+            for (let i = parent.children.length; i >= 0; i--) parent.appendChild(parent.children[Math.random() * i | 0]);
+        }
+
+        window.onload = () => {
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            shuffle(document.getElementById('right-col'));
+        };
+
+        function startGame() { document.getElementById('start-modal').style.display = 'none'; }
+
+        const getPos = (e) => e.touches ? {x: e.touches[0].clientX, y: e.touches[0].clientY} : {x: e.clientX, y: e.clientY};
+
+        window.addEventListener('mousedown', (e) => { startNode = e.target.closest('.node'); if(startNode) isDrawing = true; });
+        window.addEventListener('touchstart', (e) => { startNode = e.target.closest('.node'); if(startNode) isDrawing = true; }, {passive: false});
+
+        window.addEventListener('mousemove', (e) => { if(isDrawing) drawAll(e.clientX, e.clientY); });
+        window.addEventListener('touchmove', (e) => { if(isDrawing) drawAll(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
+
+        window.addEventListener('mouseup', (e) => endDraw(e.clientX, e.clientY));
+        window.addEventListener('touchend', (e) => endDraw(e.changedTouches[0].clientX, e.changedTouches[0].clientY));
+
+        function endDraw(x, y) {
+            const endNode = document.elementFromPoint(x, y)?.closest('.node');
+            if(isDrawing && endNode && endNode.dataset.pair === startNode.dataset.pair && endNode !== startNode) {
+                connections.push({start: getCenter(startNode), end: getCenter(endNode)});
+                if(connections.length === 3) setTimeout(() => document.getElementById('trace-info-modal').style.display = 'flex', 500);
+            }
+            isDrawing = false; drawAll();
+        }
+
+        function drawAll(mx, my) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            connections.forEach(c => drawLine(c.start, c.end, '#10b981'));
+            if(isDrawing) drawLine(getCenter(startNode), {x: mx, y: my}, '#e91e63');
+        }
+
+        function drawLine(p1, p2, color) {
+            ctx.beginPath(); ctx.lineWidth = Math.min(window.innerWidth, window.innerHeight) * 0.015; ctx.strokeStyle = color; ctx.lineCap = "round";
+            ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+        }
+
+        function startTracing() {
+            document.getElementById('trace-info-modal').style.display = 'none';
+            document.getElementById('game-area').style.display = 'none';
+            canvas.style.display = 'none';
+            document.getElementById('tracing-container').style.display = 'grid';
+            tc.width = window.innerWidth; tc.height = window.innerHeight;
+
+            let painting = false;
+            const paint = (e) => {
+                const pos = getPos(e);
+                if(!painting) return;
+                tCtx.fillStyle = '#e91e63'; tCtx.beginPath(); tCtx.arc(pos.x, pos.y, 10, 0, Math.PI*2); tCtx.fill();
+                document.querySelectorAll('.card').forEach(card => {
+                    const r = card.getBoundingClientRect();
+                    if(pos.x > r.left && pos.x < r.right && pos.y > r.top && pos.y < r.bottom) {
+                        progress[card.id]++;
+                        if(progress[card.id] >= THRESHOLD) card.style.borderColor = '#10b981';
+                    }
+                });
+                if(Object.values(progress).every(v => v >= THRESHOLD)) document.getElementById('end-modal').style.display = 'flex';
+            };
+
+            tc.addEventListener('touchstart', (e) => { painting = true; paint(e); });
+            tc.addEventListener('touchmove', paint);
+            tc.addEventListener('touchend', () => painting = false);
+            tc.addEventListener('mousedown', (e) => { painting = true; paint(e); });
+            tc.addEventListener('mousemove', paint);
+            tc.addEventListener('mouseup', () => painting = false);
+        }
+
+        function getCenter(el) { const r = el.getBoundingClientRect(); return { x: r.left + r.width/2, y: r.top + r.height/2 }; }
+    </script>
+</body>
+</html>
